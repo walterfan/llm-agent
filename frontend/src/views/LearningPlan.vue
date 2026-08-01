@@ -1,48 +1,48 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import AppHeader from '@/components/layout/AppHeader.vue';
-import { useCoachStore } from '@/stores/coach';
-import type { GoalStatus, Difficulty } from '@/types/coach';
+import { ref, onMounted } from 'vue'
+import AppHeader from '@/components/layout/AppHeader.vue'
+import { useCoachStore } from '@/stores/coach'
+import type { GoalStatus, Difficulty } from '@/types/coach'
 
-const store = useCoachStore();
+const store = useCoachStore()
 
 // Goal form
-const showGoalForm = ref(false);
-const goalSubject = ref('');
-const goalDescription = ref('');
-const goalDailyMinutes = ref(30);
-const goalDeadline = ref('');
+const showGoalForm = ref(false)
+const goalSubject = ref('')
+const goalDescription = ref('')
+const goalDailyMinutes = ref(30)
+const goalDeadline = ref('')
 
 // Session form
-const showSessionForm = ref(false);
-const sessionGoalId = ref('');
-const sessionMinutes = ref(25);
-const sessionNotes = ref('');
-const sessionDifficulty = ref<Difficulty | ''>('');
+const showSessionForm = ref(false)
+const sessionGoalId = ref('')
+const sessionMinutes = ref(25)
+const sessionNotes = ref('')
+const sessionDifficulty = ref<Difficulty | ''>('')
 
 // Selected goal for progress
-const selectedProgressGoalId = ref<string | null>(null);
+const selectedProgressGoalId = ref<string | null>(null)
 
 const statusLabels: Record<GoalStatus, { label: string; color: string }> = {
   active: { label: '进行中', color: 'bg-green-100 text-green-700' },
   completed: { label: '已完成', color: 'bg-blue-100 text-blue-700' },
   paused: { label: '已暂停', color: 'bg-yellow-100 text-yellow-700' },
   abandoned: { label: '已放弃', color: 'bg-gray-100 text-gray-500' },
-};
+}
 
 const difficultyLabels: Record<Difficulty, string> = {
   easy: '😊 简单',
   medium: '🤔 适中',
   hard: '😤 困难',
-};
+}
 
 onMounted(() => {
-  store.loadGoals();
-  store.loadSessions();
-});
+  store.loadGoals()
+  store.loadSessions()
+})
 
 async function createGoal() {
-  if (!goalSubject.value.trim()) return;
+  if (!goalSubject.value.trim()) return
 
   try {
     await store.createGoal({
@@ -50,12 +50,12 @@ async function createGoal() {
       description: goalDescription.value.trim() || undefined,
       daily_target_minutes: goalDailyMinutes.value,
       deadline: goalDeadline.value || undefined,
-    });
-    goalSubject.value = '';
-    goalDescription.value = '';
-    goalDailyMinutes.value = 30;
-    goalDeadline.value = '';
-    showGoalForm.value = false;
+    })
+    goalSubject.value = ''
+    goalDescription.value = ''
+    goalDailyMinutes.value = 30
+    goalDeadline.value = ''
+    showGoalForm.value = false
   } catch (e) {
     // Error handled in store
   }
@@ -63,14 +63,14 @@ async function createGoal() {
 
 async function updateGoalStatus(goalId: string, status: GoalStatus) {
   try {
-    await store.updateGoal(goalId, { status });
+    await store.updateGoal(goalId, { status })
   } catch (e) {
     // Error handled in store
   }
 }
 
 async function logSession() {
-  if (sessionMinutes.value <= 0) return;
+  if (sessionMinutes.value <= 0) return
 
   try {
     await store.logStudySession({
@@ -78,21 +78,21 @@ async function logSession() {
       duration_minutes: sessionMinutes.value,
       notes: sessionNotes.value.trim() || undefined,
       difficulty: (sessionDifficulty.value as Difficulty) || undefined,
-    });
-    sessionGoalId.value = '';
-    sessionMinutes.value = 25;
-    sessionNotes.value = '';
-    sessionDifficulty.value = '';
-    showSessionForm.value = false;
+    })
+    sessionGoalId.value = ''
+    sessionMinutes.value = 25
+    sessionNotes.value = ''
+    sessionDifficulty.value = ''
+    showSessionForm.value = false
   } catch (e) {
     // Error handled in store
   }
 }
 
 async function viewProgress(goalId: string) {
-  selectedProgressGoalId.value = goalId;
+  selectedProgressGoalId.value = goalId
   try {
-    await store.loadProgress(goalId);
+    await store.loadProgress(goalId)
   } catch (e) {
     // Error handled in store
   }
@@ -100,14 +100,18 @@ async function viewProgress(goalId: string) {
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('zh-CN', {
-    month: '2-digit', day: '2-digit',
-  });
+    month: '2-digit',
+    day: '2-digit',
+  })
 }
 
 function formatDateTime(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('zh-CN', {
-    month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
-  });
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }
 </script>
 
@@ -124,19 +128,27 @@ function formatDateTime(dateStr: string) {
       <!-- Quick Stats -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div class="bg-white rounded-lg shadow p-4 text-center">
-          <div class="text-2xl font-bold text-primary-600">{{ store.activeGoals.length }}</div>
+          <div class="text-2xl font-bold text-primary-600">
+            {{ store.activeGoals.length }}
+          </div>
           <div class="text-sm text-gray-500">进行中目标</div>
         </div>
         <div class="bg-white rounded-lg shadow p-4 text-center">
-          <div class="text-2xl font-bold text-green-600">{{ store.completedGoals.length }}</div>
+          <div class="text-2xl font-bold text-green-600">
+            {{ store.completedGoals.length }}
+          </div>
           <div class="text-sm text-gray-500">已完成目标</div>
         </div>
         <div class="bg-white rounded-lg shadow p-4 text-center">
-          <div class="text-2xl font-bold text-blue-600">{{ store.sessions.length }}</div>
+          <div class="text-2xl font-bold text-blue-600">
+            {{ store.sessions.length }}
+          </div>
           <div class="text-sm text-gray-500">学习次数</div>
         </div>
         <div class="bg-white rounded-lg shadow p-4 text-center">
-          <div class="text-2xl font-bold text-purple-600">{{ store.totalStudyMinutes }}</div>
+          <div class="text-2xl font-bold text-purple-600">
+            {{ store.totalStudyMinutes }}
+          </div>
           <div class="text-sm text-gray-500">总学习分钟</div>
         </div>
       </div>
@@ -235,7 +247,10 @@ function formatDateTime(dateStr: string) {
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">难度</label>
-              <select v-model="sessionDifficulty" class="w-full border rounded-md px-3 py-2 text-sm">
+              <select
+                v-model="sessionDifficulty"
+                class="w-full border rounded-md px-3 py-2 text-sm"
+              >
                 <option value="">不选择</option>
                 <option value="easy">😊 简单</option>
                 <option value="medium">🤔 适中</option>
@@ -328,24 +343,34 @@ function formatDateTime(dateStr: string) {
       <!-- Progress Report -->
       <div v-if="store.currentProgress" class="bg-white rounded-lg shadow mb-6">
         <div class="p-4 border-b">
-          <h2 class="text-lg font-semibold">📊 进度报告: {{ store.currentProgress.goal.subject }}</h2>
+          <h2 class="text-lg font-semibold">
+            📊 进度报告: {{ store.currentProgress.goal.subject }}
+          </h2>
         </div>
         <div class="p-4">
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="text-center">
-              <div class="text-xl font-bold text-primary-600">{{ store.currentProgress.total_sessions }}</div>
+              <div class="text-xl font-bold text-primary-600">
+                {{ store.currentProgress.total_sessions }}
+              </div>
               <div class="text-xs text-gray-500">学习次数</div>
             </div>
             <div class="text-center">
-              <div class="text-xl font-bold text-blue-600">{{ store.currentProgress.total_minutes }}</div>
+              <div class="text-xl font-bold text-blue-600">
+                {{ store.currentProgress.total_minutes }}
+              </div>
               <div class="text-xs text-gray-500">总分钟数</div>
             </div>
             <div class="text-center">
-              <div class="text-xl font-bold text-green-600">{{ store.currentProgress.current_streak_days }} 🔥</div>
+              <div class="text-xl font-bold text-green-600">
+                {{ store.currentProgress.current_streak_days }} 🔥
+              </div>
               <div class="text-xs text-gray-500">当前连续天数</div>
             </div>
             <div class="text-center">
-              <div class="text-xl font-bold text-purple-600">{{ store.currentProgress.longest_streak_days }}</div>
+              <div class="text-xl font-bold text-purple-600">
+                {{ store.currentProgress.longest_streak_days }}
+              </div>
               <div class="text-xs text-gray-500">最长连续天数</div>
             </div>
           </div>
@@ -360,7 +385,10 @@ function formatDateTime(dateStr: string) {
                 :style="{ width: `${Math.min(100, store.currentProgress.completion_percentage)}%` }"
               />
             </div>
-            <div v-if="store.currentProgress.days_remaining !== null" class="text-xs text-gray-500 mt-1">
+            <div
+              v-if="store.currentProgress.days_remaining !== null"
+              class="text-xs text-gray-500 mt-1"
+            >
               剩余 {{ store.currentProgress.days_remaining }} 天
             </div>
           </div>
@@ -378,17 +406,30 @@ function formatDateTime(dateStr: string) {
         </div>
 
         <div v-else class="divide-y">
-          <div v-for="s in store.sessions.slice(0, 20)" :key="s.id" class="p-3 flex items-center gap-3">
-            <div class="text-sm text-gray-500 w-24">{{ formatDateTime(s.created_at) }}</div>
+          <div
+            v-for="s in store.sessions.slice(0, 20)"
+            :key="s.id"
+            class="p-3 flex items-center gap-3"
+          >
+            <div class="text-sm text-gray-500 w-24">
+              {{ formatDateTime(s.created_at) }}
+            </div>
             <div class="font-medium text-primary-600 w-16">{{ s.duration_minutes }} 分钟</div>
-            <div v-if="s.difficulty" class="text-sm">{{ difficultyLabels[s.difficulty] }}</div>
-            <div v-if="s.notes" class="text-sm text-gray-600 truncate flex-1">{{ s.notes }}</div>
+            <div v-if="s.difficulty" class="text-sm">
+              {{ difficultyLabels[s.difficulty] }}
+            </div>
+            <div v-if="s.notes" class="text-sm text-gray-600 truncate flex-1">
+              {{ s.notes }}
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Error -->
-      <div v-if="store.error" class="mt-4 p-3 rounded border border-red-200 bg-red-50 text-red-700 text-sm">
+      <div
+        v-if="store.error"
+        class="mt-4 p-3 rounded border border-red-200 bg-red-50 text-red-700 text-sm"
+      >
         {{ store.error }}
       </div>
     </main>

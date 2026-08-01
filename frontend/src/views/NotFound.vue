@@ -17,5 +17,3 @@ import AppLayout from '@/components/layout/AppLayout.vue'
     </div>
   </AppLayout>
 </template>
-
-

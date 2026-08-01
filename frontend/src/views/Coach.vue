@@ -1,60 +1,60 @@
 <script setup lang="ts">
-import { computed, ref, nextTick, onMounted } from 'vue';
-import AppHeader from '@/components/layout/AppHeader.vue';
-import { useCoachStore } from '@/stores/coach';
-import type { CoachMode } from '@/types/coach';
+import { computed, ref, nextTick, onMounted } from 'vue'
+import AppHeader from '@/components/layout/AppHeader.vue'
+import { useCoachStore } from '@/stores/coach'
+import type { CoachMode } from '@/types/coach'
 
-const store = useCoachStore();
+const store = useCoachStore()
 
-const input = ref('');
-const chatContainer = ref<HTMLElement | null>(null);
+const input = ref('')
+const chatContainer = ref<HTMLElement | null>(null)
 
 const modes: { value: CoachMode; label: string; icon: string; desc: string }[] = [
   { value: 'coach', label: '学习教练', icon: '🎯', desc: '激励与规划' },
   { value: 'tutor', label: '知识导师', icon: '📖', desc: '深入讲解' },
   { value: 'quiz', label: '测验模式', icon: '📝', desc: '出题测验' },
-];
+]
 
-const canSend = computed(() => !!input.value.trim() && !store.isStreaming && !store.loading);
+const canSend = computed(() => !!input.value.trim() && !store.isStreaming && !store.loading)
 
 function scrollToBottom() {
   nextTick(() => {
     if (chatContainer.value) {
-      chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
+      chatContainer.value.scrollTop = chatContainer.value.scrollHeight
     }
-  });
+  })
 }
 
 async function send() {
-  if (!canSend.value) return;
-  const message = input.value.trim();
-  input.value = '';
-  store.clearError();
+  if (!canSend.value) return
+  const message = input.value.trim()
+  input.value = ''
+  store.clearError()
 
-  scrollToBottom();
+  scrollToBottom()
 
   try {
     await store.sendMessageStream(
       message,
       () => scrollToBottom(),
-      () => scrollToBottom(),
-    );
+      () => scrollToBottom()
+    )
   } catch (e) {
     // Error is handled in store
   }
 }
 
 function selectMode(mode: CoachMode) {
-  store.setMode(mode);
+  store.setMode(mode)
 }
 
 function newChat() {
-  store.startNewChat();
+  store.startNewChat()
 }
 
 onMounted(() => {
-  store.loadGoals();
-});
+  store.loadGoals()
+})
 </script>
 
 <template>
@@ -65,9 +65,7 @@ onMounted(() => {
       <div class="mb-6 flex items-center justify-between">
         <div>
           <h1 class="text-2xl font-bold text-gray-900">🎓 AI 学习教练</h1>
-          <p class="text-gray-600 mt-1">
-            你的个人学习伙伴 — 教练激励、导师讲解、测验巩固
-          </p>
+          <p class="text-gray-600 mt-1">你的个人学习伙伴 — 教练激励、导师讲解、测验巩固</p>
         </div>
         <button
           class="px-3 py-2 rounded-md bg-gray-200 text-gray-700 text-sm hover:bg-gray-300"
@@ -85,15 +83,21 @@ onMounted(() => {
             v-for="m in modes"
             :key="m.value"
             class="flex items-center gap-3 p-3 rounded-lg border-2 transition-colors text-left"
-            :class="store.currentMode === m.value
-              ? 'border-primary-500 bg-primary-50'
-              : 'border-gray-200 hover:border-gray-300'"
+            :class="
+              store.currentMode === m.value
+                ? 'border-primary-500 bg-primary-50'
+                : 'border-gray-200 hover:border-gray-300'
+            "
             @click="selectMode(m.value)"
           >
             <span class="text-2xl">{{ m.icon }}</span>
             <div>
-              <div class="font-medium text-gray-900">{{ m.label }}</div>
-              <div class="text-xs text-gray-500">{{ m.desc }}</div>
+              <div class="font-medium text-gray-900">
+                {{ m.label }}
+              </div>
+              <div class="text-xs text-gray-500">
+                {{ m.desc }}
+              </div>
             </div>
           </button>
         </div>
@@ -116,13 +120,15 @@ onMounted(() => {
 
       <!-- Chat Area -->
       <div class="bg-white rounded-lg shadow">
-        <div
-          ref="chatContainer"
-          class="p-4 space-y-3 max-h-[500px] overflow-y-auto"
-        >
+        <div ref="chatContainer" class="p-4 space-y-3 max-h-[500px] overflow-y-auto">
           <!-- Empty state -->
-          <div v-if="!store.hasMessages && !store.streamingText" class="text-center py-12 text-gray-400">
-            <div class="text-4xl mb-3">{{ modes.find(m => m.value === store.currentMode)?.icon }}</div>
+          <div
+            v-if="!store.hasMessages && !store.streamingText"
+            class="text-center py-12 text-gray-400"
+          >
+            <div class="text-4xl mb-3">
+              {{ modes.find((m) => m.value === store.currentMode)?.icon }}
+            </div>
             <p>{{ store.modeLabel }} 模式已就绪</p>
             <p class="text-sm mt-1">输入你的问题开始对话</p>
           </div>
@@ -131,9 +137,11 @@ onMounted(() => {
           <div v-for="(msg, idx) in store.messages" :key="idx" class="flex">
             <div
               class="max-w-[85%] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap"
-              :class="msg.role === 'user'
-                ? 'ml-auto bg-primary-600 text-white'
-                : 'mr-auto bg-gray-100 text-gray-900'"
+              :class="
+                msg.role === 'user'
+                  ? 'ml-auto bg-primary-600 text-white'
+                  : 'mr-auto bg-gray-100 text-gray-900'
+              "
             >
               {{ msg.content }}
               <!-- Sources -->
@@ -151,7 +159,9 @@ onMounted(() => {
 
           <!-- Streaming text -->
           <div v-if="store.streamingText" class="flex">
-            <div class="mr-auto max-w-[85%] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap bg-gray-100 text-gray-900">
+            <div
+              class="mr-auto max-w-[85%] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap bg-gray-100 text-gray-900"
+            >
               {{ store.streamingText }}
               <span class="inline-block w-2 h-4 bg-primary-500 animate-pulse ml-0.5" />
             </div>
@@ -159,7 +169,10 @@ onMounted(() => {
         </div>
 
         <!-- Error -->
-        <div v-if="store.error" class="mx-4 mb-4 p-3 rounded border border-red-200 bg-red-50 text-red-700 text-sm">
+        <div
+          v-if="store.error"
+          class="mx-4 mb-4 p-3 rounded border border-red-200 bg-red-50 text-red-700 text-sm"
+        >
           {{ store.error }}
         </div>
 

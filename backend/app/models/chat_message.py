@@ -14,12 +14,13 @@ from app.db.base import Base
 class MessageRole(str, Enum):
     """
     Role of the message sender.
-    
+
     - user: Message from the human user
     - assistant: Response from the AI agent
     - tool: Result from a tool execution
     - system: System message (e.g., context injection)
     """
+
     USER = "user"
     ASSISTANT = "assistant"
     TOOL = "tool"
@@ -29,10 +30,10 @@ class MessageRole(str, Enum):
 class ChatMessage(Base):
     """
     Chat message model for storing individual messages in a session.
-    
+
     Stores both user messages and assistant responses, including
     tool calls and their results.
-    
+
     Attributes:
         id: Unique UUID identifier for the message
         session_id: Foreign key to the parent chat session
@@ -46,36 +47,31 @@ class ChatMessage(Base):
 
     __tablename__ = "chat_messages"
 
-    id = Column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid4,
-        index=True
-    )
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4, index=True)
     session_id = Column(
         UUID(as_uuid=True),
         ForeignKey("chat_sessions.id", ondelete="CASCADE"),
         nullable=False,
-        index=True
+        index=True,
     )
     role = Column(
         SQLEnum(MessageRole, values_callable=lambda obj: [e.value for e in obj]),
         nullable=False,
-        index=True
+        index=True,
     )
     content = Column(Text, nullable=True)
-    
+
     # Tool-related fields
     # For assistant messages: list of tool calls made
     # Format: [{"id": "call_xxx", "name": "tool_name", "arguments": {...}}]
     tool_calls = Column(JSON, nullable=True)
-    
+
     # For tool role messages: which tool produced this result
     tool_name = Column(String(100), nullable=True)
-    
+
     # For tool role messages: links back to the tool_call id
     tool_call_id = Column(String(100), nullable=True)
-    
+
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     # Relationships
@@ -83,7 +79,8 @@ class ChatMessage(Base):
 
     def __repr__(self) -> str:
         content_preview = (
-            self.content[:50] + "..." if self.content and len(self.content) > 50
+            self.content[:50] + "..."
+            if self.content and len(self.content) > 50
             else self.content
         )
         return f"<ChatMessage(id={self.id}, role={self.role.value}, content={content_preview})>"

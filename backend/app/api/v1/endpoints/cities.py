@@ -20,13 +20,13 @@ def search_cities(
 ) -> CitySearchResponse:
     """
     Search cities by name (Chinese or English).
-    
+
     Requires authentication.
     """
     cities = city_service.search_cities(db, q, limit=limit)
-    
+
     results = [city_service.to_search_result(city) for city in cities]
-    
+
     return CitySearchResponse(
         cities=results,
         total=len(results),
@@ -41,7 +41,7 @@ def get_city_by_code(
 ) -> CityDetail:
     """
     Get city details by AD (Administrative Division) code.
-    
+
     Requires authentication.
     """
     # Validate AD code format
@@ -50,14 +50,13 @@ def get_city_by_code(
             status_code=400,
             detail="Invalid AD code. Must be 6 digits.",
         )
-    
+
     city = city_service.get_by_ad_code(db, ad_code)
-    
+
     if not city:
         raise HTTPException(
             status_code=404,
             detail=f"City not found with AD code: {ad_code}",
         )
-    
-    return city_service.to_detail(city)
 
+    return city_service.to_detail(city)

@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
-import { marked } from 'marked';
-import { useLearningStore } from '@/stores/learning';
-import AppHeader from '@/components/layout/AppHeader.vue';
-import type { LearningRecord, LearningRecordType } from '@/types/secretary';
+import { ref, computed, onMounted } from 'vue'
+import { marked } from 'marked'
+import { useLearningStore } from '@/stores/learning'
+import AppHeader from '@/components/layout/AppHeader.vue'
+import type { LearningRecord, LearningRecordType } from '@/types/secretary'
 
-const learningStore = useLearningStore();
+const learningStore = useLearningStore()
 
-const selectedRecord = ref<LearningRecord | null>(null);
-const searchInput = ref('');
+const selectedRecord = ref<LearningRecord | null>(null)
+const searchInput = ref('')
 
 const typeLabels: Record<LearningRecordType, string> = {
   word: '单词',
@@ -17,7 +17,7 @@ const typeLabels: Record<LearningRecordType, string> = {
   article: '文章',
   question: '问答',
   idea: '想法',
-};
+}
 
 const typeIcons: Record<LearningRecordType, string> = {
   word: '📝',
@@ -26,70 +26,77 @@ const typeIcons: Record<LearningRecordType, string> = {
   article: '📰',
   question: '❓',
   idea: '💡',
-};
+}
 
-const typeOptions: LearningRecordType[] = ['word', 'sentence', 'topic', 'article', 'question', 'idea'];
+const typeOptions: LearningRecordType[] = [
+  'word',
+  'sentence',
+  'topic',
+  'article',
+  'question',
+  'idea',
+]
 
 // Configure marked for safe rendering
 marked.setOptions({
   breaks: true,
   gfm: true,
-});
+})
 
 function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
+  const date = new Date(dateStr)
   return date.toLocaleDateString('zh-CN', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-  });
+  })
 }
 
 // Extract content from response_payload and convert to markdown
 function getContentAsMarkdown(record: LearningRecord): string {
-  if (!record.response_payload) return '';
-  
-  const payload = record.response_payload;
-  
+  if (!record.response_payload) return ''
+
+  const payload = record.response_payload
+
   // If payload has a 'content' field, use it directly
   if (typeof payload.content === 'string') {
-    return payload.content;
+    return payload.content
   }
-  
+
   // Otherwise, format the JSON nicely as markdown
-  let content = '';
-  
+  let content = ''
+
   for (const [key, value] of Object.entries(payload)) {
-    if (value === null || value === undefined) continue;
-    
-    const label = formatKeyLabel(key);
-    
+    if (value === null || value === undefined) continue
+
+    const label = formatKeyLabel(key)
+
     if (typeof value === 'string') {
-      content += `### ${label}\n\n${value}\n\n`;
+      content += `### ${label}\n\n${value}\n\n`
     } else if (Array.isArray(value)) {
-      content += `### ${label}\n\n`;
+      content += `### ${label}\n\n`
       value.forEach((item, index) => {
         if (typeof item === 'string') {
-          content += `${index + 1}. ${item}\n`;
+          content += `${index + 1}. ${item}\n`
         } else if (typeof item === 'object') {
-          content += `${index + 1}. ${JSON.stringify(item)}\n`;
+          content += `${index + 1}. ${JSON.stringify(item)}\n`
         }
-      });
-      content += '\n';
+      })
+      content += '\n'
     } else if (typeof value === 'object') {
-      content += `### ${label}\n\n`;
+      content += `### ${label}\n\n`
       for (const [subKey, subValue] of Object.entries(value)) {
-        content += `- **${formatKeyLabel(subKey)}**: ${subValue}\n`;
+        content += `- **${formatKeyLabel(subKey)}**: ${subValue}\n`
       }
-      content += '\n';
+      content += '\n'
     } else {
-      content += `### ${label}\n\n${value}\n\n`;
+      content += `### ${label}\n\n${value}\n\n`
     }
   }
-  
-  return content;
+
+  return content
 }
 
 function formatKeyLabel(key: string): string {
@@ -110,90 +117,94 @@ function formatKeyLabel(key: string): string {
     key_points: '要点',
     steps: '步骤',
     tags: '标签',
-  };
-  
-  return keyMap[key] || key.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim();
+  }
+
+  return (
+    keyMap[key] ||
+    key
+      .replace(/_/g, ' ')
+      .replace(/([A-Z])/g, ' $1')
+      .trim()
+  )
 }
 
 // Render markdown to HTML
 const renderedContent = computed(() => {
-  if (!selectedRecord.value) return '';
-  const markdown = getContentAsMarkdown(selectedRecord.value);
-  return marked(markdown);
-});
+  if (!selectedRecord.value) return ''
+  const markdown = getContentAsMarkdown(selectedRecord.value)
+  return marked(markdown)
+})
 
 async function handleSearch() {
   if (searchInput.value.trim()) {
-    await learningStore.searchRecords(searchInput.value.trim());
+    await learningStore.searchRecords(searchInput.value.trim())
   } else {
-    await learningStore.listRecords(1);
+    await learningStore.listRecords(1)
   }
 }
 
 async function handleTypeFilter(type: LearningRecordType | null) {
-  await learningStore.setTypeFilter(type);
+  await learningStore.setTypeFilter(type)
 }
 
 async function handleToggleFavorites() {
-  await learningStore.setFavoritesOnly(!learningStore.favoritesOnly);
+  await learningStore.setFavoritesOnly(!learningStore.favoritesOnly)
 }
 
 async function handleToggleFavorite(record: LearningRecord) {
-  await learningStore.toggleFavorite(record.id);
+  await learningStore.toggleFavorite(record.id)
 }
 
 async function handleDelete(record: LearningRecord) {
   if (confirm('确定要删除这条学习记录吗？')) {
-    await learningStore.deleteRecord(record.id);
+    await learningStore.deleteRecord(record.id)
     if (selectedRecord.value?.id === record.id) {
-      selectedRecord.value = null;
+      selectedRecord.value = null
     }
   }
 }
 
 async function handleMarkReviewed(record: LearningRecord) {
-  await learningStore.markReviewed(record.id);
+  await learningStore.markReviewed(record.id)
 }
 
 function handleSelectRecord(record: LearningRecord) {
-  selectedRecord.value = record;
+  selectedRecord.value = record
 }
 
 function handleCloseDetail() {
-  selectedRecord.value = null;
+  selectedRecord.value = null
 }
 
 async function handlePageChange(page: number) {
   if (learningStore.searchQuery) {
-    await learningStore.searchRecords(learningStore.searchQuery, page);
+    await learningStore.searchRecords(learningStore.searchQuery, page)
   } else {
-    await learningStore.listRecords(page);
+    await learningStore.listRecords(page)
   }
 }
 
 // Initialize
 onMounted(async () => {
-  await learningStore.listRecords(1);
-  await learningStore.loadStatistics();
-});
+  await learningStore.listRecords(1)
+  await learningStore.loadStatistics()
+})
 </script>
 
 <template>
   <div class="min-h-screen bg-gray-50">
     <!-- Top Navigation -->
     <AppHeader />
-    
+
     <div class="min-h-[calc(100vh-64px)] bg-gray-100">
       <div class="max-w-7xl mx-auto p-6">
         <!-- Header -->
         <div class="flex items-center justify-between mb-6">
           <div>
             <h1 class="text-2xl font-bold text-gray-800">学习记录</h1>
-            <p class="text-gray-500 mt-1">
-              共 {{ learningStore.totalRecords }} 条记录
-            </p>
+            <p class="text-gray-500 mt-1">共 {{ learningStore.totalRecords }} 条记录</p>
           </div>
-          
+
           <router-link
             to="/secretary"
             class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
@@ -203,10 +214,7 @@ onMounted(async () => {
         </div>
 
         <!-- Statistics -->
-        <div
-          v-if="learningStore.statistics"
-          class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6"
-        >
+        <div v-if="learningStore.statistics" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div class="bg-white rounded-lg p-4 shadow-sm">
             <div class="text-2xl font-bold text-blue-600">
               {{ learningStore.statistics.total }}
@@ -307,24 +315,16 @@ onMounted(async () => {
 
         <!-- Records list -->
         <div class="mb-6">
-          <div
-            v-if="learningStore.loading"
-            class="text-center py-8 text-gray-500"
-          >
-            加载中...
-          </div>
-          
+          <div v-if="learningStore.loading" class="text-center py-8 text-gray-500">加载中...</div>
+
           <div
             v-else-if="learningStore.records.length === 0"
             class="text-center py-8 text-gray-500 bg-white rounded-lg shadow-sm"
           >
             暂无学习记录
           </div>
-          
-          <div
-            v-else
-            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-          >
+
+          <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div
               v-for="record in learningStore.records"
               :key="record.id"
@@ -339,7 +339,7 @@ onMounted(async () => {
                   <span class="text-xl">{{ typeIcons[record.input_type] }}</span>
                   <span class="text-sm text-gray-500">{{ typeLabels[record.input_type] }}</span>
                 </div>
-                
+
                 <div class="flex items-center gap-1">
                   <button
                     type="button"
@@ -358,20 +358,17 @@ onMounted(async () => {
                   </button>
                 </div>
               </div>
-              
+
               <div class="mt-2 text-gray-800 font-medium line-clamp-2">
                 {{ record.user_input }}
               </div>
-              
+
               <div class="mt-2 flex items-center gap-3 text-xs text-gray-500">
                 <span>{{ formatDate(record.created_at) }}</span>
                 <span>复习 {{ record.review_count }} 次</span>
               </div>
-              
-              <div
-                v-if="record.tags && record.tags.length > 0"
-                class="mt-2 flex gap-1 flex-wrap"
-              >
+
+              <div v-if="record.tags && record.tags.length > 0" class="mt-2 flex gap-1 flex-wrap">
                 <span
                   v-for="tag in record.tags.slice(0, 3)"
                   :key="tag"
@@ -384,10 +381,7 @@ onMounted(async () => {
           </div>
 
           <!-- Pagination -->
-          <div
-            v-if="learningStore.totalPages > 1"
-            class="mt-6 flex justify-center gap-2"
-          >
+          <div v-if="learningStore.totalPages > 1" class="mt-6 flex justify-center gap-2">
             <button
               type="button"
               :disabled="learningStore.currentPage === 1"
@@ -411,17 +405,18 @@ onMounted(async () => {
         </div>
 
         <!-- Detail panel (below the list) -->
-        <div
-          v-if="selectedRecord"
-          class="bg-white rounded-lg shadow-sm"
-        >
+        <div v-if="selectedRecord" class="bg-white rounded-lg shadow-sm">
           <!-- Header -->
           <div class="p-4 border-b border-gray-200 flex items-center justify-between">
             <div class="flex items-center gap-3">
               <span class="text-2xl">{{ typeIcons[selectedRecord.input_type] }}</span>
               <div>
-                <span class="text-sm text-gray-500">{{ typeLabels[selectedRecord.input_type] }}</span>
-                <h3 class="font-semibold text-gray-800 text-lg">{{ selectedRecord.user_input }}</h3>
+                <span class="text-sm text-gray-500">{{
+                  typeLabels[selectedRecord.input_type]
+                }}</span>
+                <h3 class="font-semibold text-gray-800 text-lg">
+                  {{ selectedRecord.user_input }}
+                </h3>
               </div>
             </div>
             <div class="flex items-center gap-2">
@@ -449,15 +444,16 @@ onMounted(async () => {
               </button>
             </div>
           </div>
-          
+
           <!-- Content (Markdown rendered) -->
           <div class="p-6">
-            <div 
+            <!-- eslint-disable-next-line vue/no-v-html -->
+            <div
               class="prose prose-sm max-w-none prose-headings:text-gray-800 prose-p:text-gray-600 prose-li:text-gray-600 prose-strong:text-gray-700"
               v-html="renderedContent"
-            ></div>
+            />
           </div>
-          
+
           <!-- Footer with meta info -->
           <div class="px-6 py-4 bg-gray-50 rounded-b-lg border-t border-gray-100">
             <div class="flex flex-wrap gap-4 text-sm text-gray-500">

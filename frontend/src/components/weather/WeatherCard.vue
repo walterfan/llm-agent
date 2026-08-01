@@ -1,35 +1,35 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import type { WeatherData } from '@/types/weather';
-import WeatherIcon from './WeatherIcon.vue';
+import { computed } from 'vue'
+import type { WeatherData } from '@/types/weather'
+import WeatherIcon from './WeatherIcon.vue'
 
 interface Props {
-  weather: WeatherData;
+  weather: WeatherData
 }
 
-const props = defineProps<Props>();
+const props = defineProps<Props>()
 
 const formattedTime = computed(() => {
   try {
-    const date = new Date(props.weather.report_time);
+    const date = new Date(props.weather.report_time)
     return date.toLocaleString('zh-CN', {
       month: 'long',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
-    });
+    })
   } catch {
-    return props.weather.report_time;
+    return props.weather.report_time
   }
-});
+})
 
 const temperatureLabel = computed(() => {
-  return `${props.weather.temperature}°C`;
-});
+  return `${props.weather.temperature}°C`
+})
 
 const humidityLabel = computed(() => {
-  return `${props.weather.humidity}%`;
-});
+  return `${props.weather.humidity}%`
+})
 </script>
 
 <template>
@@ -76,7 +76,9 @@ const humidityLabel = computed(() => {
     <div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200">
       <!-- Humidity -->
       <div class="flex items-center space-x-3">
-        <div class="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+        <div
+          class="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center"
+        >
           <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
@@ -88,13 +90,17 @@ const humidityLabel = computed(() => {
         </div>
         <div>
           <div class="text-sm text-gray-500">Humidity</div>
-          <div class="text-lg font-semibold text-gray-900">{{ humidityLabel }}</div>
+          <div class="text-lg font-semibold text-gray-900">
+            {{ humidityLabel }}
+          </div>
         </div>
       </div>
 
       <!-- Wind -->
       <div class="flex items-center space-x-3">
-        <div class="flex-shrink-0 w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+        <div
+          class="flex-shrink-0 w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center"
+        >
           <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
@@ -115,9 +121,7 @@ const humidityLabel = computed(() => {
 
     <!-- Footer with Report Time -->
     <div class="pt-4 border-t border-gray-200">
-      <p class="text-xs text-gray-500 text-center">
-        Updated: {{ formattedTime }}
-      </p>
+      <p class="text-xs text-gray-500 text-center">Updated: {{ formattedTime }}</p>
     </div>
   </div>
 </template>
@@ -127,4 +131,3 @@ const humidityLabel = computed(() => {
   min-height: 300px;
 }
 </style>
-

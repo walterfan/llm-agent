@@ -8,7 +8,15 @@ from datetime import datetime
 from enum import Enum
 from uuid import uuid4
 
-from sqlalchemy import Column, DateTime, Enum as SQLEnum, ForeignKey, Integer, String, Text
+from sqlalchemy import (
+    Column,
+    DateTime,
+    Enum as SQLEnum,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -17,6 +25,7 @@ from app.db.base import Base
 
 class GoalStatus(str, Enum):
     """Learning goal status."""
+
     ACTIVE = "active"
     COMPLETED = "completed"
     PAUSED = "paused"
@@ -83,5 +92,7 @@ class LearningGoal(Base):
             "daily_target_minutes": self.daily_target_minutes,
             "deadline": self.deadline.isoformat() if self.deadline else None,
             "created_at": self.created_at.isoformat() if self.created_at else None,
-            "completed_at": self.completed_at.isoformat() if self.completed_at else None,
+            "completed_at": (
+                self.completed_at.isoformat() if self.completed_at else None
+            ),
         }

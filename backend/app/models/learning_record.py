@@ -4,7 +4,16 @@ from datetime import datetime
 from enum import Enum
 from uuid import uuid4
 
-from sqlalchemy import Boolean, Column, DateTime, Enum as SQLEnum, ForeignKey, Integer, String, Text
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    Enum as SQLEnum,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+)
 from sqlalchemy.dialects.postgresql import JSON, UUID
 from sqlalchemy.orm import relationship
 
@@ -14,7 +23,7 @@ from app.db.base import Base
 class LearningRecordType(str, Enum):
     """
     Type of learning content.
-    
+
     - word: English word learning
     - sentence: English sentence learning
     - topic: Tech topic learning plan
@@ -22,6 +31,7 @@ class LearningRecordType(str, Enum):
     - question: Q&A content
     - idea: Idea converted to action plan
     """
+
     WORD = "word"
     SENTENCE = "sentence"
     TOPIC = "topic"
@@ -33,10 +43,10 @@ class LearningRecordType(str, Enum):
 class LearningRecord(Base):
     """
     Learning record model for persisting user's learning content.
-    
+
     Stores various types of learning content (words, sentences, topics, etc.)
     along with the structured response from the AI and user metadata.
-    
+
     Attributes:
         id: Unique UUID identifier
         user_id: Foreign key to the user who owns this record
@@ -55,56 +65,42 @@ class LearningRecord(Base):
 
     __tablename__ = "learning_records"
 
-    id = Column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid4,
-        index=True
-    )
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4, index=True)
     user_id = Column(
-        Integer,
-        ForeignKey("users.id", ondelete="CASCADE"),
-        nullable=False,
-        index=True
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
     input_type = Column(
-        SQLEnum(
-            LearningRecordType,
-            values_callable=lambda obj: [e.value for e in obj]
-        ),
+        SQLEnum(LearningRecordType, values_callable=lambda obj: [e.value for e in obj]),
         nullable=False,
-        index=True
+        index=True,
     )
     user_input = Column(Text, nullable=False)
-    
+
     # Structured response from AI (JSON)
     # Contains the full response schema (WordResponse, TopicResponse, etc.)
     response_payload = Column(JSON, nullable=False)
-    
+
     # Optional link to chat session
     session_id = Column(
         UUID(as_uuid=True),
         ForeignKey("chat_sessions.id", ondelete="SET NULL"),
-        nullable=True
+        nullable=True,
     )
-    
+
     # Categorization
     tags = Column(JSON, nullable=True)  # ["english", "vocabulary", etc.]
-    
+
     # User engagement
     is_favorite = Column(Boolean, default=False, nullable=False)
     review_count = Column(Integer, default=0, nullable=False)
     last_reviewed_at = Column(DateTime, nullable=True)
-    
+
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(
-        DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
-        nullable=False
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
     )
-    
+
     # Soft delete
     is_deleted = Column(Boolean, default=False, nullable=False)
 

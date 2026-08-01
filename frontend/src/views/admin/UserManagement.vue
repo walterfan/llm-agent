@@ -4,13 +4,11 @@
       <div class="mb-6 flex items-center justify-between">
         <div>
           <h1 class="text-3xl font-bold text-gray-900">User Management</h1>
-          <p class="mt-1 text-sm text-gray-600">
-            Manage system users, roles, and permissions
-          </p>
+          <p class="mt-1 text-sm text-gray-600">Manage system users, roles, and permissions</p>
         </div>
         <button
-          @click="openCreateDialog"
           class="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          @click="openCreateDialog"
         >
           + Create User
         </button>
@@ -45,7 +43,11 @@
       >
         <div class="flex items-center">
           <svg class="h-5 w-5 text-yellow-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+            <path
+              fill-rule="evenodd"
+              d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+              clip-rule="evenodd"
+            />
           </svg>
           <span class="text-sm text-yellow-800">
             <strong>{{ pendingCount }}</strong> user(s) pending approval
@@ -54,16 +56,15 @@
       </div>
 
       <!-- Error Message -->
-      <div
-        v-if="adminStore.error"
-        class="mb-6 rounded-md bg-red-50 p-4 text-sm text-red-700"
-      >
+      <div v-if="adminStore.error" class="mb-6 rounded-md bg-red-50 p-4 text-sm text-red-700">
         {{ adminStore.error }}
       </div>
 
       <!-- Loading State -->
       <div v-if="adminStore.loading && !adminStore.users.length" class="text-center py-12">
-        <div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+        <div
+          class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"
+        />
         <p class="mt-4 text-gray-600">Loading users...</p>
       </div>
 
@@ -92,7 +93,9 @@
               >
                 Created
               </th>
-              <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
+              <th
+                class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500"
+              >
                 Actions
               </th>
             </tr>
@@ -100,8 +103,12 @@
           <tbody class="divide-y divide-gray-200 bg-white">
             <tr v-for="user in adminStore.users" :key="user.id" class="hover:bg-gray-50">
               <td class="whitespace-nowrap px-6 py-4">
-                <div class="text-sm font-medium text-gray-900">{{ user.email }}</div>
-                <div class="text-sm text-gray-500">{{ user.full_name || 'N/A' }}</div>
+                <div class="text-sm font-medium text-gray-900">
+                  {{ user.email }}
+                </div>
+                <div class="text-sm text-gray-500">
+                  {{ user.full_name || 'N/A' }}
+                </div>
               </td>
               <td class="whitespace-nowrap px-6 py-4">
                 <span
@@ -113,7 +120,9 @@
               </td>
               <td class="whitespace-nowrap px-6 py-4">
                 <span
-                  :class="user.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                  :class="
+                    user.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  "
                   class="inline-flex rounded-full px-2 text-xs font-semibold leading-5"
                 >
                   {{ user.is_active ? 'Active' : 'Inactive' }}
@@ -125,28 +134,32 @@
               <td class="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
                 <button
                   v-if="!user.is_active"
-                  @click="approveUser(user)"
                   class="text-green-600 hover:text-green-900 mr-4"
                   title="Approve user"
+                  @click="approveUser(user)"
                 >
                   ✓ Approve
                 </button>
                 <button
-                  @click="openEditDialog(user)"
                   class="text-blue-600 hover:text-blue-900 mr-4"
+                  @click="openEditDialog(user)"
                 >
                   Edit
                 </button>
                 <button
-                  @click="openProfileDialog(user)"
                   class="text-purple-600 hover:text-purple-900 mr-4"
+                  @click="openProfileDialog(user)"
                 >
                   Profile
                 </button>
                 <button
-                  @click="openDeleteDialog(user)"
                   :disabled="user.id === authStore.user?.id"
-                  :class="user.id === authStore.user?.id ? 'text-gray-400 cursor-not-allowed' : 'text-red-600 hover:text-red-900'"
+                  :class="
+                    user.id === authStore.user?.id
+                      ? 'text-gray-400 cursor-not-allowed'
+                      : 'text-red-600 hover:text-red-900'
+                  "
+                  @click="openDeleteDialog(user)"
                 >
                   Delete
                 </button>
@@ -165,16 +178,16 @@
             </div>
             <div class="flex space-x-2">
               <button
-                @click="previousPage"
                 :disabled="currentPage === 1"
                 class="rounded-md border border-gray-300 px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50 hover:bg-gray-50"
+                @click="previousPage"
               >
                 Previous
               </button>
               <button
-                @click="nextPage"
                 :disabled="currentPage * pageSize >= adminStore.totalUsers"
                 class="rounded-md border border-gray-300 px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50 hover:bg-gray-50"
+                @click="nextPage"
               >
                 Next
               </button>
@@ -246,7 +259,7 @@ let searchTimeout: ReturnType<typeof setTimeout> | null = null
 
 // Computed: count of pending users
 const pendingCount = computed(() => {
-  return adminStore.users.filter(u => !u.is_active).length
+  return adminStore.users.filter((u) => !u.is_active).length
 })
 
 onMounted(() => {
@@ -392,5 +405,3 @@ async function approveUser(user: User) {
   }
 }
 </script>
-
-

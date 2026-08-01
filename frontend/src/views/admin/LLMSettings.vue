@@ -85,20 +85,26 @@ onMounted(async () => {
       <div class="mb-6">
         <h1 class="text-3xl font-bold text-gray-900">LLM Settings</h1>
         <p class="mt-1 text-gray-600">
-          Configure LLM providers for text generation, embeddings, and image generation.
-          Empty fields fall back to server defaults.
+          Configure LLM providers for text generation, embeddings, and image generation. Empty
+          fields fall back to server defaults.
         </p>
       </div>
 
       <!-- Alert Messages -->
       <Transition name="fade">
-        <div v-if="store.error" class="mb-4 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-2">
+        <div
+          v-if="store.error"
+          class="mb-4 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-2"
+        >
           <span class="text-red-500 flex-shrink-0">&#x274C;</span>
           <span class="text-red-800 text-sm">{{ store.error }}</span>
         </div>
       </Transition>
       <Transition name="fade">
-        <div v-if="store.successMessage" class="mb-4 bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-2">
+        <div
+          v-if="store.successMessage"
+          class="mb-4 bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-2"
+        >
           <span class="text-green-500 flex-shrink-0">&#x2705;</span>
           <span class="text-green-800 text-sm">{{ store.successMessage }}</span>
         </div>
@@ -107,8 +113,19 @@ onMounted(async () => {
       <!-- Loading -->
       <div v-if="store.loading" class="flex items-center justify-center py-20">
         <svg class="animate-spin h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          />
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+          />
         </svg>
       </div>
 
@@ -116,15 +133,15 @@ onMounted(async () => {
         <!-- Tabs -->
         <div class="flex gap-1 mb-6 bg-gray-100 p-1 rounded-lg w-fit">
           <button
-            v-for="tab in (['chat', 'embedding', 'image'] as const)"
+            v-for="tab in ['chat', 'embedding', 'image'] as const"
             :key="tab"
-            @click="activeTab = tab"
             :class="[
               'px-5 py-2.5 rounded-md text-sm font-medium transition-all',
               activeTab === tab
                 ? 'bg-white text-gray-900 shadow-sm'
                 : 'text-gray-600 hover:text-gray-900',
             ]"
+            @click="activeTab = tab"
           >
             <span v-if="tab === 'chat'">Text Generation</span>
             <span v-else-if="tab === 'embedding'">Embedding</span>
@@ -137,7 +154,10 @@ onMounted(async () => {
           <div v-show="activeTab === 'chat'" class="bg-white rounded-lg shadow p-6 space-y-5">
             <div>
               <h2 class="text-lg font-semibold text-gray-900 mb-1">Text Generation (Chat)</h2>
-              <p class="text-sm text-gray-500">Configure the LLM used for chat, coaching, translation, and other text generation tasks.</p>
+              <p class="text-sm text-gray-500">
+                Configure the LLM used for chat, coaching, translation, and other text generation
+                tasks.
+              </p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -149,7 +169,9 @@ onMounted(async () => {
                   :placeholder="store.defaults?.chat_base_url || 'https://api.openai.com/v1'"
                   class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
-                <p class="mt-1 text-xs text-gray-400">OpenAI-compatible endpoint. Supports OpenAI, DeepSeek, Ollama, vLLM, etc.</p>
+                <p class="mt-1 text-xs text-gray-400">
+                  OpenAI-compatible endpoint. Supports OpenAI, DeepSeek, Ollama, vLLM, etc.
+                </p>
               </div>
 
               <div class="md:col-span-2">
@@ -158,20 +180,25 @@ onMounted(async () => {
                   <input
                     v-model="form.chat_api_key"
                     :type="showChatKey ? 'text' : 'password'"
-                    :placeholder="store.settings?.chat_api_key_set ? '(key is set — leave blank to keep current)' : 'sk-...'"
-                    @input="chatKeyEdited = true"
+                    :placeholder="
+                      store.settings?.chat_api_key_set
+                        ? '(key is set — leave blank to keep current)'
+                        : 'sk-...'
+                    "
                     class="w-full border border-gray-300 rounded-lg px-3 py-2.5 pr-20 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    @input="chatKeyEdited = true"
                   />
                   <button
                     type="button"
-                    @click="showChatKey = !showChatKey"
                     class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-500 hover:text-gray-700 px-2 py-1"
+                    @click="showChatKey = !showChatKey"
                   >
                     {{ showChatKey ? 'Hide' : 'Show' }}
                   </button>
                 </div>
                 <p v-if="store.maskedKeys?.chat_api_key" class="mt-1 text-xs text-gray-400">
-                  Current: <code class="bg-gray-100 px-1 rounded">{{ store.maskedKeys.chat_api_key }}</code>
+                  Current:
+                  <code class="bg-gray-100 px-1 rounded">{{ store.maskedKeys.chat_api_key }}</code>
                 </p>
               </div>
 
@@ -183,7 +210,9 @@ onMounted(async () => {
                   :placeholder="store.defaults?.chat_model || 'gpt-3.5-turbo'"
                   class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
-                <p class="mt-1 text-xs text-gray-400">e.g. gpt-4o, deepseek-chat, llama3.1, qwen2.5</p>
+                <p class="mt-1 text-xs text-gray-400">
+                  e.g. gpt-4o, deepseek-chat, llama3.1, qwen2.5
+                </p>
               </div>
 
               <div>
@@ -206,7 +235,9 @@ onMounted(async () => {
                     class="w-20 border border-gray-300 rounded-lg px-2 py-2 text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
-                <p class="mt-1 text-xs text-gray-400">0 = deterministic, 1 = balanced, 2 = creative</p>
+                <p class="mt-1 text-xs text-gray-400">
+                  0 = deterministic, 1 = balanced, 2 = creative
+                </p>
               </div>
             </div>
           </div>
@@ -215,13 +246,16 @@ onMounted(async () => {
           <div v-show="activeTab === 'embedding'" class="bg-white rounded-lg shadow p-6 space-y-5">
             <div>
               <h2 class="text-lg font-semibold text-gray-900 mb-1">Embedding Model</h2>
-              <p class="text-sm text-gray-500">Configure the embedding model used for the RAG knowledge base and semantic search. Leave empty to use text generation settings.</p>
+              <p class="text-sm text-gray-500">
+                Configure the embedding model used for the RAG knowledge base and semantic search.
+                Leave empty to use text generation settings.
+              </p>
             </div>
 
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
               <p class="text-sm text-blue-800">
-                <strong>Tip:</strong> Many chat APIs (e.g. DeepSeek) don't provide embedding endpoints.
-                You can point embeddings to a different provider like OpenAI.
+                <strong>Tip:</strong> Many chat APIs (e.g. DeepSeek) don't provide embedding
+                endpoints. You can point embeddings to a different provider like OpenAI.
               </p>
             </div>
 
@@ -231,7 +265,9 @@ onMounted(async () => {
                 <input
                   v-model="form.embedding_base_url"
                   type="url"
-                  :placeholder="store.defaults?.embedding_base_url || 'Falls back to Chat API Base URL'"
+                  :placeholder="
+                    store.defaults?.embedding_base_url || 'Falls back to Chat API Base URL'
+                  "
                   class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
@@ -242,20 +278,27 @@ onMounted(async () => {
                   <input
                     v-model="form.embedding_api_key"
                     :type="showEmbeddingKey ? 'text' : 'password'"
-                    :placeholder="store.settings?.embedding_api_key_set ? '(key is set — leave blank to keep current)' : 'Falls back to Chat API Key'"
-                    @input="embeddingKeyEdited = true"
+                    :placeholder="
+                      store.settings?.embedding_api_key_set
+                        ? '(key is set — leave blank to keep current)'
+                        : 'Falls back to Chat API Key'
+                    "
                     class="w-full border border-gray-300 rounded-lg px-3 py-2.5 pr-20 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    @input="embeddingKeyEdited = true"
                   />
                   <button
                     type="button"
-                    @click="showEmbeddingKey = !showEmbeddingKey"
                     class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-500 hover:text-gray-700 px-2 py-1"
+                    @click="showEmbeddingKey = !showEmbeddingKey"
                   >
                     {{ showEmbeddingKey ? 'Hide' : 'Show' }}
                   </button>
                 </div>
                 <p v-if="store.maskedKeys?.embedding_api_key" class="mt-1 text-xs text-gray-400">
-                  Current: <code class="bg-gray-100 px-1 rounded">{{ store.maskedKeys.embedding_api_key }}</code>
+                  Current:
+                  <code class="bg-gray-100 px-1 rounded">{{
+                    store.maskedKeys.embedding_api_key
+                  }}</code>
                 </p>
               </div>
 
@@ -267,7 +310,9 @@ onMounted(async () => {
                   :placeholder="store.defaults?.embedding_model || 'text-embedding-3-small'"
                   class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
-                <p class="mt-1 text-xs text-gray-400">e.g. text-embedding-3-small, text-embedding-ada-002</p>
+                <p class="mt-1 text-xs text-gray-400">
+                  e.g. text-embedding-3-small, text-embedding-ada-002
+                </p>
               </div>
             </div>
           </div>
@@ -276,12 +321,16 @@ onMounted(async () => {
           <div v-show="activeTab === 'image'" class="bg-white rounded-lg shadow p-6 space-y-5">
             <div>
               <h2 class="text-lg font-semibold text-gray-900 mb-1">Image Generation</h2>
-              <p class="text-sm text-gray-500">Configure the image generation model (optional). Used for AI-powered image creation tasks.</p>
+              <p class="text-sm text-gray-500">
+                Configure the image generation model (optional). Used for AI-powered image creation
+                tasks.
+              </p>
             </div>
 
             <div class="bg-amber-50 border border-amber-200 rounded-lg p-3">
               <p class="text-sm text-amber-800">
-                <strong>Note:</strong> Image generation is not yet integrated into agents. Configure now for future use.
+                <strong>Note:</strong> Image generation is not yet integrated into agents. Configure
+                now for future use.
               </p>
             </div>
 
@@ -302,20 +351,25 @@ onMounted(async () => {
                   <input
                     v-model="form.image_api_key"
                     :type="showImageKey ? 'text' : 'password'"
-                    :placeholder="store.settings?.image_api_key_set ? '(key is set — leave blank to keep current)' : 'sk-...'"
-                    @input="imageKeyEdited = true"
+                    :placeholder="
+                      store.settings?.image_api_key_set
+                        ? '(key is set — leave blank to keep current)'
+                        : 'sk-...'
+                    "
                     class="w-full border border-gray-300 rounded-lg px-3 py-2.5 pr-20 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    @input="imageKeyEdited = true"
                   />
                   <button
                     type="button"
-                    @click="showImageKey = !showImageKey"
                     class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-500 hover:text-gray-700 px-2 py-1"
+                    @click="showImageKey = !showImageKey"
                   >
                     {{ showImageKey ? 'Hide' : 'Show' }}
                   </button>
                 </div>
                 <p v-if="store.maskedKeys?.image_api_key" class="mt-1 text-xs text-gray-400">
-                  Current: <code class="bg-gray-100 px-1 rounded">{{ store.maskedKeys.image_api_key }}</code>
+                  Current:
+                  <code class="bg-gray-100 px-1 rounded">{{ store.maskedKeys.image_api_key }}</code>
                 </p>
               </div>
 
@@ -336,10 +390,22 @@ onMounted(async () => {
           <div v-if="store.defaults" class="mt-6 bg-gray-50 border border-gray-200 rounded-lg p-4">
             <h3 class="text-sm font-medium text-gray-700 mb-2">Server Defaults (from .env)</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-xs text-gray-500">
-              <div>Chat Base URL: <code class="text-gray-700">{{ store.defaults.chat_base_url || '—' }}</code></div>
-              <div>Chat Model: <code class="text-gray-700">{{ store.defaults.chat_model || '—' }}</code></div>
-              <div>Embedding Base URL: <code class="text-gray-700">{{ store.defaults.embedding_base_url || '—' }}</code></div>
-              <div>Embedding Model: <code class="text-gray-700">{{ store.defaults.embedding_model || '—' }}</code></div>
+              <div>
+                Chat Base URL:
+                <code class="text-gray-700">{{ store.defaults.chat_base_url || '—' }}</code>
+              </div>
+              <div>
+                Chat Model:
+                <code class="text-gray-700">{{ store.defaults.chat_model || '—' }}</code>
+              </div>
+              <div>
+                Embedding Base URL:
+                <code class="text-gray-700">{{ store.defaults.embedding_base_url || '—' }}</code>
+              </div>
+              <div>
+                Embedding Model:
+                <code class="text-gray-700">{{ store.defaults.embedding_model || '—' }}</code>
+              </div>
             </div>
           </div>
 
@@ -354,9 +420,9 @@ onMounted(async () => {
             </button>
             <button
               type="button"
-              @click="handleReset"
               :disabled="store.saving"
               class="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-50 text-sm font-medium transition-colors"
+              @click="handleReset"
             >
               Reset
             </button>

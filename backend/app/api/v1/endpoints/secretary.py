@@ -50,6 +50,7 @@ router = APIRouter()
 # Chat Endpoints
 # ============================================================================
 
+
 @router.post("/chat", response_model=ChatResponse)
 async def chat(
     request: ChatRequest,
@@ -58,13 +59,13 @@ async def chat(
 ):
     """
     Send a message to the Personal Secretary agent.
-    
+
     If session_id is not provided, creates a new session.
     Returns the complete response (non-streaming).
     """
     start_time = time.time()
     is_new_session = False
-    
+
     try:
         # Get or create session
         if request.session_id:
@@ -77,7 +78,7 @@ async def chat(
             session = ChatService.create_session(db, current_user.id, title)
             is_new_session = True
             record_session_created()
-        
+
         # Save user message
         user_msg = ChatService.add_message(
             db=db,
@@ -86,23 +87,23 @@ async def chat(
             content=request.message,
         )
         record_message("user")
-        
+
         # Load chat history
         messages = ChatService.get_messages(db, session.id, limit=20)
         history = [
             {"role": msg.role.value, "content": msg.content}
             for msg in messages[:-1]  # Exclude the message we just added
         ]
-        
+
         # Create agent and get response
         agent = SecretaryAgent(
             user_id=current_user.id,
             session_id=session.id,
             db=db,
         )
-        
+
         result = await agent.chat(request.message, history)
-        
+
         # Save assistant response
         assistant_msg = ChatService.add_message(
             db=db,
@@ -112,11 +113,11 @@ async def chat(
             tool_calls=result.get("tool_calls"),
         )
         record_message("assistant")
-        
+
         # Record success metrics
         duration = time.time() - start_time
         record_chat_request("non-streaming", "success", duration)
-        
+
         return ChatResponse(
             session_id=session.id,
             message_id=assistant_msg.id,
@@ -140,7 +141,7 @@ async def chat_stream(
 ):
     """
     Send a message to the Personal Secretary agent with streaming response.
-    
+
     Returns Server-Sent Events (SSE) with:
     - type: "token" - streaming token
     - type: "tool_call" - tool being called
@@ -149,7 +150,7 @@ async def chat_stream(
     - type: "error" - error occurred
     """
     is_new_session = False
-    
+
     # Get or create session
     if request.session_id:
         session = ChatService.get_session(db, request.session_id, current_user.id)
@@ -160,7 +161,7 @@ async def chat_stream(
         session = ChatService.create_session(db, current_user.id, title)
         is_new_session = True
         record_session_created()
-    
+
     # Save user message
     ChatService.add_message(
         db=db,
@@ -169,57 +170,58 @@ async def chat_stream(
         content=request.message,
     )
     record_message("user")
-    
+
     # Load chat history
     messages = ChatService.get_messages(db, session.id, limit=20)
     history = [
-        {"role": msg.role.value, "content": msg.content}
-        for msg in messages[:-1]
+        {"role": msg.role.value, "content": msg.content} for msg in messages[:-1]
     ]
-    
+
     # Create agent
     agent = SecretaryAgent(
         user_id=current_user.id,
         session_id=session.id,
         db=db,
     )
-    
+
     async def event_generator():
         """Generate SSE events from agent stream."""
         start_time = time.time()
         first_token_time = None
         full_content = ""
         tool_calls = []
-        
+
         stream_started()
-        
+
         try:
             async for event in agent.chat_stream(request.message, history):
                 event_type = event.get("type")
-                
+
                 if event_type == "token":
                     # Record first token latency
                     if first_token_time is None:
                         first_token_time = time.time()
                         record_first_token_latency(first_token_time - start_time)
-                    
+
                     full_content += event.get("content", "")
                     yield f"data: {json.dumps(event)}\n\n"
-                
+
                 elif event_type == "tool_call":
-                    tool_calls.append({
-                        "tool": event.get("tool"),
-                        "args": event.get("args"),
-                    })
+                    tool_calls.append(
+                        {
+                            "tool": event.get("tool"),
+                            "args": event.get("args"),
+                        }
+                    )
                     yield f"data: {json.dumps(event)}\n\n"
-                
+
                 elif event_type == "tool_result":
                     # Update tool call with result
                     for tc in tool_calls:
                         if tc["tool"] == event.get("tool"):
                             tc["result"] = event.get("result")
                     yield f"data: {json.dumps(event)}\n\n"
-                
+
                 elif event_type == "done":
                     # Save assistant response
                     assistant_msg = ChatService.add_message(
@@ -230,27 +232,27 @@ async def chat_stream(
                         tool_calls=tool_calls if tool_calls else None,
                     )
                     record_message("assistant")
-                    
+
                     # Record success metrics
                     duration = time.time() - start_time
                     record_chat_request("streaming", "success", duration)
-                    
+
                     yield f"data: {json.dumps({'type': 'done', 'session_id': str(session.id), 'message_id': str(assistant_msg.id)})}\n\n"
-                
+
                 elif event_type == "error":
                     record_chat_error("streaming_error")
                     yield f"data: {json.dumps(event)}\n\n"
-        
+
         except Exception as e:
             logger.error(f"Streaming error: {e}", exc_info=True)
             duration = time.time() - start_time
             record_chat_request("streaming", "error", duration)
             record_chat_error(type(e).__name__)
             yield f"data: {json.dumps({'type': 'error', 'content': str(e)})}\n\n"
-        
+
         finally:
             stream_ended()
-    
+
     return StreamingResponse(
         event_generator(),
         media_type="text/event-stream",
@@ -264,6 +266,7 @@ async def chat_stream(
 # ============================================================================
 # Session Endpoints
 # ============================================================================
+
 
 @router.get("/sessions", response_model=SessionListResponse)
 async def list_sessions(
@@ -280,7 +283,7 @@ async def list_sessions(
         limit=page_size,
         offset=offset,
     )
-    
+
     return SessionListResponse(
         sessions=[
             SessionResponse(
@@ -308,9 +311,9 @@ async def get_session(
     session = ChatService.get_session(db, session_id, current_user.id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
-    
+
     messages = ChatService.get_messages(db, session_id)
-    
+
     return SessionDetailResponse(
         id=session.id,
         title=session.title,
@@ -346,6 +349,7 @@ async def delete_session(
 # ============================================================================
 # Tool Discovery
 # ============================================================================
+
 
 @router.get("/tools", response_model=ToolListResponse)
 async def list_tools(
@@ -444,5 +448,5 @@ async def list_tools(
             category="utility",
         ),
     ]
-    
+
     return ToolListResponse(tools=tools)

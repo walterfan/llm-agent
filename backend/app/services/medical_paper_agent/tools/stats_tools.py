@@ -27,17 +27,23 @@ class ChiSquareInput(BaseModel):
 class SurvivalInput(BaseModel):
     times: list[float] = Field(description="Survival/event times")
     events: list[int] = Field(description="Event indicators (1=event, 0=censored)")
-    groups: Optional[list[int]] = Field(default=None, description="Group labels for comparison")
+    groups: Optional[list[int]] = Field(
+        default=None, description="Group labels for comparison"
+    )
 
 
 class SampleSizeInput(BaseModel):
-    effect_size: float = Field(description="Expected effect size (Cohen's d or proportion difference)")
+    effect_size: float = Field(
+        description="Expected effect size (Cohen's d or proportion difference)"
+    )
     alpha: float = Field(default=0.05, description="Significance level")
     power: float = Field(default=0.80, description="Statistical power")
     test_type: str = Field(default="two_sample_ttest", description="Type of test")
 
 
-def run_ttest(group1: list[float], group2: list[float], paired: bool = False) -> dict[str, Any]:
+def run_ttest(
+    group1: list[float], group2: list[float], paired: bool = False
+) -> dict[str, Any]:
     """
     Run an independent or paired t-test.
 
@@ -57,10 +63,17 @@ def run_ttest(group1: list[float], group2: list[float], paired: bool = False) ->
         else:
             stat, p_value = stats.ttest_ind(g1, g2)
             pooled_std = math.sqrt(
-                ((len(g1) - 1) * np.var(g1, ddof=1) + (len(g2) - 1) * np.var(g2, ddof=1))
+                (
+                    (len(g1) - 1) * np.var(g1, ddof=1)
+                    + (len(g2) - 1) * np.var(g2, ddof=1)
+                )
                 / (len(g1) + len(g2) - 2)
             )
-            effect_size = float((np.mean(g1) - np.mean(g2)) / pooled_std) if pooled_std > 0 else 0.0
+            effect_size = (
+                float((np.mean(g1) - np.mean(g2)) / pooled_std)
+                if pooled_std > 0
+                else 0.0
+            )
 
         # Confidence interval for mean difference
         mean_diff = float(np.mean(g1) - np.mean(g2))
@@ -139,7 +152,11 @@ def run_survival_analysis(
             "test_name": "survival_analysis",
             "n_subjects": len(times),
             "n_events": int(events_arr.sum()),
-            "median_time": round(float(np.median(times_arr[events_arr == 1])), 2) if events_arr.sum() > 0 else None,
+            "median_time": (
+                round(float(np.median(times_arr[events_arr == 1])), 2)
+                if events_arr.sum() > 0
+                else None
+            ),
         }
 
         if groups is not None:
@@ -161,8 +178,9 @@ def run_survival_analysis(
                 expected_g1 = (events_g0 + events_g1) * n1 / (n0 + n1)
 
                 if expected_g0 > 0 and expected_g1 > 0:
-                    chi2 = ((events_g0 - expected_g0) ** 2 / expected_g0 +
-                            (events_g1 - expected_g1) ** 2 / expected_g1)
+                    chi2 = (events_g0 - expected_g0) ** 2 / expected_g0 + (
+                        events_g1 - expected_g1
+                    ) ** 2 / expected_g1
                     p_value = float(1 - stats.chi2.cdf(chi2, df=1))
                 else:
                     chi2 = 0.0

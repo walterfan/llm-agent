@@ -6,10 +6,21 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.core.security import create_access_token, create_refresh_token, decode_access_token
+from app.core.security import (
+    create_access_token,
+    create_refresh_token,
+    decode_access_token,
+)
 from app.db.base import get_db
 from app.models.user import UserRole
-from app.schemas.auth import LoginRequest, LoginResponse, RefreshRequest, RefreshResponse, SignupRequest, SignupResponse
+from app.schemas.auth import (
+    LoginRequest,
+    LoginResponse,
+    RefreshRequest,
+    RefreshResponse,
+    SignupRequest,
+    SignupResponse,
+)
 from app.schemas.user import User, UserCreate
 from app.services.user_service import AuthFailureReason, UserService
 
@@ -18,7 +29,9 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.post("/signup", response_model=SignupResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/signup", response_model=SignupResponse, status_code=status.HTTP_201_CREATED
+)
 def signup(
     signup_data: SignupRequest,
     db: Annotated[Session, Depends(get_db)],
@@ -29,8 +42,8 @@ def signup(
     - **email**: valid email address (unique)
     - **password**: minimum 8 characters
     - **full_name**: optional full name
-    
-    **Note**: 
+
+    **Note**:
     - First user becomes super_admin and is active immediately
     - Subsequent users are inactive and require admin approval
     """
@@ -49,7 +62,7 @@ def signup(
         full_name=signup_data.full_name,
     )
     user = UserService.create_user(db, user_create)
-    
+
     # Determine message based on whether this is the first user
     if user.role == UserRole.SUPER_ADMIN:
         message = "User created successfully as super admin"
@@ -79,19 +92,25 @@ def signin(
     logger.info(f"📥 [SIGNIN] Request from {client_ip} for email: {login_data.email}")
 
     # Authenticate user with detailed failure reason
-    auth_result = UserService.authenticate_user_with_reason(db, login_data.email, login_data.password)
-    
+    auth_result = UserService.authenticate_user_with_reason(
+        db, login_data.email, login_data.password
+    )
+
     if auth_result.user is None:
         # Handle different failure reasons with appropriate messages
         if auth_result.failure_reason == AuthFailureReason.INACTIVE_ACCOUNT:
-            logger.warning(f"📥 [SIGNIN] Rejected - inactive account: {login_data.email}")
+            logger.warning(
+                f"📥 [SIGNIN] Rejected - inactive account: {login_data.email}"
+            )
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Your account is inactive and pending approval by an administrator. Please contact support.",
             )
         else:
             # For user_not_found and invalid_password, use generic message for security
-            logger.warning(f"📥 [SIGNIN] Rejected - {auth_result.failure_reason.value}: {login_data.email}")
+            logger.warning(
+                f"📥 [SIGNIN] Rejected - {auth_result.failure_reason.value}: {login_data.email}"
+            )
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Incorrect email or password",

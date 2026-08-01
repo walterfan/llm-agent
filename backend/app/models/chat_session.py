@@ -13,10 +13,10 @@ from app.db.base import Base
 class ChatSession(Base):
     """
     Chat session model for storing conversation sessions.
-    
+
     Each session represents a conversation thread between a user and
     the Personal Secretary agent.
-    
+
     Attributes:
         id: Unique UUID identifier for the session
         user_id: Foreign key to the user who owns this session
@@ -28,26 +28,15 @@ class ChatSession(Base):
 
     __tablename__ = "chat_sessions"
 
-    id = Column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid4,
-        index=True
-    )
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4, index=True)
     user_id = Column(
-        Integer,
-        ForeignKey("users.id", ondelete="CASCADE"),
-        nullable=False,
-        index=True
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
     title = Column(String(255), nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(
-        DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
-        nullable=False
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
     )
 
     # Relationships
@@ -55,9 +44,11 @@ class ChatSession(Base):
         "ChatMessage",
         back_populates="session",
         cascade="all, delete-orphan",
-        order_by="ChatMessage.created_at"
+        order_by="ChatMessage.created_at",
     )
     user = relationship("User", back_populates="chat_sessions")
 
     def __repr__(self) -> str:
-        return f"<ChatSession(id={self.id}, user_id={self.user_id}, title={self.title})>"
+        return (
+            f"<ChatSession(id={self.id}, user_id={self.user_id}, title={self.title})>"
+        )

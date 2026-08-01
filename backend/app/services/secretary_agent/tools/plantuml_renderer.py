@@ -26,9 +26,7 @@ logger = logging.getLogger("secretary_agent")
 # PlantUML Text Encoding (for server mode)
 # ============================================================================
 
-_PLANTUML_ALPHABET = (
-    "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_"
-)
+_PLANTUML_ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_"
 
 
 def _encode_6bit(value: int) -> str:
@@ -44,12 +42,7 @@ def _encode_3bytes(b1: int, b2: int, b3: int) -> str:
     c2 = ((b1 & 0x3) << 4) | (b2 >> 4)
     c3 = ((b2 & 0xF) << 2) | (b3 >> 6)
     c4 = b3 & 0x3F
-    return (
-        _encode_6bit(c1)
-        + _encode_6bit(c2)
-        + _encode_6bit(c3)
-        + _encode_6bit(c4)
-    )
+    return _encode_6bit(c1) + _encode_6bit(c2) + _encode_6bit(c3) + _encode_6bit(c4)
 
 
 def plantuml_text_encode(text: str) -> str:
@@ -77,11 +70,10 @@ def plantuml_text_encode(text: str) -> str:
 # Output Directory
 # ============================================================================
 
+
 def _get_output_dir() -> Path:
     """Get or create the output directory for mindmap images."""
-    output_dir = Path(
-        getattr(settings, "PLANTUML_OUTPUT_DIR", "static/mindmaps")
-    )
+    output_dir = Path(getattr(settings, "PLANTUML_OUTPUT_DIR", "static/mindmaps"))
     output_dir.mkdir(parents=True, exist_ok=True)
     return output_dir
 
@@ -95,6 +87,7 @@ def _generate_filename(puml_script: str) -> str:
 # ============================================================================
 # Rendering Backends
 # ============================================================================
+
 
 async def render_via_server(
     puml_script: str,
@@ -159,9 +152,7 @@ def render_via_jar(
     """
     resolved_jar = jar_path or getattr(settings, "PLANTUML_JAR_PATH", None)
     if not resolved_jar or not Path(resolved_jar).exists():
-        raise FileNotFoundError(
-            f"PlantUML jar not found at: {resolved_jar}"
-        )
+        raise FileNotFoundError(f"PlantUML jar not found at: {resolved_jar}")
 
     # Write script to temp file
     import tempfile
@@ -204,6 +195,7 @@ def render_via_jar(
 # ============================================================================
 # Public API
 # ============================================================================
+
 
 def _jar_available() -> bool:
     """Check whether a local PlantUML jar is configured and exists."""

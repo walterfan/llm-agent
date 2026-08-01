@@ -59,5 +59,3 @@ class SignupResponse(BaseModel):
 
     user: User
     message: str = "User created successfully"
-
-

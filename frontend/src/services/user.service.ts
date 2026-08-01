@@ -1,5 +1,11 @@
 import api from './api'
-import type { ChangePasswordRequest, ChangePasswordResponse, User, UserProfileUpdate, UserUpdate } from '@/types/user'
+import type {
+  ChangePasswordRequest,
+  ChangePasswordResponse,
+  User,
+  UserProfileUpdate,
+  UserUpdate,
+} from '@/types/user'
 
 export const userService = {
   /**
@@ -41,5 +47,3 @@ export const userService = {
     return response.data
   },
 }
-
-

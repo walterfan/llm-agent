@@ -2,7 +2,6 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { userService } from '@/services/user.service'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import InputField from '@/components/forms/InputField.vue'
 import ButtonComponent from '@/components/forms/ButtonComponent.vue'
@@ -134,7 +133,7 @@ const handleChangePassword = async () => {
 
   isPasswordLoading.value = true
   try {
-    await userService.changePassword({
+    await authStore.changePassword({
       current_password: currentPassword.value,
       new_password: newPassword.value,
     })
@@ -144,7 +143,7 @@ const handleChangePassword = async () => {
     newPassword.value = ''
     confirmPassword.value = ''
   } catch (error: any) {
-    passwordServerError.value = error.response?.data?.detail || 'Failed to change password. Please try again.'
+    passwordServerError.value = error.message || 'Failed to change password. Please try again.'
   } finally {
     isPasswordLoading.value = false
   }
@@ -159,17 +158,23 @@ const handleChangePassword = async () => {
       <div class="bg-white shadow sm:rounded-lg">
         <div class="px-4 py-5 sm:p-6">
           <div v-if="successMessage" class="mb-4 rounded-md bg-green-50 p-4">
-            <p class="text-sm text-green-800">{{ successMessage }}</p>
+            <p class="text-sm text-green-800">
+              {{ successMessage }}
+            </p>
           </div>
 
           <div v-if="serverError" class="mb-4 rounded-md bg-red-50 p-4">
-            <p class="text-sm text-red-800">{{ serverError }}</p>
+            <p class="text-sm text-red-800">
+              {{ serverError }}
+            </p>
           </div>
 
           <div class="space-y-6">
             <div>
               <label class="block text-sm font-medium text-gray-700">Email</label>
-              <p class="mt-1 text-sm text-gray-900">{{ authStore.currentUser?.email }}</p>
+              <p class="mt-1 text-sm text-gray-900">
+                {{ authStore.currentUser?.email }}
+              </p>
               <p class="mt-1 text-xs text-gray-500">Email cannot be changed</p>
             </div>
 
@@ -203,7 +208,7 @@ const handleChangePassword = async () => {
               </ButtonComponent>
 
               <template v-if="isEditing">
-                <ButtonComponent @click="handleUpdateProfile" :loading="authStore.loading">
+                <ButtonComponent :loading="authStore.loading" @click="handleUpdateProfile">
                   Save Changes
                 </ButtonComponent>
                 <ButtonComponent variant="secondary" @click="cancelEditing">
@@ -219,20 +224,22 @@ const handleChangePassword = async () => {
           <h3 class="text-lg font-medium text-gray-900 mb-4">Change Password</h3>
 
           <div v-if="passwordSuccessMessage" class="mb-4 rounded-md bg-green-50 p-4">
-            <p class="text-sm text-green-800">{{ passwordSuccessMessage }}</p>
+            <p class="text-sm text-green-800">
+              {{ passwordSuccessMessage }}
+            </p>
           </div>
 
           <div v-if="passwordServerError" class="mb-4 rounded-md bg-red-50 p-4">
-            <p class="text-sm text-red-800">{{ passwordServerError }}</p>
+            <p class="text-sm text-red-800">
+              {{ passwordServerError }}
+            </p>
           </div>
 
           <div v-if="!isChangingPassword">
             <p class="text-sm text-gray-600 mb-4">
               Update your password to keep your account secure.
             </p>
-            <ButtonComponent @click="startChangingPassword">
-              Change Password
-            </ButtonComponent>
+            <ButtonComponent @click="startChangingPassword"> Change Password </ButtonComponent>
           </div>
 
           <div v-else class="space-y-4">
@@ -242,7 +249,9 @@ const handleChangePassword = async () => {
               type="password"
               placeholder="Enter your current password"
               :error="currentPasswordError"
-              @blur="currentPasswordError = !currentPassword ? 'Current password is required' : null"
+              @blur="
+                currentPasswordError = !currentPassword ? 'Current password is required' : null
+              "
             />
 
             <InputField
@@ -260,11 +269,14 @@ const handleChangePassword = async () => {
               type="password"
               placeholder="Confirm your new password"
               :error="confirmPasswordError"
-              @blur="confirmPasswordError = newPassword !== confirmPassword ? 'Passwords do not match' : null"
+              @blur="
+                confirmPasswordError =
+                  newPassword !== confirmPassword ? 'Passwords do not match' : null
+              "
             />
 
             <div class="flex gap-3">
-              <ButtonComponent @click="handleChangePassword" :loading="isPasswordLoading">
+              <ButtonComponent :loading="isPasswordLoading" @click="handleChangePassword">
                 Update Password
               </ButtonComponent>
               <ButtonComponent variant="secondary" @click="cancelChangingPassword">
@@ -287,5 +299,3 @@ const handleChangePassword = async () => {
     </div>
   </AppLayout>
 </template>
-
-

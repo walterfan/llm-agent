@@ -25,9 +25,8 @@ class Role(Base):
         "Permission",
         secondary="role_permissions",
         back_populates="roles",
-        lazy="selectin"
+        lazy="selectin",
     )
 
     def __repr__(self) -> str:
         return f"<Role(id={self.id}, name={self.name})>"
-

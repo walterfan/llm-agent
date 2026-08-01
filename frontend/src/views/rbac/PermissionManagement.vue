@@ -7,8 +7,8 @@
           <p class="mt-1 text-sm text-gray-600">Manage system permissions</p>
         </div>
         <button
-          @click="openCreateDialog"
           class="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          @click="openCreateDialog"
         >
           + Create Permission
         </button>
@@ -35,34 +35,53 @@
 
       <!-- Loading -->
       <div v-if="rbacStore.loading && !rbacStore.permissions.length" class="text-center py-12">
-        <div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+        <div
+          class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"
+        />
         <p class="mt-4 text-gray-600">Loading permissions...</p>
       </div>
 
       <!-- Permissions Table -->
-      <div v-else-if="rbacStore.permissions.length" class="overflow-hidden rounded-lg bg-white shadow">
+      <div
+        v-else-if="rbacStore.permissions.length"
+        class="overflow-hidden rounded-lg bg-white shadow"
+      >
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+              <th
+                class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
+              >
                 Name
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+              <th
+                class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
+              >
                 Resource
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+              <th
+                class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
+              >
                 Action
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+              <th
+                class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
+              >
                 Description
               </th>
-              <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
+              <th
+                class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500"
+              >
                 Actions
               </th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-200 bg-white">
-            <tr v-for="permission in rbacStore.permissions" :key="permission.id" class="hover:bg-gray-50">
+            <tr
+              v-for="permission in rbacStore.permissions"
+              :key="permission.id"
+              class="hover:bg-gray-50"
+            >
               <td class="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
                 {{ permission.name }}
               </td>
@@ -72,7 +91,9 @@
                 </span>
               </td>
               <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-600">
-                <span class="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800">
+                <span
+                  class="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800"
+                >
                   {{ permission.action }}
                 </span>
               </td>
@@ -81,14 +102,14 @@
               </td>
               <td class="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
                 <button
-                  @click="openEditDialog(permission)"
                   class="text-blue-600 hover:text-blue-900 mr-4"
+                  @click="openEditDialog(permission)"
                 >
                   Edit
                 </button>
                 <button
-                  @click="openDeleteDialog(permission)"
                   class="text-red-600 hover:text-red-900"
+                  @click="openDeleteDialog(permission)"
                 >
                   Delete
                 </button>
@@ -107,16 +128,16 @@
             </div>
             <div class="flex space-x-2">
               <button
-                @click="previousPage"
                 :disabled="currentPage === 1"
                 class="rounded-md border px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                @click="previousPage"
               >
                 Previous
               </button>
               <button
-                @click="nextPage"
                 :disabled="currentPage * pageSize >= rbacStore.totalPermissions"
                 class="rounded-md border px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                @click="nextPage"
               >
                 Next
               </button>
@@ -132,24 +153,38 @@
     </div>
 
     <!-- Create/Edit Dialog Placeholder -->
-    <div v-if="isCreateDialogOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" @click.self="closeCreateDialog">
+    <div
+      v-if="isCreateDialogOpen"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+      @click.self="closeCreateDialog"
+    >
       <div class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
         <h2 class="mb-4 text-xl font-semibold">Create Permission</h2>
         <p class="text-sm text-gray-600 mb-4">Feature coming soon: Use API directly for now</p>
-        <button @click="closeCreateDialog" class="rounded-md bg-gray-600 px-4 py-2 text-white">Close</button>
+        <button class="rounded-md bg-gray-600 px-4 py-2 text-white" @click="closeCreateDialog">
+          Close
+        </button>
       </div>
     </div>
 
     <!-- Delete Dialog -->
-    <div v-if="isDeleteDialogOpen && selectedPermission" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" @click.self="closeDeleteDialog">
+    <div
+      v-if="isDeleteDialogOpen && selectedPermission"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+      @click.self="closeDeleteDialog"
+    >
       <div class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
         <h2 class="mb-4 text-xl font-semibold">Delete Permission</h2>
         <p class="mb-6 text-gray-600">
-          Are you sure you want to delete permission <strong>{{ selectedPermission.name }}</strong>?
+          Are you sure you want to delete permission <strong>{{ selectedPermission.name }}</strong
+          >?
         </p>
         <div class="flex justify-end space-x-3">
-          <button @click="closeDeleteDialog" class="rounded-md border px-4 py-2">Cancel</button>
-          <button @click="handleDeletePermission" class="rounded-md bg-red-600 px-4 py-2 text-white">
+          <button class="rounded-md border px-4 py-2" @click="closeDeleteDialog">Cancel</button>
+          <button
+            class="rounded-md bg-red-600 px-4 py-2 text-white"
+            @click="handleDeletePermission"
+          >
             Delete
           </button>
         </div>
@@ -246,4 +281,3 @@ async function handleDeletePermission() {
   }
 }
 </script>
-

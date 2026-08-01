@@ -1,0 +1,29 @@
+[importlinter]
+root_packages =
+    app
+
+[importlinter:contract:layering]
+name = Backend layering: API → Services → Models
+type = layers
+layers =
+    app.api
+    app.services
+    app.models
+
+[importlinter:contract:core-independence]
+name = Core independence
+type = forbidden
+source_modules =
+    app.core
+forbidden_modules =
+    app.api
+    app.services
+
+[importlinter:contract:model-isolation]
+name = Model isolation
+type = forbidden
+source_modules =
+    app.models
+forbidden_modules =
+    app.api
+    app.services

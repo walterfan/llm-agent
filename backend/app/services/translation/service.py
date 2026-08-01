@@ -51,10 +51,14 @@ class NormalizedInput:
 class TranslationResult(BaseModel):
     """Structured translation response."""
 
-    translated_markdown: str = Field(description="Translated content (Chinese only or bilingual)")
+    translated_markdown: str = Field(
+        description="Translated content (Chinese only or bilingual)"
+    )
     explanation: str = Field(description="Key terms and context explanation in Chinese")
     summary: str = Field(description="Concise summary in Chinese")
-    source_truncated: bool = Field(default=False, description="Whether source was truncated to max length")
+    source_truncated: bool = Field(
+        default=False, description="Whether source was truncated to max length"
+    )
 
 
 def _truncate_source(text: str) -> tuple[str, bool]:
@@ -100,7 +104,9 @@ async def _fetch_pubmed_abstract(pmid: str) -> tuple[str, str]:
             response = await client.get(NCBI_EFETCH_URL, params=params)
             response.raise_for_status()
     except httpx.HTTPStatusError as e:
-        raise ValueError(f"PubMed API returned HTTP {e.response.status_code} for PMID {pmid}.") from e
+        raise ValueError(
+            f"PubMed API returned HTTP {e.response.status_code} for PMID {pmid}."
+        ) from e
     except httpx.RequestError as e:
         raise ValueError(f"Failed to fetch from PubMed: {e}") from e
 
@@ -126,9 +132,13 @@ async def normalize_input_from_url(url: str) -> NormalizedInput:
             if not content:
                 raise ValueError("PubMed returned no content.")
             source_text, truncated = _truncate_source(content)
-            return NormalizedInput(source_text=source_text, truncated=truncated, title=title)
+            return NormalizedInput(
+                source_text=source_text, truncated=truncated, title=title
+            )
         except ValueError as e:
-            logger.info("PubMed efetch failed (%s), falling back to fetch_article: %s", pmid, e)
+            logger.info(
+                "PubMed efetch failed (%s), falling back to fetch_article: %s", pmid, e
+            )
             # Fall through to normal fetch (may still 403)
 
     fetch_result = await fetch_article(url=url)
@@ -145,7 +155,9 @@ async def normalize_input_from_url(url: str) -> NormalizedInput:
             raise ValueError("URL returned empty text.")
         title = "Untitled"
         source_text, truncated = _truncate_source(content)
-        return NormalizedInput(source_text=source_text, truncated=truncated, title=title)
+        return NormalizedInput(
+            source_text=source_text, truncated=truncated, title=title
+        )
     else:
         assert isinstance(fetch_result.body, str)
         extracted = await extract_to_markdown(
@@ -168,7 +180,9 @@ def normalize_input_from_text(text: str) -> NormalizedInput:
     if not content:
         raise ValueError("Pasted text is empty.")
     source_text, truncated = _truncate_source(content)
-    return NormalizedInput(source_text=source_text, truncated=truncated, title="Pasted text")
+    return NormalizedInput(
+        source_text=source_text, truncated=truncated, title="Pasted text"
+    )
 
 
 async def normalize_input_from_file(
@@ -182,7 +196,9 @@ async def normalize_input_from_file(
     """
     ct = (content_type or "").split(";")[0].strip().lower()
     # Normalize common aliases
-    if ct in ("text/md", "text/x-markdown") or (filename and filename.lower().endswith(".md")):
+    if ct in ("text/md", "text/x-markdown") or (
+        filename and filename.lower().endswith(".md")
+    ):
         ct = "text/markdown"
     if ct not in ALLOWED_CONTENT_TYPES:
         raise ValueError(
@@ -231,7 +247,9 @@ English text:
 
 def _explanation_prompt(translated_markdown: str) -> str:
     """Prompt for key terms and context explanation."""
-    excerpt = translated_markdown[:3000] + ("..." if len(translated_markdown) > 3000 else "")
+    excerpt = translated_markdown[:3000] + (
+        "..." if len(translated_markdown) > 3000 else ""
+    )
     return f"""Based on the following Chinese text (translation of an English source), provide a brief explanation of key terms, concepts, or context that would help a reader understand the content. Write in Chinese. Output only the explanation, no preamble.
 
 ---
@@ -242,7 +260,9 @@ def _explanation_prompt(translated_markdown: str) -> str:
 
 def _summary_prompt(translated_markdown: str) -> str:
     """Prompt for concise summary."""
-    excerpt = translated_markdown[:4000] + ("..." if len(translated_markdown) > 4000 else "")
+    excerpt = translated_markdown[:4000] + (
+        "..." if len(translated_markdown) > 4000 else ""
+    )
     return f"""Summarize the following Chinese text in 3–5 sentences. Write the summary in Chinese. Output only the summary, no preamble.
 
 ---
@@ -338,5 +358,3 @@ class TranslationService:
         yield {"event": "summary", "data": summary}
 
         yield {"event": "done", "source_truncated": source_truncated}
-
-

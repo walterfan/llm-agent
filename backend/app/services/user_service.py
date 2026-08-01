@@ -8,13 +8,20 @@ from sqlalchemy import func
 from app.core.security import get_password_hash, verify_password
 from app.models.user import User, UserRole
 from app.schemas.email import EmailPreferencesUpdate
-from app.schemas.user import UserAdminCreate, UserAdminUpdate, UserCreate, UserProfileUpdate, UserUpdate
+from app.schemas.user import (
+    UserAdminCreate,
+    UserAdminUpdate,
+    UserCreate,
+    UserProfileUpdate,
+    UserUpdate,
+)
 
 logger = logging.getLogger(__name__)
 
 
 class AuthFailureReason(str, Enum):
     """Enum for authentication failure reasons."""
+
     USER_NOT_FOUND = "user_not_found"
     INVALID_PASSWORD = "invalid_password"
     INACTIVE_ACCOUNT = "inactive_account"
@@ -22,6 +29,7 @@ class AuthFailureReason(str, Enum):
 
 class AuthResult(NamedTuple):
     """Result of authentication attempt."""
+
     user: User | None
     failure_reason: AuthFailureReason | None = None
 
@@ -43,15 +51,15 @@ class UserService:
     def create_user(db: Session, user_create: UserCreate) -> User:
         """
         Create a new user via signup.
-        
+
         - First user automatically becomes super_admin with is_active=True
         - Subsequent users get user role with is_active=False (requires admin approval)
         """
         hashed_password = get_password_hash(user_create.password)
-        
+
         # Check if this is the first user (for fresh installations)
         user_count = db.query(User).count()
-        
+
         if user_count == 0:
             # First user: super_admin and active
             role = UserRole.SUPER_ADMIN
@@ -60,7 +68,7 @@ class UserService:
             # Subsequent users: user role and inactive (requires approval)
             role = UserRole.USER
             is_active = False
-        
+
         db_user = User(
             email=user_create.email,
             hashed_password=hashed_password,
@@ -77,7 +85,7 @@ class UserService:
     def authenticate_user(db: Session, email: str, password: str) -> User | None:
         """
         Authenticate user with email and password.
-        
+
         Returns the user if authentication is successful, None otherwise.
         For detailed failure reasons, use authenticate_user_with_reason().
         """
@@ -85,29 +93,43 @@ class UserService:
         return result.user
 
     @staticmethod
-    def authenticate_user_with_reason(db: Session, email: str, password: str) -> AuthResult:
+    def authenticate_user_with_reason(
+        db: Session, email: str, password: str
+    ) -> AuthResult:
         """
         Authenticate user with email and password, returning detailed failure reason.
-        
+
         Returns:
             AuthResult with user and failure_reason
         """
         logger.info(f"🔐 [AUTH] Signin attempt for email: {email}")
-        
+
         user = UserService.get_user_by_email(db, email)
         if not user:
             logger.warning(f"❌ [AUTH] User not found: {email}")
-            return AuthResult(user=None, failure_reason=AuthFailureReason.USER_NOT_FOUND)
-        
+            return AuthResult(
+                user=None, failure_reason=AuthFailureReason.USER_NOT_FOUND
+            )
+
         if not verify_password(password, user.hashed_password):
-            logger.warning(f"❌ [AUTH] Invalid password for user: {email} (user_id={user.id})")
-            return AuthResult(user=None, failure_reason=AuthFailureReason.INVALID_PASSWORD)
-        
+            logger.warning(
+                f"❌ [AUTH] Invalid password for user: {email} (user_id={user.id})"
+            )
+            return AuthResult(
+                user=None, failure_reason=AuthFailureReason.INVALID_PASSWORD
+            )
+
         if not user.is_active:
-            logger.warning(f"⚠️ [AUTH] Inactive account login attempt: {email} (user_id={user.id}, role={user.role.value})")
-            return AuthResult(user=None, failure_reason=AuthFailureReason.INACTIVE_ACCOUNT)
-        
-        logger.info(f"✅ [AUTH] Successful authentication for: {email} (user_id={user.id}, role={user.role.value})")
+            logger.warning(
+                f"⚠️ [AUTH] Inactive account login attempt: {email} (user_id={user.id}, role={user.role.value})"
+            )
+            return AuthResult(
+                user=None, failure_reason=AuthFailureReason.INACTIVE_ACCOUNT
+            )
+
+        logger.info(
+            f"✅ [AUTH] Successful authentication for: {email} (user_id={user.id}, role={user.role.value})"
+        )
         return AuthResult(user=user, failure_reason=None)
 
     @staticmethod
@@ -124,34 +146,42 @@ class UserService:
         return user
 
     @staticmethod
-    def change_password(db: Session, user: User, current_password: str, new_password: str) -> tuple[bool, str]:
+    def change_password(
+        db: Session, user: User, current_password: str, new_password: str
+    ) -> tuple[bool, str]:
         """
         Change user password after verifying current password.
-        
+
         Returns:
             tuple[bool, str]: (success, message)
         """
-        logger.info(f"🔐 [PASSWORD] Change password attempt for user: {user.email} (id={user.id})")
-        
+        logger.info(
+            f"🔐 [PASSWORD] Change password attempt for user: {user.email} (id={user.id})"
+        )
+
         # Verify current password
         if not verify_password(current_password, user.hashed_password):
-            logger.warning(f"❌ [PASSWORD] Current password verification failed for: {user.email}")
+            logger.warning(
+                f"❌ [PASSWORD] Current password verification failed for: {user.email}"
+            )
             return False, "Current password is incorrect"
-        
+
         # Update to new password
         user.hashed_password = get_password_hash(new_password)
         db.add(user)
         db.commit()
         db.refresh(user)
-        
+
         logger.info(f"✅ [PASSWORD] Password changed successfully for: {user.email}")
         return True, "Password changed successfully"
 
     @staticmethod
-    def update_user_profile(db: Session, user: User, profile_update: UserProfileUpdate) -> User:
+    def update_user_profile(
+        db: Session, user: User, profile_update: UserProfileUpdate
+    ) -> User:
         """Update user dress preferences profile."""
         update_data = profile_update.model_dump(exclude_unset=True)
-        
+
         for key, value in update_data.items():
             setattr(user, key, value)
 
@@ -180,7 +210,9 @@ class UserService:
         }
 
     @staticmethod
-    def update_email_preferences(db: Session, user: User, preferences: EmailPreferencesUpdate) -> User:
+    def update_email_preferences(
+        db: Session, user: User, preferences: EmailPreferencesUpdate
+    ) -> User:
         """Update user email preferences."""
         if preferences.email_notifications_enabled is not None:
             user.email_notifications_enabled = preferences.email_notifications_enabled
@@ -203,33 +235,33 @@ class UserService:
         skip: int = 0,
         limit: int = 20,
         search: str | None = None,
-        role: UserRole | None = None
+        role: UserRole | None = None,
     ) -> tuple[list[User], int]:
         """
         Get paginated list of users with optional filtering.
-        
+
         Returns: (users, total_count)
         """
         query = db.query(User)
-        
+
         # Apply search filter
         if search:
             search_pattern = f"%{search}%"
             query = query.filter(
-                (User.email.ilike(search_pattern)) |
-                (User.full_name.ilike(search_pattern))
+                (User.email.ilike(search_pattern))
+                | (User.full_name.ilike(search_pattern))
             )
-        
+
         # Apply role filter
         if role:
             query = query.filter(User.role == role)
-        
+
         # Get total count before pagination
         total = query.count()
-        
+
         # Apply pagination and sorting
         users = query.order_by(User.id).offset(skip).limit(limit).all()
-        
+
         return users, total
 
     @staticmethod
@@ -241,9 +273,9 @@ class UserService:
         existing_user = UserService.get_user_by_email(db, user_create.email)
         if existing_user:
             raise ValueError("Email already registered")
-        
+
         hashed_password = get_password_hash(user_create.password)
-        
+
         db_user = User(
             email=user_create.email,
             hashed_password=hashed_password,
@@ -258,14 +290,11 @@ class UserService:
 
     @staticmethod
     def update_user_as_admin(
-        db: Session,
-        user_id: int,
-        user_update: UserAdminUpdate,
-        current_user: User
+        db: Session, user_id: int, user_update: UserAdminUpdate, current_user: User
     ) -> User:
         """
         Update user as admin.
-        
+
         Validates that:
         - User cannot change their own role
         - Cannot update non-existent user
@@ -273,22 +302,25 @@ class UserService:
         user = UserService.get_user_by_id(db, user_id)
         if not user:
             raise ValueError("User not found")
-        
+
         # Prevent self-role-change (only if actually changing the role)
-        if (user_update.role is not None and 
-            user.id == current_user.id and 
-            user_update.role != user.role):
+        if (
+            user_update.role is not None
+            and user.id == current_user.id
+            and user_update.role != user.role
+        ):
             raise ValueError("Cannot change your own role")
-        
+
         # Update fields
         if user_update.full_name is not None:
             user.full_name = user_update.full_name
         if user_update.email is not None:
             # Check if new email is already taken
-            existing = db.query(User).filter(
-                User.email == user_update.email,
-                User.id != user_id
-            ).first()
+            existing = (
+                db.query(User)
+                .filter(User.email == user_update.email, User.id != user_id)
+                .first()
+            )
             if existing:
                 raise ValueError("Email already in use")
             user.email = user_update.email
@@ -298,19 +330,24 @@ class UserService:
             user.is_active = user_update.is_active
         if user_update.password is not None:
             user.hashed_password = get_password_hash(user_update.password)
-        
+
         # Update profile fields (only if explicitly included in the update)
         profile_fields = [
-            "gender", "age", "identity", "style", 
-            "temperature_sensitivity", "activity_context", "other_preferences"
+            "gender",
+            "age",
+            "identity",
+            "style",
+            "temperature_sensitivity",
+            "activity_context",
+            "other_preferences",
         ]
-        
+
         update_data = user_update.model_dump(exclude_unset=True)
-        
+
         for field in profile_fields:
             if field in update_data:
                 setattr(user, field, update_data[field])
-        
+
         db.add(user)
         db.commit()
         db.refresh(user)
@@ -318,14 +355,11 @@ class UserService:
 
     @staticmethod
     def update_user_role(
-        db: Session,
-        user_id: int,
-        new_role: UserRole,
-        current_user: User
+        db: Session, user_id: int, new_role: UserRole, current_user: User
     ) -> User:
         """
         Update user role.
-        
+
         Validates that:
         - User cannot change their own role
         - Cannot demote the last super_admin
@@ -333,19 +367,21 @@ class UserService:
         user = UserService.get_user_by_id(db, user_id)
         if not user:
             raise ValueError("User not found")
-        
+
         # Prevent self-role-change
         if user.id == current_user.id:
             raise ValueError("Cannot change your own role")
-        
+
         # Prevent demoting last super_admin
         if user.role == UserRole.SUPER_ADMIN:
-            super_admin_count = db.query(func.count(User.id)).filter(
-                User.role == UserRole.SUPER_ADMIN
-            ).scalar()
+            super_admin_count = (
+                db.query(func.count(User.id))
+                .filter(User.role == UserRole.SUPER_ADMIN)
+                .scalar()
+            )
             if super_admin_count <= 1:
                 raise ValueError("Cannot demote the last super_admin")
-        
+
         user.role = new_role
         db.add(user)
         db.commit()
@@ -356,7 +392,7 @@ class UserService:
     def delete_user_as_admin(db: Session, user_id: int, current_user: User) -> None:
         """
         Delete user as admin.
-        
+
         Validates that:
         - User cannot delete themselves
         - Cannot delete the last super_admin
@@ -364,20 +400,20 @@ class UserService:
         user = UserService.get_user_by_id(db, user_id)
         if not user:
             raise ValueError("User not found")
-        
+
         # Prevent self-deletion
         if user.id == current_user.id:
             raise ValueError("Cannot delete your own account")
-        
+
         # Prevent deleting last super_admin
         if user.role == UserRole.SUPER_ADMIN:
-            super_admin_count = db.query(func.count(User.id)).filter(
-                User.role == UserRole.SUPER_ADMIN
-            ).scalar()
+            super_admin_count = (
+                db.query(func.count(User.id))
+                .filter(User.role == UserRole.SUPER_ADMIN)
+                .scalar()
+            )
             if super_admin_count <= 1:
                 raise ValueError("Cannot delete the last super_admin")
-        
+
         db.delete(user)
         db.commit()
-
-

@@ -2,9 +2,9 @@
  * AI Coach Pinia store
  */
 
-import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
-import coachService from '@/services/coach.service';
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+import coachService from '@/services/coach.service'
 import type {
   CoachMode,
   CoachStreamEvent,
@@ -15,15 +15,15 @@ import type {
   SessionCreate,
   ProgressReport,
   CoachSource,
-} from '@/types/coach';
+} from '@/types/coach'
 
 export interface CoachMessage {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  sources?: CoachSource[];
-  mode?: CoachMode;
-  created_at: string;
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+  sources?: CoachSource[]
+  mode?: CoachMode
+  created_at: string
 }
 
 export const useCoachStore = defineStore('coach', () => {
@@ -32,42 +32,42 @@ export const useCoachStore = defineStore('coach', () => {
   // ============================================================================
 
   // Chat state
-  const messages = ref<CoachMessage[]>([]);
-  const currentMode = ref<CoachMode>('coach');
-  const sessionId = ref<string | null>(null);
-  const selectedGoalId = ref<string | null>(null);
+  const messages = ref<CoachMessage[]>([])
+  const currentMode = ref<CoachMode>('coach')
+  const sessionId = ref<string | null>(null)
+  const selectedGoalId = ref<string | null>(null)
 
   // Streaming state
-  const isStreaming = ref(false);
-  const streamingText = ref('');
+  const isStreaming = ref(false)
+  const streamingText = ref('')
 
   // Goals & sessions
-  const goals = ref<LearningGoal[]>([]);
-  const sessions = ref<StudySession[]>([]);
-  const currentProgress = ref<ProgressReport | null>(null);
+  const goals = ref<LearningGoal[]>([])
+  const sessions = ref<StudySession[]>([])
+  const currentProgress = ref<ProgressReport | null>(null)
 
   // UI state
-  const loading = ref(false);
-  const error = ref<string | null>(null);
+  const loading = ref(false)
+  const error = ref<string | null>(null)
 
   // ============================================================================
   // Computed
   // ============================================================================
 
-  const hasMessages = computed(() => messages.value.length > 0);
-  const activeGoals = computed(() => goals.value.filter(g => g.status === 'active'));
-  const completedGoals = computed(() => goals.value.filter(g => g.status === 'completed'));
+  const hasMessages = computed(() => messages.value.length > 0)
+  const activeGoals = computed(() => goals.value.filter((g) => g.status === 'active'))
+  const completedGoals = computed(() => goals.value.filter((g) => g.status === 'completed'))
   const totalStudyMinutes = computed(() =>
     sessions.value.reduce((sum, s) => sum + s.duration_minutes, 0)
-  );
+  )
   const modeLabel = computed(() => {
     const labels: Record<CoachMode, string> = {
       coach: '🎯 学习教练',
       tutor: '📖 知识导师',
       quiz: '📝 测验模式',
-    };
-    return labels[currentMode.value];
-  });
+    }
+    return labels[currentMode.value]
+  })
 
   // ============================================================================
   // Chat Actions
@@ -77,8 +77,8 @@ export const useCoachStore = defineStore('coach', () => {
    * Send a message to the coach (non-streaming)
    */
   async function sendMessage(message: string) {
-    loading.value = true;
-    error.value = null;
+    loading.value = true
+    error.value = null
 
     // Add user message
     messages.value.push({
@@ -87,7 +87,7 @@ export const useCoachStore = defineStore('coach', () => {
       content: message,
       mode: currentMode.value,
       created_at: new Date().toISOString(),
-    });
+    })
 
     try {
       const response = await coachService.chat({
@@ -95,9 +95,9 @@ export const useCoachStore = defineStore('coach', () => {
         mode: currentMode.value,
         session_id: sessionId.value,
         goal_id: selectedGoalId.value,
-      });
+      })
 
-      sessionId.value = response.session_id;
+      sessionId.value = response.session_id
 
       // Add assistant message
       messages.value.push({
@@ -107,14 +107,14 @@ export const useCoachStore = defineStore('coach', () => {
         sources: response.sources,
         mode: currentMode.value,
         created_at: new Date().toISOString(),
-      });
+      })
 
-      return response;
+      return response
     } catch (err: any) {
-      error.value = err.response?.data?.detail || err.message || '发送消息失败';
-      throw err;
+      error.value = err.response?.data?.detail || err.message || '发送消息失败'
+      throw err
     } finally {
-      loading.value = false;
+      loading.value = false
     }
   }
 
@@ -124,11 +124,11 @@ export const useCoachStore = defineStore('coach', () => {
   async function sendMessageStream(
     message: string,
     onToken?: (token: string) => void,
-    onComplete?: (sid: string) => void,
+    onComplete?: (sid: string) => void
   ): Promise<void> {
-    isStreaming.value = true;
-    streamingText.value = '';
-    error.value = null;
+    isStreaming.value = true
+    streamingText.value = ''
+    error.value = null
 
     // Add user message
     messages.value.push({
@@ -137,9 +137,9 @@ export const useCoachStore = defineStore('coach', () => {
       content: message,
       mode: currentMode.value,
       created_at: new Date().toISOString(),
-    });
+    })
 
-    const token = localStorage.getItem('access_token') || '';
+    const token = localStorage.getItem('access_token') || ''
 
     try {
       for await (const event of coachService.chatStream(
@@ -147,22 +147,22 @@ export const useCoachStore = defineStore('coach', () => {
         currentMode.value,
         token,
         sessionId.value,
-        selectedGoalId.value,
+        selectedGoalId.value
       )) {
-        const data = event as CoachStreamEvent;
+        const data = event as CoachStreamEvent
 
         switch (data.type) {
           case 'start':
             // Session started
-            break;
+            break
 
           case 'token':
-            streamingText.value += data.content;
-            onToken?.(data.content);
-            break;
+            streamingText.value += data.content
+            onToken?.(data.content)
+            break
 
           case 'done':
-            sessionId.value = data.session_id;
+            sessionId.value = data.session_id
 
             // Add assistant message
             messages.value.push({
@@ -171,21 +171,21 @@ export const useCoachStore = defineStore('coach', () => {
               content: streamingText.value,
               mode: currentMode.value,
               created_at: new Date().toISOString(),
-            });
+            })
 
-            onComplete?.(data.session_id);
-            break;
+            onComplete?.(data.session_id)
+            break
 
           case 'error':
-            error.value = data.content;
-            break;
+            error.value = data.content
+            break
         }
       }
     } catch (err: any) {
-      error.value = err.message || '流式传输失败';
-      throw err;
+      error.value = err.message || '流式传输失败'
+      throw err
     } finally {
-      isStreaming.value = false;
+      isStreaming.value = false
     }
   }
 
@@ -193,24 +193,24 @@ export const useCoachStore = defineStore('coach', () => {
    * Start a new chat session
    */
   function startNewChat() {
-    messages.value = [];
-    sessionId.value = null;
-    streamingText.value = '';
-    error.value = null;
+    messages.value = []
+    sessionId.value = null
+    streamingText.value = ''
+    error.value = null
   }
 
   /**
    * Set coaching mode
    */
   function setMode(mode: CoachMode) {
-    currentMode.value = mode;
+    currentMode.value = mode
   }
 
   /**
    * Set selected goal for coaching context
    */
   function setSelectedGoal(goalId: string | null) {
-    selectedGoalId.value = goalId;
+    selectedGoalId.value = goalId
   }
 
   // ============================================================================
@@ -221,16 +221,16 @@ export const useCoachStore = defineStore('coach', () => {
    * Load all goals
    */
   async function loadGoals(status?: string) {
-    loading.value = true;
-    error.value = null;
+    loading.value = true
+    error.value = null
 
     try {
-      goals.value = await coachService.listGoals(status);
+      goals.value = await coachService.listGoals(status)
     } catch (err: any) {
-      error.value = err.response?.data?.detail || err.message || '加载目标失败';
-      throw err;
+      error.value = err.response?.data?.detail || err.message || '加载目标失败'
+      throw err
     } finally {
-      loading.value = false;
+      loading.value = false
     }
   }
 
@@ -238,18 +238,18 @@ export const useCoachStore = defineStore('coach', () => {
    * Create a new goal
    */
   async function createGoal(data: GoalCreate) {
-    loading.value = true;
-    error.value = null;
+    loading.value = true
+    error.value = null
 
     try {
-      const goal = await coachService.createGoal(data);
-      goals.value.unshift(goal);
-      return goal;
+      const goal = await coachService.createGoal(data)
+      goals.value.unshift(goal)
+      return goal
     } catch (err: any) {
-      error.value = err.response?.data?.detail || err.message || '创建目标失败';
-      throw err;
+      error.value = err.response?.data?.detail || err.message || '创建目标失败'
+      throw err
     } finally {
-      loading.value = false;
+      loading.value = false
     }
   }
 
@@ -257,21 +257,21 @@ export const useCoachStore = defineStore('coach', () => {
    * Update a goal
    */
   async function updateGoal(goalId: string, data: GoalUpdate) {
-    loading.value = true;
-    error.value = null;
+    loading.value = true
+    error.value = null
 
     try {
-      const updated = await coachService.updateGoal(goalId, data);
-      const idx = goals.value.findIndex(g => g.id === goalId);
+      const updated = await coachService.updateGoal(goalId, data)
+      const idx = goals.value.findIndex((g) => g.id === goalId)
       if (idx >= 0) {
-        goals.value[idx] = updated;
+        goals.value[idx] = updated
       }
-      return updated;
+      return updated
     } catch (err: any) {
-      error.value = err.response?.data?.detail || err.message || '更新目标失败';
-      throw err;
+      error.value = err.response?.data?.detail || err.message || '更新目标失败'
+      throw err
     } finally {
-      loading.value = false;
+      loading.value = false
     }
   }
 
@@ -283,18 +283,18 @@ export const useCoachStore = defineStore('coach', () => {
    * Log a study session
    */
   async function logStudySession(data: SessionCreate) {
-    loading.value = true;
-    error.value = null;
+    loading.value = true
+    error.value = null
 
     try {
-      const session = await coachService.logSession(data);
-      sessions.value.unshift(session);
-      return session;
+      const session = await coachService.logSession(data)
+      sessions.value.unshift(session)
+      return session
     } catch (err: any) {
-      error.value = err.response?.data?.detail || err.message || '记录学习失败';
-      throw err;
+      error.value = err.response?.data?.detail || err.message || '记录学习失败'
+      throw err
     } finally {
-      loading.value = false;
+      loading.value = false
     }
   }
 
@@ -302,16 +302,16 @@ export const useCoachStore = defineStore('coach', () => {
    * Load study sessions
    */
   async function loadSessions(goalId?: string) {
-    loading.value = true;
-    error.value = null;
+    loading.value = true
+    error.value = null
 
     try {
-      sessions.value = await coachService.listSessions(goalId);
+      sessions.value = await coachService.listSessions(goalId)
     } catch (err: any) {
-      error.value = err.response?.data?.detail || err.message || '加载学习记录失败';
-      throw err;
+      error.value = err.response?.data?.detail || err.message || '加载学习记录失败'
+      throw err
     } finally {
-      loading.value = false;
+      loading.value = false
     }
   }
 
@@ -323,17 +323,17 @@ export const useCoachStore = defineStore('coach', () => {
    * Load progress report for a goal
    */
   async function loadProgress(goalId: string) {
-    loading.value = true;
-    error.value = null;
+    loading.value = true
+    error.value = null
 
     try {
-      currentProgress.value = await coachService.getProgress(goalId);
-      return currentProgress.value;
+      currentProgress.value = await coachService.getProgress(goalId)
+      return currentProgress.value
     } catch (err: any) {
-      error.value = err.response?.data?.detail || err.message || '加载进度失败';
-      throw err;
+      error.value = err.response?.data?.detail || err.message || '加载进度失败'
+      throw err
     } finally {
-      loading.value = false;
+      loading.value = false
     }
   }
 
@@ -341,14 +341,14 @@ export const useCoachStore = defineStore('coach', () => {
    * Clear error
    */
   function clearError() {
-    error.value = null;
+    error.value = null
   }
 
   /**
    * Stop streaming
    */
   function stopStreaming() {
-    isStreaming.value = false;
+    isStreaming.value = false
   }
 
   return {
@@ -394,5 +394,5 @@ export const useCoachStore = defineStore('coach', () => {
     // Utility
     clearError,
     stopStreaming,
-  };
-});
+  }
+})

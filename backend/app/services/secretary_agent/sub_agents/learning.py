@@ -62,55 +62,61 @@ def create_learning_tools(
     tools: list[StructuredTool] = []
 
     # Save learning record
-    tools.append(StructuredTool.from_function(
-        func=partial(
-            save_learning,
-            db=db,
-            user_id=user_id,
-            session_id=session_id,
-        ),
-        name="save_learning",
-        description=(
-            "Save a learning record when user explicitly asks to save/remember "
-            "learning content. Input types: word, sentence, topic, article, "
-            "question, idea. Only use when user explicitly requests to save."
-        ),
-        args_schema=SaveLearningInput,
-    ))
+    tools.append(
+        StructuredTool.from_function(
+            func=partial(
+                save_learning,
+                db=db,
+                user_id=user_id,
+                session_id=session_id,
+            ),
+            name="save_learning",
+            description=(
+                "Save a learning record when user explicitly asks to save/remember "
+                "learning content. Input types: word, sentence, topic, article, "
+                "question, idea. Only use when user explicitly requests to save."
+            ),
+            args_schema=SaveLearningInput,
+        )
+    )
 
     # List learning records
-    tools.append(StructuredTool.from_function(
-        func=partial(
-            list_learning,
-            db=db,
-            user_id=user_id,
-        ),
-        name="list_learning",
-        description=(
-            "List user's learning records. "
-            "Can filter by type (word, sentence, topic, etc.)."
-        ),
-        args_schema=ListLearningInput,
-    ))
+    tools.append(
+        StructuredTool.from_function(
+            func=partial(
+                list_learning,
+                db=db,
+                user_id=user_id,
+            ),
+            name="list_learning",
+            description=(
+                "List user's learning records. "
+                "Can filter by type (word, sentence, topic, etc.)."
+            ),
+            args_schema=ListLearningInput,
+        )
+    )
 
     # Learn from web article (async)
-    tools.append(StructuredTool.from_function(
-        coroutine=learn_article,
-        name="learn_article",
-        description=(
-            "Learn from a web article or PDF. Provide a URL and the tool will: "
-            "1) Fetch the page (HTML or PDF), "
-            "2) Extract main content to text, "
-            "3) Translate to bilingual (English + Chinese), "
-            "4) Summarize with key points, "
-            "5) Generate a PlantUML mindmap, "
-            "6) Render the mindmap as PNG. "
-            "Works best with: direct article HTML URLs and direct .pdf links. "
-            "Limitations: JavaScript-rendered pages and login-required pages may fail; "
-            "suggest the user paste the article text or save as PDF and share that link."
-        ),
-        args_schema=LearnArticleInput,
-    ))
+    tools.append(
+        StructuredTool.from_function(
+            coroutine=learn_article,
+            name="learn_article",
+            description=(
+                "Learn from a web article or PDF. Provide a URL and the tool will: "
+                "1) Fetch the page (HTML or PDF), "
+                "2) Extract main content to text, "
+                "3) Translate to bilingual (English + Chinese), "
+                "4) Summarize with key points, "
+                "5) Generate a PlantUML mindmap, "
+                "6) Render the mindmap as PNG. "
+                "Works best with: direct article HTML URLs and direct .pdf links. "
+                "Limitations: JavaScript-rendered pages and login-required pages may fail; "
+                "suggest the user paste the article text or save as PDF and share that link."
+            ),
+            args_schema=LearnArticleInput,
+        )
+    )
 
     return tools
 
@@ -149,8 +155,7 @@ def create_learning_agent(
     )
 
     logger.info(
-        f"Created LearningAgent with {len(tools)} tools: "
-        f"{[t.name for t in tools]}"
+        f"Created LearningAgent with {len(tools)} tools: " f"{[t.name for t in tools]}"
     )
 
     return agent

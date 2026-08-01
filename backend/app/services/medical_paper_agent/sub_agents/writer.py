@@ -27,13 +27,17 @@ def create_writer_tools() -> list[StructuredTool]:
     """Create the tool set for the Writer Agent."""
     tools = [
         StructuredTool.from_function(
-            func=lambda section_type, context, word_limit=500: write_section_prompt(section_type, context, word_limit),
+            func=lambda section_type, context, word_limit=500: write_section_prompt(
+                section_type, context, word_limit
+            ),
             name="write_section",
             description="Generate a prompt for writing a manuscript section (introduction, methods, results, discussion, abstract).",
             args_schema=WriteSectionInput,
         ),
         StructuredTool.from_function(
-            func=lambda section_type, current_content, feedback: revise_section_prompt(section_type, current_content, feedback),
+            func=lambda section_type, current_content, feedback: revise_section_prompt(
+                section_type, current_content, feedback
+            ),
             name="revise_section",
             description="Generate a prompt for revising a manuscript section based on compliance feedback.",
             args_schema=ReviseSectionInput,

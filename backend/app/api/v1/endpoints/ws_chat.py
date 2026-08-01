@@ -60,6 +60,7 @@ router = APIRouter()
 # Connection Manager — tracks all active WebSocket connections
 # ============================================================================
 
+
 class ConnectionManager:
     """
     Manages active WebSocket connections.
@@ -138,6 +139,7 @@ manager = ConnectionManager()
 # WebSocket Authentication
 # ============================================================================
 
+
 def authenticate_ws_token(token: str, db: Session) -> Optional[User]:
     """
     Authenticate a WebSocket connection via JWT token.
@@ -167,6 +169,7 @@ def authenticate_ws_token(token: str, db: Session) -> Optional[User]:
 # ============================================================================
 # WebSocket Chat Endpoint
 # ============================================================================
+
 
 @router.websocket("/chat")
 async def websocket_chat(
@@ -205,13 +208,16 @@ async def websocket_chat(
     manager.connect(user.id, websocket)
 
     # Send welcome message
-    await manager.send_json(websocket, {
-        "type": "connected",
-        "user_id": user.id,
-        "user_name": user.full_name or user.email,
-        "online_count": manager.online_count,
-        "timestamp": datetime.now().isoformat(),
-    })
+    await manager.send_json(
+        websocket,
+        {
+            "type": "connected",
+            "user_id": user.id,
+            "user_name": user.full_name or user.email,
+            "online_count": manager.online_count,
+            "timestamp": datetime.now().isoformat(),
+        },
+    )
 
     try:
         # --- Message loop ---
@@ -221,10 +227,13 @@ async def websocket_chat(
             try:
                 data = json.loads(raw)
             except json.JSONDecodeError:
-                await manager.send_json(websocket, {
-                    "type": "error",
-                    "content": "Invalid JSON",
-                })
+                await manager.send_json(
+                    websocket,
+                    {
+                        "type": "error",
+                        "content": "Invalid JSON",
+                    },
+                )
                 continue
 
             msg_type = data.get("type", "")
@@ -248,20 +257,26 @@ async def websocket_chat(
                 await _handle_delete_session(websocket, data, user, db)
 
             else:
-                await manager.send_json(websocket, {
-                    "type": "error",
-                    "content": f"Unknown message type: {msg_type}",
-                })
+                await manager.send_json(
+                    websocket,
+                    {
+                        "type": "error",
+                        "content": f"Unknown message type: {msg_type}",
+                    },
+                )
 
     except WebSocketDisconnect:
         logger.info(f"WS client disconnected: user={user.id}")
     except Exception as e:
         logger.error(f"WS error for user={user.id}: {e}", exc_info=True)
         try:
-            await manager.send_json(websocket, {
-                "type": "error",
-                "content": f"Server error: {str(e)}",
-            })
+            await manager.send_json(
+                websocket,
+                {
+                    "type": "error",
+                    "content": f"Server error: {str(e)}",
+                },
+            )
         except Exception:
             pass
     finally:
@@ -272,6 +287,7 @@ async def websocket_chat(
 # ============================================================================
 # Message Handlers
 # ============================================================================
+
 
 async def _handle_chat(
     ws: WebSocket,
@@ -284,10 +300,13 @@ async def _handle_chat(
     """
     message = data.get("message", "").strip()
     if not message:
-        await manager.send_json(ws, {
-            "type": "error",
-            "content": "Message cannot be empty",
-        })
+        await manager.send_json(
+            ws,
+            {
+                "type": "error",
+                "content": "Message cannot be empty",
+            },
+        )
         return
 
     session_id_str = data.get("session_id")
@@ -299,21 +318,27 @@ async def _handle_chat(
             session_id = UUID(session_id_str)
             session = ChatService.get_session(db, session_id, user.id)
             if not session:
-                await manager.send_json(ws, {
-                    "type": "error",
-                    "content": "Session not found",
-                })
+                await manager.send_json(
+                    ws,
+                    {
+                        "type": "error",
+                        "content": "Session not found",
+                    },
+                )
                 return
         else:
             title = ChatService.generate_session_title(message)
             session = ChatService.create_session(db, user.id, title)
             record_session_created()
             # Notify client of new session
-            await manager.send_json(ws, {
-                "type": "session_created",
-                "session_id": str(session.id),
-                "title": session.title,
-            })
+            await manager.send_json(
+                ws,
+                {
+                    "type": "session_created",
+                    "session_id": str(session.id),
+                    "title": session.title,
+                },
+            )
 
         # Save user message
         ChatService.add_message(
@@ -327,8 +352,7 @@ async def _handle_chat(
         # Load chat history
         messages = ChatService.get_messages(db, session.id, limit=20)
         history = [
-            {"role": msg.role.value, "content": msg.content}
-            for msg in messages[:-1]
+            {"role": msg.role.value, "content": msg.content} for msg in messages[:-1]
         ]
 
         # Create agent and stream response
@@ -356,10 +380,12 @@ async def _handle_chat(
                 await manager.send_json(ws, event)
 
             elif event_type == "tool_call":
-                tool_calls.append({
-                    "tool": event.get("tool"),
-                    "args": event.get("args"),
-                })
+                tool_calls.append(
+                    {
+                        "tool": event.get("tool"),
+                        "args": event.get("args"),
+                    }
+                )
                 await manager.send_json(ws, event)
 
             elif event_type == "tool_result":
@@ -385,11 +411,14 @@ async def _handle_chat(
                 duration = time.time() - start_time
                 record_chat_request("websocket", "success", duration)
 
-                await manager.send_json(ws, {
-                    "type": "done",
-                    "session_id": str(session.id),
-                    "message_id": str(assistant_msg.id),
-                })
+                await manager.send_json(
+                    ws,
+                    {
+                        "type": "done",
+                        "session_id": str(session.id),
+                        "message_id": str(assistant_msg.id),
+                    },
+                )
 
             elif event_type == "error":
                 record_chat_error("ws_streaming_error")
@@ -402,10 +431,13 @@ async def _handle_chat(
         record_chat_request("websocket", "error", duration)
         record_chat_error(type(e).__name__)
         logger.error(f"WS chat error: {e}", exc_info=True)
-        await manager.send_json(ws, {
-            "type": "error",
-            "content": f"Chat error: {str(e)}",
-        })
+        await manager.send_json(
+            ws,
+            {
+                "type": "error",
+                "content": f"Chat error: {str(e)}",
+            },
+        )
         stream_ended()
 
 
@@ -413,11 +445,14 @@ async def _handle_new_session(ws: WebSocket, user: User, db: Session):
     """Create a new empty session."""
     session = ChatService.create_session(db, user.id, title=None)
     record_session_created()
-    await manager.send_json(ws, {
-        "type": "session_created",
-        "session_id": str(session.id),
-        "title": session.title,
-    })
+    await manager.send_json(
+        ws,
+        {
+            "type": "session_created",
+            "session_id": str(session.id),
+            "title": session.title,
+        },
+    )
 
 
 async def _handle_list_sessions(
@@ -438,22 +473,25 @@ async def _handle_list_sessions(
         offset=offset,
     )
 
-    await manager.send_json(ws, {
-        "type": "sessions",
-        "sessions": [
-            {
-                "id": str(s.id),
-                "title": s.title,
-                "message_count": ChatService.get_message_count(db, s.id),
-                "created_at": s.created_at.isoformat(),
-                "updated_at": s.updated_at.isoformat(),
-            }
-            for s in sessions
-        ],
-        "total": total,
-        "page": page,
-        "page_size": page_size,
-    })
+    await manager.send_json(
+        ws,
+        {
+            "type": "sessions",
+            "sessions": [
+                {
+                    "id": str(s.id),
+                    "title": s.title,
+                    "message_count": ChatService.get_message_count(db, s.id),
+                    "created_at": s.created_at.isoformat(),
+                    "updated_at": s.updated_at.isoformat(),
+                }
+                for s in sessions
+            ],
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+        },
+    )
 
 
 async def _handle_get_session(
@@ -465,43 +503,52 @@ async def _handle_get_session(
     """Get a session with its messages."""
     session_id_str = data.get("session_id")
     if not session_id_str:
-        await manager.send_json(ws, {
-            "type": "error",
-            "content": "session_id is required",
-        })
+        await manager.send_json(
+            ws,
+            {
+                "type": "error",
+                "content": "session_id is required",
+            },
+        )
         return
 
     session_id = UUID(session_id_str)
     session = ChatService.get_session(db, session_id, user.id)
     if not session:
-        await manager.send_json(ws, {
-            "type": "error",
-            "content": "Session not found",
-        })
+        await manager.send_json(
+            ws,
+            {
+                "type": "error",
+                "content": "Session not found",
+            },
+        )
         return
 
     messages = ChatService.get_messages(db, session_id)
 
-    await manager.send_json(ws, {
-        "type": "session_detail",
-        "session": {
-            "id": str(session.id),
-            "title": session.title,
-            "messages": [
-                {
-                    "id": str(m.id),
-                    "role": m.role.value,
-                    "content": m.content,
-                    "tool_calls": m.tool_calls,
-                    "tool_name": m.tool_name,
-                    "created_at": m.created_at.isoformat(),
-                }
-                for m in messages
-            ],
-            "created_at": session.created_at.isoformat(),
-            "updated_at": session.updated_at.isoformat(),
+    await manager.send_json(
+        ws,
+        {
+            "type": "session_detail",
+            "session": {
+                "id": str(session.id),
+                "title": session.title,
+                "messages": [
+                    {
+                        "id": str(m.id),
+                        "role": m.role.value,
+                        "content": m.content,
+                        "tool_calls": m.tool_calls,
+                        "tool_name": m.tool_name,
+                        "created_at": m.created_at.isoformat(),
+                    }
+                    for m in messages
+                ],
+                "created_at": session.created_at.isoformat(),
+                "updated_at": session.updated_at.isoformat(),
+            },
         },
-    })
+    )
 
 
 async def _handle_delete_session(
@@ -513,30 +560,40 @@ async def _handle_delete_session(
     """Delete a chat session."""
     session_id_str = data.get("session_id")
     if not session_id_str:
-        await manager.send_json(ws, {
-            "type": "error",
-            "content": "session_id is required",
-        })
+        await manager.send_json(
+            ws,
+            {
+                "type": "error",
+                "content": "session_id is required",
+            },
+        )
         return
 
     session_id = UUID(session_id_str)
     success = ChatService.delete_session(db, session_id, user.id)
 
     if success:
-        await manager.send_json(ws, {
-            "type": "session_deleted",
-            "session_id": session_id_str,
-        })
+        await manager.send_json(
+            ws,
+            {
+                "type": "session_deleted",
+                "session_id": session_id_str,
+            },
+        )
     else:
-        await manager.send_json(ws, {
-            "type": "error",
-            "content": "Session not found",
-        })
+        await manager.send_json(
+            ws,
+            {
+                "type": "error",
+                "content": "Session not found",
+            },
+        )
 
 
 # ============================================================================
 # REST endpoints for connection info (admin)
 # ============================================================================
+
 
 @router.get("/status")
 async def ws_status():

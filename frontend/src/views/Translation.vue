@@ -1,158 +1,163 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { marked } from 'marked';
-import AppHeader from '@/components/layout/AppHeader.vue';
+import { ref, computed } from 'vue'
+import { marked } from 'marked'
+import AppHeader from '@/components/layout/AppHeader.vue'
 import {
-  translateByUrl,
-  translateByFile,
-  translateByText,
-  streamTranslationByUrl,
-  streamTranslationByFile,
-  streamTranslationByText,
+  useTranslationStore,
   type TranslationResponse,
   type OutputMode,
   type StreamEvent,
-} from '@/services/translation.service';
+} from '@/stores/translation'
 
-marked.setOptions({ breaks: true, gfm: true });
+const translationStore = useTranslationStore()
 
-const urlInput = ref('');
-const pastedText = ref('');
-const fileInput = ref<File | null>(null);
-const outputMode = ref<OutputMode>('chinese_only');
-const useStreaming = ref(true);
-const loading = ref(false);
-const error = ref<string | null>(null);
+marked.setOptions({ breaks: true, gfm: true })
 
-const translatedMarkdown = ref('');
-const explanation = ref('');
-const summary = ref('');
-const sourceTruncated = ref(false);
+const urlInput = ref('')
+const pastedText = ref('')
+const fileInput = ref<File | null>(null)
+const outputMode = ref<OutputMode>('chinese_only')
+const useStreaming = ref(true)
+const loading = ref(false)
+const error = ref<string | null>(null)
 
-const hasUrl = computed(() => !!urlInput.value?.trim());
-const hasPastedText = computed(() => !!pastedText.value?.trim());
-const hasFile = computed(() => !!fileInput.value);
+const translatedMarkdown = ref('')
+const explanation = ref('')
+const summary = ref('')
+const sourceTruncated = ref(false)
+
+const hasUrl = computed(() => !!urlInput.value?.trim())
+const hasPastedText = computed(() => !!pastedText.value?.trim())
+const hasFile = computed(() => !!fileInput.value)
 const canSubmit = computed(
   () =>
     (hasUrl.value && !hasFile.value && !hasPastedText.value) ||
     (hasFile.value && !hasUrl.value && !hasPastedText.value) ||
     (hasPastedText.value && !hasUrl.value && !hasFile.value)
-);
+)
 
 function onFileChange(e: Event) {
-  const target = e.target as HTMLInputElement;
-  fileInput.value = target.files?.[0] ?? null;
+  const target = e.target as HTMLInputElement
+  fileInput.value = target.files?.[0] ?? null
 }
 
 function clearResult() {
-  translatedMarkdown.value = '';
-  explanation.value = '';
-  summary.value = '';
-  sourceTruncated.value = false;
-  error.value = null;
+  translatedMarkdown.value = ''
+  explanation.value = ''
+  summary.value = ''
+  sourceTruncated.value = false
+  error.value = null
 }
 
 function buildFullMarkdown(): string {
-  const parts: string[] = [];
-  const hr = '\n\n---\n\n';
+  const parts: string[] = []
+  const hr = '\n\n---\n\n'
   if (translatedMarkdown.value) {
-    parts.push('# 翻译\n\n', translatedMarkdown.value);
+    parts.push('# 翻译\n\n', translatedMarkdown.value)
   }
   if (explanation.value) {
-    parts.push(hr, '# 解释\n\n', explanation.value);
+    parts.push(hr, '# 解释\n\n', explanation.value)
   }
   if (summary.value) {
-    parts.push(hr, '# 总结\n\n', summary.value);
+    parts.push(hr, '# 总结\n\n', summary.value)
   }
-  return parts.join('');
+  return parts.join('')
 }
 
 const fullMarkdownHtml = computed(() => {
-  const md = buildFullMarkdown();
-  return md ? marked(md) : '';
-});
+  const md = buildFullMarkdown()
+  return md ? marked(md) : ''
+})
 
 function downloadMarkdown() {
-  const md = buildFullMarkdown();
-  if (!md) return;
-  const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'translation.md';
-  a.click();
-  URL.revokeObjectURL(a.href);
+  const md = buildFullMarkdown()
+  if (!md) return
+  const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' })
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(blob)
+  a.download = 'translation.md'
+  a.click()
+  URL.revokeObjectURL(a.href)
 }
 
 async function runNonStreaming() {
-  clearResult();
-  loading.value = true;
-  error.value = null;
+  clearResult()
+  loading.value = true
+  error.value = null
   try {
-    let res: TranslationResponse;
+    let res: TranslationResponse
     if (hasUrl.value) {
-      res = await translateByUrl(urlInput.value.trim(), outputMode.value);
+      res = await translationStore.translateByUrl(urlInput.value.trim(), outputMode.value)
     } else if (hasPastedText.value) {
-      res = await translateByText(pastedText.value.trim(), outputMode.value);
+      res = await translationStore.translateByText(pastedText.value.trim(), outputMode.value)
     } else if (fileInput.value) {
-      res = await translateByFile(fileInput.value, outputMode.value);
+      res = await translationStore.translateByFile(fileInput.value, outputMode.value)
     } else {
-      throw new Error('Provide URL, pasted text, or file');
+      throw new Error('Provide URL, pasted text, or file')
     }
-    translatedMarkdown.value = res.translated_markdown;
-    explanation.value = res.explanation;
-    summary.value = res.summary;
-    sourceTruncated.value = res.source_truncated;
+    translatedMarkdown.value = res.translated_markdown
+    explanation.value = res.explanation
+    summary.value = res.summary
+    sourceTruncated.value = res.source_truncated
   } catch (e) {
-    error.value = e instanceof Error ? e.message : String(e);
+    error.value = e instanceof Error ? e.message : String(e)
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
 
 async function runStreaming() {
-  clearResult();
-  loading.value = true;
-  error.value = null;
+  clearResult()
+  loading.value = true
+  error.value = null
   try {
     const onEvent = (ev: StreamEvent) => {
       if (ev.event === 'token' && ev.data !== undefined) {
-        translatedMarkdown.value += ev.data;
+        translatedMarkdown.value += ev.data
       } else if (ev.event === 'explanation_token' && ev.data !== undefined) {
-        explanation.value += ev.data;
+        explanation.value += ev.data
       } else if (ev.event === 'explanation' && ev.data !== undefined) {
-        explanation.value = ev.data;
+        explanation.value = ev.data
       } else if (ev.event === 'summary_token' && ev.data !== undefined) {
-        summary.value += ev.data;
+        summary.value += ev.data
       } else if (ev.event === 'summary' && ev.data !== undefined) {
-        summary.value = ev.data;
+        summary.value = ev.data
       } else if (ev.event === 'done') {
-        if (ev.source_truncated) sourceTruncated.value = true;
+        if (ev.source_truncated) sourceTruncated.value = true
       } else if (ev.event === 'error' && ev.data) {
-        error.value = ev.data;
+        error.value = ev.data
       }
-    };
+    }
     if (hasUrl.value) {
-      await streamTranslationByUrl(urlInput.value.trim(), outputMode.value, onEvent);
+      await translationStore.streamTranslationByUrl(
+        urlInput.value.trim(),
+        outputMode.value,
+        onEvent
+      )
     } else if (hasPastedText.value) {
-      await streamTranslationByText(pastedText.value.trim(), outputMode.value, onEvent);
+      await translationStore.streamTranslationByText(
+        pastedText.value.trim(),
+        outputMode.value,
+        onEvent
+      )
     } else if (fileInput.value) {
-      await streamTranslationByFile(fileInput.value, outputMode.value, onEvent);
+      await translationStore.streamTranslationByFile(fileInput.value, outputMode.value, onEvent)
     } else {
-      throw new Error('Provide URL, pasted text, or file');
+      throw new Error('Provide URL, pasted text, or file')
     }
   } catch (e) {
-    error.value = e instanceof Error ? e.message : String(e);
+    error.value = e instanceof Error ? e.message : String(e)
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
 
 async function handleSubmit() {
-  if (!canSubmit.value) return;
+  if (!canSubmit.value) return
   if (useStreaming.value) {
-    await runStreaming();
+    await runStreaming()
   } else {
-    await runNonStreaming();
+    await runNonStreaming()
   }
 }
 </script>
@@ -190,14 +195,18 @@ async function handleSubmit() {
             />
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">或上传文件 (PDF / .txt / .md)</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >或上传文件 (PDF / .txt / .md)</label
+            >
             <input
               type="file"
               accept=".pdf,.txt,.md,application/pdf,text/plain,text/markdown"
               class="w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-primary-50 file:text-primary-700"
               @change="onFileChange"
             />
-            <p v-if="fileInput" class="mt-1 text-sm text-gray-500">{{ fileInput.name }}</p>
+            <p v-if="fileInput" class="mt-1 text-sm text-gray-500">
+              {{ fileInput.name }}
+            </p>
           </div>
           <div class="flex flex-wrap items-center gap-4">
             <div class="flex items-center gap-2">
@@ -224,7 +233,10 @@ async function handleSubmit() {
             {{ loading ? '翻译中…' : '开始翻译' }}
           </button>
         </div>
-        <p v-if="!canSubmit && (hasUrl || hasFile || hasPastedText)" class="mt-2 text-sm text-amber-600">
+        <p
+          v-if="!canSubmit && (hasUrl || hasFile || hasPastedText)"
+          class="mt-2 text-sm text-amber-600"
+        >
           请只选择一种输入方式：URL、粘贴文本或上传文件，不能同时使用多种。
         </p>
       </div>
@@ -235,7 +247,10 @@ async function handleSubmit() {
       </div>
 
       <!-- Result -->
-      <div v-if="translatedMarkdown || explanation || summary" class="bg-white rounded-lg shadow p-6">
+      <div
+        v-if="translatedMarkdown || explanation || summary"
+        class="bg-white rounded-lg shadow p-6"
+      >
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-lg font-semibold text-gray-900">翻译结果</h2>
           <button
@@ -247,10 +262,8 @@ async function handleSubmit() {
           </button>
         </div>
         <p v-if="sourceTruncated" class="text-sm text-amber-600 mb-2">（原文已截断）</p>
-        <div
-          class="prose prose-sm max-w-none translation-result"
-          v-html="fullMarkdownHtml"
-        />
+        <!-- eslint-disable-next-line vue/no-v-html -->
+        <div class="prose prose-sm max-w-none translation-result" v-html="fullMarkdownHtml" />
       </div>
     </main>
   </div>

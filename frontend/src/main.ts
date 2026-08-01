@@ -21,5 +21,3 @@ if (authStore.isAuthenticated) {
 }
 
 app.mount('#app')
-
-

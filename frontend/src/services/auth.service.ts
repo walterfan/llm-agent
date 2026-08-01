@@ -30,7 +30,7 @@ export const authService = {
     try {
       const response = await axios.post<{ access_token: string; refresh_token: string }>(
         '/api/v1/auth/refresh',
-        { refresh_token: refreshToken },
+        { refresh_token: refreshToken }
       )
       const { access_token, refresh_token: newRefreshToken } = response.data
       localStorage.setItem('access_token', access_token)
@@ -80,5 +80,3 @@ export const authService = {
     return !!this.getToken()
   },
 }
-
-

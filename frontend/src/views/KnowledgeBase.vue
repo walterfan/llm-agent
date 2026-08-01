@@ -1,73 +1,78 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import AppHeader from '@/components/layout/AppHeader.vue';
-import { useKnowledgeStore } from '@/stores/knowledge';
+import { ref, onMounted } from 'vue'
+import AppHeader from '@/components/layout/AppHeader.vue'
+import { useKnowledgeStore } from '@/stores/knowledge'
 
-const store = useKnowledgeStore();
+const store = useKnowledgeStore()
 
 // Upload form
-const showUploadForm = ref(false);
-const uploadTitle = ref('');
-const uploadContent = ref('');
-const uploadTags = ref('');
-const fileInput = ref<HTMLInputElement | null>(null);
+const showUploadForm = ref(false)
+const uploadTitle = ref('')
+const uploadContent = ref('')
+const uploadTags = ref('')
+const fileInput = ref<HTMLInputElement | null>(null)
 
 // Query
-const queryText = ref('');
+const queryText = ref('')
 
 onMounted(() => {
-  store.loadDocuments();
-  store.loadStats();
-});
+  store.loadDocuments()
+  store.loadStats()
+})
 
 async function uploadText() {
-  if (!uploadTitle.value.trim() || !uploadContent.value.trim()) return;
+  if (!uploadTitle.value.trim() || !uploadContent.value.trim()) return
 
   try {
     await store.uploadDocument({
       title: uploadTitle.value.trim(),
       content: uploadContent.value.trim(),
-      tags: uploadTags.value ? uploadTags.value.split(',').map(t => t.trim()).filter(Boolean) : [],
-    });
-    uploadTitle.value = '';
-    uploadContent.value = '';
-    uploadTags.value = '';
-    showUploadForm.value = false;
-    store.loadStats();
+      tags: uploadTags.value
+        ? uploadTags.value
+            .split(',')
+            .map((t) => t.trim())
+            .filter(Boolean)
+        : [],
+    })
+    uploadTitle.value = ''
+    uploadContent.value = ''
+    uploadTags.value = ''
+    showUploadForm.value = false
+    store.loadStats()
   } catch (e) {
     // Error handled in store
   }
 }
 
 async function uploadFile(event: Event) {
-  const target = event.target as HTMLInputElement;
-  const file = target.files?.[0];
-  if (!file) return;
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
 
   try {
-    await store.uploadFile(file);
-    target.value = '';
-    await store.loadDocuments();
-    await store.loadStats();
+    await store.uploadFile(file)
+    target.value = ''
+    await store.loadDocuments()
+    await store.loadStats()
   } catch (e) {
     // Error handled in store
   }
 }
 
 async function deleteDoc(docId: string) {
-  if (!confirm('确定要删除这个文档吗？')) return;
+  if (!confirm('确定要删除这个文档吗？')) return
   try {
-    await store.deleteDocument(docId);
-    store.loadStats();
+    await store.deleteDocument(docId)
+    store.loadStats()
   } catch (e) {
     // Error handled in store
   }
 }
 
 async function search() {
-  if (!queryText.value.trim()) return;
+  if (!queryText.value.trim()) return
   try {
-    await store.queryKnowledge(queryText.value.trim());
+    await store.queryKnowledge(queryText.value.trim())
   } catch (e) {
     // Error handled in store
   }
@@ -75,9 +80,12 @@ async function search() {
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('zh-CN', {
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit',
-  });
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }
 </script>
 
@@ -89,7 +97,9 @@ function formatDate(dateStr: string) {
       <div class="mb-6 flex items-center justify-between">
         <div>
           <h1 class="text-2xl font-bold text-gray-900">📚 知识库</h1>
-          <p class="text-gray-600 mt-1">上传文档，构建你的个人知识库，AI 教练会基于这些内容回答问题</p>
+          <p class="text-gray-600 mt-1">
+            上传文档，构建你的个人知识库，AI 教练会基于这些内容回答问题
+          </p>
         </div>
         <button
           class="px-3 py-2 rounded-md bg-primary-600 text-white text-sm hover:bg-primary-700"
@@ -102,19 +112,27 @@ function formatDate(dateStr: string) {
       <!-- Stats -->
       <div v-if="store.stats" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div class="bg-white rounded-lg shadow p-4 text-center">
-          <div class="text-2xl font-bold text-primary-600">{{ store.stats.total_documents }}</div>
+          <div class="text-2xl font-bold text-primary-600">
+            {{ store.stats.total_documents }}
+          </div>
           <div class="text-sm text-gray-500">文档数</div>
         </div>
         <div class="bg-white rounded-lg shadow p-4 text-center">
-          <div class="text-2xl font-bold text-primary-600">{{ store.stats.total_words.toLocaleString() }}</div>
+          <div class="text-2xl font-bold text-primary-600">
+            {{ store.stats.total_words.toLocaleString() }}
+          </div>
           <div class="text-sm text-gray-500">总字数</div>
         </div>
         <div class="bg-white rounded-lg shadow p-4 text-center">
-          <div class="text-2xl font-bold text-primary-600">{{ store.stats.total_chunks }}</div>
+          <div class="text-2xl font-bold text-primary-600">
+            {{ store.stats.total_chunks }}
+          </div>
           <div class="text-sm text-gray-500">知识块</div>
         </div>
         <div class="bg-white rounded-lg shadow p-4 text-center">
-          <div class="text-2xl font-bold text-primary-600">{{ Object.keys(store.stats.tags || {}).length }}</div>
+          <div class="text-2xl font-bold text-primary-600">
+            {{ Object.keys(store.stats.tags || {}).length }}
+          </div>
           <div class="text-sm text-gray-500">标签数</div>
         </div>
       </div>
@@ -197,27 +215,28 @@ function formatDate(dateStr: string) {
         </div>
 
         <!-- Query message (e.g. RAG unavailable) -->
-        <div v-if="store.queryMessage" class="mt-4 p-3 rounded border border-amber-200 bg-amber-50 text-amber-800 text-sm">
+        <div
+          v-if="store.queryMessage"
+          class="mt-4 p-3 rounded border border-amber-200 bg-amber-50 text-amber-800 text-sm"
+        >
           {{ store.queryMessage }}
         </div>
 
         <!-- Query Results -->
         <div v-if="store.hasQueryResults" class="mt-4 space-y-3">
-          <h3 class="text-sm font-medium text-gray-700">搜索结果 ({{ store.queryResults.length }})</h3>
-          <div
-            v-for="(r, idx) in store.queryResults"
-            :key="idx"
-            class="border rounded-lg p-3"
-          >
+          <h3 class="text-sm font-medium text-gray-700">
+            搜索结果 ({{ store.queryResults.length }})
+          </h3>
+          <div v-for="(r, idx) in store.queryResults" :key="idx" class="border rounded-lg p-3">
             <div class="flex items-center justify-between mb-1">
               <span class="text-sm font-medium text-gray-900">
                 {{ r.metadata?.title || '未知文档' }}
               </span>
-              <span class="text-xs text-gray-500">
-                相关度: {{ (r.score * 100).toFixed(0) }}%
-              </span>
+              <span class="text-xs text-gray-500"> 相关度: {{ (r.score * 100).toFixed(0) }}% </span>
             </div>
-            <p class="text-sm text-gray-600 whitespace-pre-wrap">{{ r.content }}</p>
+            <p class="text-sm text-gray-600 whitespace-pre-wrap">
+              {{ r.content }}
+            </p>
           </div>
         </div>
       </div>
@@ -244,7 +263,9 @@ function formatDate(dateStr: string) {
             class="p-4 flex items-center justify-between hover:bg-gray-50"
           >
             <div class="flex-1 min-w-0">
-              <div class="font-medium text-gray-900 truncate">{{ doc.title }}</div>
+              <div class="font-medium text-gray-900 truncate">
+                {{ doc.title }}
+              </div>
               <div class="text-sm text-gray-500 mt-1">
                 {{ doc.word_count.toLocaleString() }} 字 · {{ formatDate(doc.created_at) }}
                 <span v-if="doc.tags && doc.tags.length > 0" class="ml-2">
@@ -258,10 +279,7 @@ function formatDate(dateStr: string) {
                 </span>
               </div>
             </div>
-            <button
-              class="ml-4 text-red-500 hover:text-red-700 text-sm"
-              @click="deleteDoc(doc.id)"
-            >
+            <button class="ml-4 text-red-500 hover:text-red-700 text-sm" @click="deleteDoc(doc.id)">
               删除
             </button>
           </div>
@@ -269,7 +287,10 @@ function formatDate(dateStr: string) {
       </div>
 
       <!-- Error -->
-      <div v-if="store.error" class="mt-4 p-3 rounded border border-red-200 bg-red-50 text-red-700 text-sm">
+      <div
+        v-if="store.error"
+        class="mt-4 p-3 rounded border border-red-200 bg-red-50 text-red-700 text-sm"
+      >
         {{ store.error }}
       </div>
     </main>

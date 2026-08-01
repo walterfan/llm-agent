@@ -19,11 +19,13 @@ PROMPTS_DIR = Path(__file__).parent / "prompts"
 
 class PromptNotFoundError(Exception):
     """Raised when a prompt template is not found."""
+
     pass
 
 
 class PromptVariableError(Exception):
     """Raised when required prompt variables are missing."""
+
     pass
 
 

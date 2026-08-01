@@ -168,9 +168,7 @@ class SchedulerService:
             max_instances=1,
         )
 
-        logger.info(
-            f"📋 Registered {len(self._scheduler.get_jobs())} default jobs"
-        )
+        logger.info(f"📋 Registered {len(self._scheduler.get_jobs())} default jobs")
 
     # ========================================================================
     # Dynamic job management
@@ -304,7 +302,11 @@ class SchedulerService:
         entry = {
             "job_id": event.job_id,
             "status": "success",
-            "scheduled_at": event.scheduled_run_time.isoformat() if event.scheduled_run_time else None,
+            "scheduled_at": (
+                event.scheduled_run_time.isoformat()
+                if event.scheduled_run_time
+                else None
+            ),
             "executed_at": datetime.now().isoformat(),
             "retval": str(event.retval)[:200] if event.retval else None,
         }
@@ -320,7 +322,11 @@ class SchedulerService:
         entry = {
             "job_id": event.job_id,
             "status": "error",
-            "scheduled_at": event.scheduled_run_time.isoformat() if event.scheduled_run_time else None,
+            "scheduled_at": (
+                event.scheduled_run_time.isoformat()
+                if event.scheduled_run_time
+                else None
+            ),
             "executed_at": datetime.now().isoformat(),
             "error": str(event.exception)[:500] if event.exception else "Unknown error",
         }
@@ -335,7 +341,11 @@ class SchedulerService:
         entry = {
             "job_id": event.job_id,
             "status": "missed",
-            "scheduled_at": event.scheduled_run_time.isoformat() if event.scheduled_run_time else None,
+            "scheduled_at": (
+                event.scheduled_run_time.isoformat()
+                if event.scheduled_run_time
+                else None
+            ),
             "executed_at": datetime.now().isoformat(),
         }
         self._job_history.append(entry)

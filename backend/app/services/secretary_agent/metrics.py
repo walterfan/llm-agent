@@ -144,15 +144,18 @@ AGENT_INFO = Info(
 )
 
 # Initialize agent info
-AGENT_INFO.info({
-    "version": "1.0.0",
-    "framework": "langchain",
-})
+AGENT_INFO.info(
+    {
+        "version": "1.0.0",
+        "framework": "langchain",
+    }
+)
 
 
 # ============================================================================
 # Metric Helper Functions
 # ============================================================================
+
 
 def record_chat_request(method: str, status: str, duration: float):
     """Record metrics for a chat request."""
@@ -181,7 +184,7 @@ def record_llm_call(
     """Record metrics for an LLM call."""
     LLM_CALLS_TOTAL.labels(model=model, status=status).inc()
     LLM_CALL_DURATION.labels(model=model).observe(duration)
-    
+
     if prompt_tokens > 0:
         LLM_TOKENS_TOTAL.labels(model=model, type="prompt").inc(prompt_tokens)
     if completion_tokens > 0:
@@ -241,6 +244,7 @@ def stream_ended():
 # Decorators
 # ============================================================================
 
+
 @contextmanager
 def track_chat_request(method: str = "non-streaming"):
     """Context manager to track chat request metrics."""
@@ -270,6 +274,7 @@ def track_streaming():
 
 def track_tool(tool_name: str):
     """Decorator to track tool call metrics."""
+
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         async def async_wrapper(*args, **kwargs):
@@ -285,7 +290,7 @@ def track_tool(tool_name: str):
             finally:
                 duration = time.time() - start_time
                 record_tool_call(tool_name, status, duration)
-        
+
         @wraps(func)
         def sync_wrapper(*args, **kwargs):
             start_time = time.time()
@@ -300,17 +305,19 @@ def track_tool(tool_name: str):
             finally:
                 duration = time.time() - start_time
                 record_tool_call(tool_name, status, duration)
-        
+
         import asyncio
+
         if asyncio.iscoroutinefunction(func):
             return async_wrapper
         return sync_wrapper
-    
+
     return decorator
 
 
 def track_llm(model: str = "unknown"):
     """Decorator to track LLM call metrics."""
+
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         async def async_wrapper(*args, **kwargs):
@@ -324,7 +331,7 @@ def track_llm(model: str = "unknown"):
                 if hasattr(result, "usage"):
                     prompt_tokens = getattr(result.usage, "prompt_tokens", 0)
                     completion_tokens = getattr(result.usage, "completion_tokens", 0)
-                
+
                 record_llm_call(
                     model=model,
                     status=status,
@@ -341,7 +348,7 @@ def track_llm(model: str = "unknown"):
                     duration=time.time() - start_time,
                 )
                 raise
-        
+
         @wraps(func)
         def sync_wrapper(*args, **kwargs):
             start_time = time.time()
@@ -362,10 +369,11 @@ def track_llm(model: str = "unknown"):
                     duration=time.time() - start_time,
                 )
                 raise
-        
+
         import asyncio
+
         if asyncio.iscoroutinefunction(func):
             return async_wrapper
         return sync_wrapper
-    
+
     return decorator

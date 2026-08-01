@@ -3,4 +3,3 @@
 from app.services.philosophy_master_agent.service import PhilosophyMasterService
 
 __all__ = ["PhilosophyMasterService"]
-

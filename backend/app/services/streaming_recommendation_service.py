@@ -44,14 +44,11 @@ class StreamingRecommendationService:
         self.weather_provider = WeatherProviderFactory.create(
             provider_type=settings.WEATHER_PROVIDER,
             base_url=settings.WEATHER_BASE_URL,
-            api_key=settings.WEATHER_API_KEY
+            api_key=settings.WEATHER_API_KEY,
         )
 
     async def generate_recommendation_stream(
-        self,
-        user: User,
-        city: str,
-        date: str | None = None
+        self, user: User, city: str, date: str | None = None
     ) -> AsyncIterator[str]:
         """
         Generate a streaming dress recommendation.
@@ -72,15 +69,16 @@ class StreamingRecommendationService:
         """
         try:
             # Send start event
-            yield self._format_sse(StreamStartEvent(
-                message=f"正在为{user.full_name or '您'}生成穿衣建议..."
-            ))
+            yield self._format_sse(
+                StreamStartEvent(
+                    message=f"正在为{user.full_name or '您'}生成穿衣建议..."
+                )
+            )
 
             # Step 1: Get weather data
-            yield self._format_sse(StreamDataEvent(
-                field="status",
-                value="正在获取天气数据..."
-            ))
+            yield self._format_sse(
+                StreamDataEvent(field="status", value="正在获取天气数据...")
+            )
 
             # Resolve city to AD code
             city_obj = CityService.get_by_ad_code(self.db, city)
@@ -94,39 +92,33 @@ class StreamingRecommendationService:
 
             # Fetch weather
             weather_data = await self.weather_provider.fetch_weather(
-                city_obj.ad_code,
-                extensions="base"
+                city_obj.ad_code, extensions="base"
             )
 
             # Send weather data
-            yield self._format_sse(StreamDataEvent(
-                field="weather",
-                value={
-                    "city": weather_data.city,
-                    "temperature": weather_data.temperature_float,
-                    "weather": weather_data.weather,
-                    "humidity": weather_data.humidity_float,
-                }
-            ))
-
-            # Step 2: Build prompt
-            prompt = self.recommendation_service._build_prompt(
-                user,
-                weather_data,
-                date
+            yield self._format_sse(
+                StreamDataEvent(
+                    field="weather",
+                    value={
+                        "city": weather_data.city,
+                        "temperature": weather_data.temperature_float,
+                        "weather": weather_data.weather,
+                        "humidity": weather_data.humidity_float,
+                    },
+                )
             )
 
-            yield self._format_sse(StreamDataEvent(
-                field="status",
-                value="正在生成AI推荐..."
-            ))
+            # Step 2: Build prompt
+            prompt = self.recommendation_service._build_prompt(user, weather_data, date)
+
+            yield self._format_sse(
+                StreamDataEvent(field="status", value="正在生成AI推荐...")
+            )
 
             # Step 3: Stream LLM response
             full_response = ""
             async for token in self.llm_provider.generate_completion_stream(
-                prompt,
-                temperature=0.7,
-                max_tokens=500
+                prompt, temperature=0.7, max_tokens=500
             ):
                 full_response += token
                 yield self._format_sse(StreamTokenEvent(content=token))
@@ -136,23 +128,20 @@ class StreamingRecommendationService:
                 # Try to extract structured data from the response
                 # This is a simplified version - you might want more robust parsing
                 recommendation_id = await self._save_recommendation(
-                    user,
-                    city_obj.ad_code,
-                    weather_data,
-                    prompt,
-                    full_response
+                    user, city_obj.ad_code, weather_data, prompt, full_response
                 )
 
-                yield self._format_sse(StreamDoneEvent(
-                    message="推荐生成完成！",
-                    recommendation_id=recommendation_id
-                ))
+                yield self._format_sse(
+                    StreamDoneEvent(
+                        message="推荐生成完成！", recommendation_id=recommendation_id
+                    )
+                )
 
             except Exception as e:
                 logger.warning(f"Failed to save streaming recommendation: {e}")
-                yield self._format_sse(StreamDoneEvent(
-                    message="推荐生成完成（未保存）"
-                ))
+                yield self._format_sse(
+                    StreamDoneEvent(message="推荐生成完成（未保存）")
+                )
 
         except ValueError as e:
             logger.error(f"Validation error in streaming: {e}")
@@ -160,9 +149,9 @@ class StreamingRecommendationService:
 
         except Exception as e:
             logger.error(f"Error in streaming recommendation: {e}")
-            yield self._format_sse(StreamErrorEvent(
-                message="抱歉，推荐服务暂时不可用，请稍后再试。"
-            ))
+            yield self._format_sse(
+                StreamErrorEvent(message="抱歉，推荐服务暂时不可用，请稍后再试。")
+            )
 
     async def generate_recommendation_stream_3days(
         self,
@@ -185,14 +174,15 @@ class StreamingRecommendationService:
         - done: stream completed
         """
         try:
-            yield self._format_sse(StreamStartEvent(
-                message=f"正在为{user.full_name or '您'}生成未来3天穿衣建议..."
-            ))
+            yield self._format_sse(
+                StreamStartEvent(
+                    message=f"正在为{user.full_name or '您'}生成未来3天穿衣建议..."
+                )
+            )
 
-            yield self._format_sse(StreamDataEvent(
-                field="status",
-                value="正在获取未来3天天气预报..."
-            ))
+            yield self._format_sse(
+                StreamDataEvent(field="status", value="正在获取未来3天天气预报...")
+            )
 
             # Resolve city to AD code
             city_obj = CityService.get_by_ad_code(self.db, city)
@@ -206,20 +196,28 @@ class StreamingRecommendationService:
             days = max(1, min(int(days), 3))
 
             # Fetch N-day forecast via WeatherHelper (uses extensions="all")
-            forecasts = await WeatherHelper(self.db).get_forecast(city_obj.ad_code, days=days)
+            forecasts = await WeatherHelper(self.db).get_forecast(
+                city_obj.ad_code, days=days
+            )
             if not forecasts:
                 raise ValueError(f"城市 '{city_obj.ad_code}' 没有可用的天气预报数据")
 
-            city_display = getattr(city_obj, "display_name", None) or getattr(city_obj, "location_name_zh", None) or city_obj.ad_code
+            city_display = (
+                getattr(city_obj, "display_name", None)
+                or getattr(city_obj, "location_name_zh", None)
+                or city_obj.ad_code
+            )
 
-            yield self._format_sse(StreamDataEvent(
-                field="forecast",
-                value={
-                    "city": city_display,
-                    "ad_code": city_obj.ad_code,
-                    "days": len(forecasts),
-                }
-            ))
+            yield self._format_sse(
+                StreamDataEvent(
+                    field="forecast",
+                    value={
+                        "city": city_display,
+                        "ad_code": city_obj.ad_code,
+                        "days": len(forecasts),
+                    },
+                )
+            )
 
             recommendation_ids: list[str] = []
 
@@ -228,23 +226,26 @@ class StreamingRecommendationService:
                 date_label = forecast.get("date_label", f"+{day_index}天")
                 forecast_date = forecast.get("date") or (dt_date.today().isoformat())
 
-                yield self._format_sse(StreamDataEvent(
-                    field="status",
-                    value=f"正在生成{date_label}推荐..."
-                ))
+                yield self._format_sse(
+                    StreamDataEvent(
+                        field="status", value=f"正在生成{date_label}推荐..."
+                    )
+                )
 
                 # Mark day boundary so the client can group subsequent tokens
-                yield self._format_sse(StreamDataEvent(
-                    field="day",
-                    value={
-                        "index": day_index,
-                        "date": forecast_date,
-                        "label": date_label,
-                        "weather_text": forecast.get("weather_text"),
-                        "temperature_low": forecast.get("temperature_low"),
-                        "temperature_high": forecast.get("temperature_high"),
-                    }
-                ))
+                yield self._format_sse(
+                    StreamDataEvent(
+                        field="day",
+                        value={
+                            "index": day_index,
+                            "date": forecast_date,
+                            "label": date_label,
+                            "weather_text": forecast.get("weather_text"),
+                            "temperature_low": forecast.get("temperature_low"),
+                            "temperature_high": forecast.get("temperature_high"),
+                        },
+                    )
+                )
 
                 # Build multi-day prompt for this day and stream tokens
                 prompt = self.recommendation_service._build_multi_day_prompt(
@@ -276,38 +277,50 @@ class StreamingRecommendationService:
                     )
                     recommendation_ids.append(saved_id)
                 except Exception as e:
-                    logger.warning(f"Failed to save 3-day streaming recommendation ({date_label}): {e}")
+                    logger.warning(
+                        f"Failed to save 3-day streaming recommendation ({date_label}): {e}"
+                    )
 
-                yield self._format_sse(StreamDataEvent(
-                    field="day_done",
-                    value={
-                        "index": day_index,
-                        "label": date_label,
-                        "recommendation_id": saved_id,
-                    }
-                ))
+                yield self._format_sse(
+                    StreamDataEvent(
+                        field="day_done",
+                        value={
+                            "index": day_index,
+                            "label": date_label,
+                            "recommendation_id": saved_id,
+                        },
+                    )
+                )
 
             # Provide list of IDs (if any) and finish
             if recommendation_ids:
-                yield self._format_sse(StreamDataEvent(
-                    field="recommendation_ids",
-                    value=recommendation_ids
-                ))
+                yield self._format_sse(
+                    StreamDataEvent(
+                        field="recommendation_ids", value=recommendation_ids
+                    )
+                )
 
-            yield self._format_sse(StreamDoneEvent(
-                message="未来3天推荐生成完成！"
-            ))
+            yield self._format_sse(StreamDoneEvent(message="未来3天推荐生成完成！"))
 
         except ValueError as e:
             logger.error(f"Validation error in 3-day streaming: {e}")
             yield self._format_sse(StreamErrorEvent(message=str(e)))
         except Exception as e:
             logger.error(f"Error in 3-day streaming recommendation: {e}")
-            yield self._format_sse(StreamErrorEvent(
-                message="抱歉，推荐服务暂时不可用，请稍后再试。"
-            ))
+            yield self._format_sse(
+                StreamErrorEvent(message="抱歉，推荐服务暂时不可用，请稍后再试。")
+            )
 
-    def _format_sse(self, event: StreamStartEvent | StreamTokenEvent | StreamDataEvent | StreamErrorEvent | StreamDoneEvent) -> str:
+    def _format_sse(
+        self,
+        event: (
+            StreamStartEvent
+            | StreamTokenEvent
+            | StreamDataEvent
+            | StreamErrorEvent
+            | StreamDoneEvent
+        ),
+    ) -> str:
         """Format an event as Server-Sent Event."""
         return f"data: {event.model_dump_json()}\n\n"
 
@@ -327,7 +340,9 @@ class StreamingRecommendationService:
         """
         # Forecast date is already included in forecast dict from WeatherHelper
         forecast_date_str = forecast.get("date")
-        forecast_date = dt_date.fromisoformat(forecast_date_str) if forecast_date_str else None
+        forecast_date = (
+            dt_date.fromisoformat(forecast_date_str) if forecast_date_str else None
+        )
 
         recommendation = Recommendation(
             user_id=user.id,
@@ -355,7 +370,7 @@ class StreamingRecommendationService:
         city_ad_code: str,
         weather_data,
         prompt: str,
-        response_text: str
+        response_text: str,
     ) -> str:
         """
         Save streaming recommendation to database.
@@ -389,15 +404,14 @@ class StreamingRecommendationService:
                 "raw_text": response_text,
                 "clothing_items": [],  # Would need parsing
                 "advice": response_text,
-                "generated_at": datetime.utcnow().isoformat()
+                "generated_at": datetime.utcnow().isoformat(),
             },
             cost_estimate=None,
             tokens_used=None,
-            created_at=datetime.utcnow()
+            created_at=datetime.utcnow(),
         )
 
         self.db.add(recommendation)
         self.db.commit()
 
         return recommendation_id
-

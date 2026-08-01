@@ -1,10 +1,9 @@
 import axios, { type AxiosInstance, type AxiosError, type InternalAxiosRequestConfig } from 'axios'
-import { authService } from './auth.service'
 
 // Create axios instance with default config
 const api: AxiosInstance = axios.create({
   baseURL: '/api/v1',
-  timeout: 10000,
+  timeout: 60000, // 60 seconds - increased for LLM operations (compile, reasoning)
   headers: {
     'Content-Type': 'application/json',
   },
@@ -69,10 +68,19 @@ api.interceptors.response.use(
       isRefreshing = true
 
       try {
-        const result = await authService.refreshToken()
-        if (result) {
+        // Refresh token using standalone axios to avoid interceptor recursion
+        const refreshToken = localStorage.getItem('refresh_token')
+        if (refreshToken) {
+          const response = await axios.post<{ access_token: string; refresh_token: string }>(
+            '/api/v1/auth/refresh',
+            { refresh_token: refreshToken }
+          )
+          const { access_token, refresh_token: newRefreshToken } = response.data
+          localStorage.setItem('access_token', access_token)
+          localStorage.setItem('refresh_token', newRefreshToken)
+
           // Refresh succeeded — retry original request and queued requests
-          originalRequest.headers.Authorization = `Bearer ${result.access_token}`
+          originalRequest.headers.Authorization = `Bearer ${access_token}`
           processQueue(null)
           return api(originalRequest)
         }
@@ -85,7 +93,9 @@ api.interceptors.response.use(
 
     // Refresh failed or not applicable — clear auth and redirect to login
     if (error.response?.status === 401) {
-      authService.clearAuth()
+      localStorage.removeItem('access_token')
+      localStorage.removeItem('refresh_token')
+      localStorage.removeItem('user')
       if (window.location.pathname !== '/signin') {
         window.location.href = '/signin'
       }

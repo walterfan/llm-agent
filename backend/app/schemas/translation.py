@@ -16,7 +16,9 @@ class TranslationUrlRequest(BaseModel):
 class TranslationResponse(BaseModel):
     """Response body for non-streaming translation."""
 
-    translated_markdown: str = Field(..., description="Translated content (Chinese or bilingual)")
+    translated_markdown: str = Field(
+        ..., description="Translated content (Chinese or bilingual)"
+    )
     explanation: str = Field(..., description="Key terms and context explanation")
     summary: str = Field(..., description="Concise summary in Chinese")
     source_truncated: bool = Field(

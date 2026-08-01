@@ -7,7 +7,9 @@ from pydantic import BaseModel
 class LLMProvider(ABC):
     """Abstract base class for LLM providers."""
 
-    def __init__(self, base_url: str, api_key: str, model: str, verify_ssl: bool = True):
+    def __init__(
+        self, base_url: str, api_key: str, model: str, verify_ssl: bool = True
+    ):
         """
         Initialize LLM provider.
 
@@ -34,7 +36,7 @@ class LLMProvider(ABC):
         prompt: str,
         response_model: type[BaseModel],
         max_retries: int = 3,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> BaseModel:
         """
         Generate a structured completion.
@@ -51,9 +53,7 @@ class LLMProvider(ABC):
         pass
 
     async def generate_completion_stream(
-        self,
-        prompt: str,
-        **kwargs: Any
+        self, prompt: str, **kwargs: Any
     ) -> AsyncIterator[str]:
         """
         Generate a streaming completion (token-by-token).

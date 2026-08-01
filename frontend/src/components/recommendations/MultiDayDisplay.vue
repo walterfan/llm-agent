@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import type { DailyRecommendation } from '@/types/recommendation';
+import { ref } from 'vue'
+import type { DailyRecommendation } from '@/types/recommendation'
 
 // Props are used in the template
 defineProps<{
-  dailyRecommendations: DailyRecommendation[];
-}>();
+  dailyRecommendations: DailyRecommendation[]
+}>()
 
-const activeTab = ref<number>(0);
+const activeTab = ref<number>(0)
 
 function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
+  const date = new Date(dateStr)
   return date.toLocaleDateString('zh-CN', {
     month: 'long',
     day: 'numeric',
-  });
+  })
 }
 </script>
 
@@ -26,17 +26,21 @@ function formatDate(dateStr: string): string {
         <button
           v-for="(day, index) in dailyRecommendations"
           :key="index"
-          @click="activeTab = index"
           :class="[
             'px-4 py-3 text-sm font-medium border-b-2 transition-colors',
             activeTab === index
               ? 'border-blue-500 text-blue-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
           ]"
+          @click="activeTab = index"
         >
           <div class="text-center">
-            <div class="font-bold">{{ day.date_label }}</div>
-            <div class="text-xs mt-1">{{ formatDate(day.date) }}</div>
+            <div class="font-bold">
+              {{ day.date_label }}
+            </div>
+            <div class="text-xs mt-1">
+              {{ formatDate(day.date) }}
+            </div>
           </div>
         </button>
       </nav>
@@ -45,8 +49,8 @@ function formatDate(dateStr: string): string {
     <!-- Tab Content -->
     <div
       v-for="(day, index) in dailyRecommendations"
-      :key="index"
       v-show="activeTab === index"
+      :key="index"
       class="tab-content"
     >
       <div class="bg-white rounded-xl shadow-lg p-6">
@@ -57,7 +61,9 @@ function formatDate(dateStr: string): string {
               <h3 class="text-xl font-bold text-gray-900 mb-1">
                 {{ day.date_label }} · {{ formatDate(day.date) }}
               </h3>
-              <p class="text-gray-600">{{ day.weather_summary }}</p>
+              <p class="text-gray-600">
+                {{ day.weather_summary }}
+              </p>
             </div>
             <div class="text-4xl">
               {{ day.recommendation.emoji_summary || '👔' }}
@@ -97,7 +103,9 @@ function formatDate(dateStr: string): string {
 
         <!-- Weather Warnings -->
         <div
-          v-if="day.recommendation.weather_warnings && day.recommendation.weather_warnings.length > 0"
+          v-if="
+            day.recommendation.weather_warnings && day.recommendation.weather_warnings.length > 0
+          "
           class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded"
         >
           <div class="flex items-start">
@@ -136,4 +144,3 @@ function formatDate(dateStr: string): string {
   }
 }
 </style>
-

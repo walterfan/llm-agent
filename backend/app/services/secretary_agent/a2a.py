@@ -23,11 +23,13 @@ from pydantic import BaseModel, Field
 
 class A2AProtocol(str, Enum):
     """Protocol version for A2A messages."""
+
     V1 = "a2a.v1"
 
 
 class A2AStatus(str, Enum):
     """Status of an A2A message/response."""
+
     OK = "ok"
     ERROR = "error"
     PARTIAL = "partial"  # partial result (e.g., streaming)
@@ -38,6 +40,7 @@ class A2AStatus(str, Enum):
 
 class A2AErrorType(str, Enum):
     """Classification of errors for retry strategy decisions."""
+
     VALIDATION_ERROR = "VALIDATION_ERROR"  # bad input, don't retry
     TOOL_ERROR = "TOOL_ERROR"  # tool failed, may retry
     LLM_ERROR = "LLM_ERROR"  # LLM failed, may retry with backoff
@@ -47,6 +50,7 @@ class A2AErrorType(str, Enum):
 
 class A2AError(BaseModel):
     """Structured error information for A2A messages."""
+
     type: A2AErrorType
     message: str
     retryable: bool = False
@@ -55,6 +59,7 @@ class A2AError(BaseModel):
 
 class A2AArtifact(BaseModel):
     """Artifact produced by a SubAgent."""
+
     type: str  # e.g., "markdown", "json", "image"
     path: Optional[str] = None  # file path if saved
     content: Optional[str] = None  # inline content if small
@@ -62,6 +67,7 @@ class A2AArtifact(BaseModel):
 
 class A2AMetrics(BaseModel):
     """Performance metrics for an A2A interaction."""
+
     latency_ms: float
     tokens_in: Optional[int] = None
     tokens_out: Optional[int] = None
@@ -84,12 +90,11 @@ class A2AMessage(BaseModel):
             input={"word": "serendipity"},
         )
     """
+
     protocol: A2AProtocol = A2AProtocol.V1
     id: str = Field(default_factory=lambda: f"msg_{uuid4().hex[:12]}")
     correlation_id: Optional[str] = None  # trace_id from tracing module
-    timestamp: str = Field(
-        default_factory=lambda: datetime.utcnow().isoformat() + "Z"
-    )
+    timestamp: str = Field(default_factory=lambda: datetime.utcnow().isoformat() + "Z")
 
     # Routing
     sender: str  # e.g., "supervisor", "learning_agent"

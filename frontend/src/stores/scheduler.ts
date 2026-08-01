@@ -5,12 +5,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { schedulerService } from '@/services/scheduler.service'
-import type {
-  ScheduledJob,
-  JobType,
-  JobHistoryEntry,
-  AddJobRequest,
-} from '@/types/scheduler'
+import type { ScheduledJob, JobType, JobHistoryEntry, AddJobRequest } from '@/types/scheduler'
 
 export const useSchedulerStore = defineStore('scheduler', () => {
   // ========== State ==========
@@ -52,13 +47,17 @@ export const useSchedulerStore = defineStore('scheduler', () => {
     error.value = msg
     successMessage.value = null
     // Auto-clear after 5s
-    setTimeout(() => { if (error.value === msg) error.value = null }, 5000)
+    setTimeout(() => {
+      if (error.value === msg) error.value = null
+    }, 5000)
   }
 
   function setSuccess(msg: string) {
     successMessage.value = msg
     error.value = null
-    setTimeout(() => { if (successMessage.value === msg) successMessage.value = null }, 3000)
+    setTimeout(() => {
+      if (successMessage.value === msg) successMessage.value = null
+    }, 3000)
   }
 
   async function fetchJobs() {

@@ -38,7 +38,7 @@ class LLMProviderFactory:
         model: str,
         verify_ssl: bool = True,
         timeout: int = 30,
-        **kwargs
+        **kwargs,
     ) -> LLMProvider:
         """
         Get an LLM provider instance by type.
@@ -71,6 +71,5 @@ class LLMProviderFactory:
             model=model,
             verify_ssl=verify_ssl,
             timeout=timeout,
-            **kwargs
+            **kwargs,
         )
-

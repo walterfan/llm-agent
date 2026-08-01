@@ -36,12 +36,14 @@ router = APIRouter()
 
 class ExportRequest(BaseModel):
     """Request body for export endpoint."""
+
     tables: Optional[list[str]] = None
     exclude_tables: Optional[list[str]] = None
 
 
 class ImportResponse(BaseModel):
     """Response for import endpoint."""
+
     imported: dict[str, int]
     skipped: dict[str, int]
     updated: dict[str, int]
@@ -54,6 +56,7 @@ class ImportResponse(BaseModel):
 
 class BackupInfo(BaseModel):
     """Backup file information."""
+
     filename: str
     path: str
     type: str
@@ -65,6 +68,7 @@ class BackupInfo(BaseModel):
 
 class BackupListResponse(BaseModel):
     """Response for list backups endpoint."""
+
     backups: list[BackupInfo]
     total: int
     backup_dir: str
@@ -93,7 +97,9 @@ async def export_database(
 
         tables = request.tables
         exclude_tables = request.exclude_tables
-        result = backup_service.export_to_json(tables=tables, exclude_tables=exclude_tables)
+        result = backup_service.export_to_json(
+            tables=tables, exclude_tables=exclude_tables
+        )
 
         export_path = Path(result["path"])
         filename = export_path.name
@@ -140,7 +146,9 @@ async def export_database_metadata(
 
         tables = request.tables
         exclude_tables = request.exclude_tables
-        result = backup_service.export_to_json(tables=tables, exclude_tables=exclude_tables)
+        result = backup_service.export_to_json(
+            tables=tables, exclude_tables=exclude_tables
+        )
         return result
     except Exception as e:
         logger.error(f"❌ Export failed: {e}", exc_info=True)
@@ -150,14 +158,16 @@ async def export_database_metadata(
         )
 
 
-@router.post("/import", response_model=ImportResponse, summary="Import database from JSON")
+@router.post(
+    "/import", response_model=ImportResponse, summary="Import database from JSON"
+)
 async def import_database(
     current_user: Annotated[User, Depends(require_permission("user.update"))],
     file: UploadFile = File(..., description="JSON backup file to import"),
     conflict_strategy: str = Query(
         default=ConflictStrategy.SKIP.value,
         description="How to handle conflicting rows: 'skip' = ignore conflicts (safest), "
-                    "'update' = overwrite existing, 'error' = abort on conflict",
+        "'update' = overwrite existing, 'error' = abort on conflict",
     ),
     tables: Optional[str] = Query(
         default=None,
@@ -322,7 +332,9 @@ async def download_backup(
             detail="Access denied",
         )
 
-    media_type = "application/json" if filename.endswith(".json") else "application/octet-stream"
+    media_type = (
+        "application/json" if filename.endswith(".json") else "application/octet-stream"
+    )
     return FileResponse(
         path=str(filepath),
         filename=filename,

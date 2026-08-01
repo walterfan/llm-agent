@@ -11,7 +11,8 @@ const agents = [
     id: 'secretary',
     name: 'Personal Secretary',
     icon: '🤖',
-    description: 'Your AI assistant for learning English, tech topics, managing tasks, notes, and reminders',
+    description:
+      'Your AI assistant for learning English, tech topics, managing tasks, notes, and reminders',
     route: '/secretary',
     color: 'from-blue-500 to-indigo-600',
   },
@@ -19,7 +20,8 @@ const agents = [
     id: 'learning',
     name: 'Learning History',
     icon: '📚',
-    description: 'Review and manage your learning records: words, sentences, topics, articles, and ideas',
+    description:
+      'Review and manage your learning records: words, sentences, topics, articles, and ideas',
     route: '/learning',
     color: 'from-amber-500 to-orange-600',
   },
@@ -27,7 +29,8 @@ const agents = [
     id: 'medical-paper',
     name: 'Medical Paper',
     icon: '📄',
-    description: 'AI-assisted medical paper writing with compliance, literature, stats, and writing support',
+    description:
+      'AI-assisted medical paper writing with compliance, literature, stats, and writing support',
     route: '/medical-paper',
     color: 'from-emerald-500 to-teal-600',
   },
@@ -43,7 +46,8 @@ const agents = [
     id: 'translation',
     name: 'Translation',
     icon: '🌐',
-    description: 'Translate URLs, pasted text, or uploaded files (PDF/text/md) to Chinese with explanation and summary',
+    description:
+      'Translate URLs, pasted text, or uploaded files (PDF/text/md) to Chinese with explanation and summary',
     route: '/translation',
     color: 'from-violet-500 to-purple-600',
   },
@@ -51,7 +55,8 @@ const agents = [
     id: 'philosophy',
     name: 'Philosophy Master',
     icon: '🧠',
-    description: 'Philosophical analysis and practical guidance with selectable schools, tone, depth, and modes',
+    description:
+      'Philosophical analysis and practical guidance with selectable schools, tone, depth, and modes',
     route: '/philosophy',
     color: 'from-cyan-500 to-sky-600',
   },
@@ -59,9 +64,19 @@ const agents = [
     id: 'coach',
     name: 'AI Coach',
     icon: '🎓',
-    description: 'Personal learning coach with 3 modes: coaching, tutoring, and quiz — powered by your knowledge base',
+    description:
+      'Personal learning coach with 3 modes: coaching, tutoring, and quiz — powered by your knowledge base',
     route: '/coach',
     color: 'from-amber-500 to-orange-600',
+  },
+  {
+    id: 'factory',
+    name: 'AI Agent Factory',
+    icon: '🏭',
+    description:
+      'Create, manage, and deploy custom AI agents with specifications, tools, and memory',
+    route: '/factory',
+    color: 'from-indigo-500 to-blue-600',
   },
 ]
 
@@ -120,8 +135,8 @@ const tools = [
         Lazy Rabbit Agent
       </h1>
       <p class="text-lg leading-8 text-gray-600 max-w-2xl mx-auto mb-8">
-        Your personal AI assistant for learning, productivity, and daily life.
-        Get help with English learning, tech topics, task management, and more.
+        Your personal AI assistant for learning, productivity, and daily life. Get help with English
+        learning, tech topics, task management, and more.
       </p>
 
       <div class="flex gap-4 justify-center">
@@ -129,7 +144,7 @@ const tools = [
           <ButtonComponent>Get Started</ButtonComponent>
         </RouterLink>
         <RouterLink to="/signin">
-          <ButtonComponent variant="secondary">Sign In</ButtonComponent>
+          <ButtonComponent variant="secondary"> Sign In </ButtonComponent>
         </RouterLink>
       </div>
 
@@ -154,9 +169,7 @@ const tools = [
         <div class="bg-white p-6 rounded-lg shadow">
           <div class="text-4xl mb-4">✅</div>
           <h3 class="text-lg font-semibold mb-2">Productivity</h3>
-          <p class="text-gray-600">
-            Manage tasks, notes, and reminders all in one place
-          </p>
+          <p class="text-gray-600">Manage tasks, notes, and reminders all in one place</p>
         </div>
       </div>
     </div>
@@ -187,7 +200,7 @@ const tools = [
               <div
                 class="absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-10 transition-opacity"
                 :class="agent.color"
-              ></div>
+              />
               <div class="p-6">
                 <div class="flex items-start gap-4">
                   <div
@@ -197,14 +210,25 @@ const tools = [
                     <span class="filter drop-shadow">{{ agent.icon }}</span>
                   </div>
                   <div class="flex-1">
-                    <h3 class="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                    <h3
+                      class="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors"
+                    >
                       {{ agent.name }}
                     </h3>
-                    <p class="mt-1 text-sm text-gray-600">{{ agent.description }}</p>
+                    <p class="mt-1 text-sm text-gray-600">
+                      {{ agent.description }}
+                    </p>
                   </div>
-                  <div class="flex-shrink-0 text-gray-400 group-hover:text-blue-500 transition-colors">
+                  <div
+                    class="flex-shrink-0 text-gray-400 group-hover:text-blue-500 transition-colors"
+                  >
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 5l7 7-7 7"
+                      />
                     </svg>
                   </div>
                 </div>
@@ -225,11 +249,17 @@ const tools = [
               :to="tool.route"
               class="group bg-white rounded-lg shadow hover:shadow-md p-4 text-center transition-all duration-200 hover:-translate-y-1"
             >
-              <div class="text-3xl mb-2">{{ tool.icon }}</div>
-              <h3 class="text-sm font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
+              <div class="text-3xl mb-2">
+                {{ tool.icon }}
+              </div>
+              <h3
+                class="text-sm font-medium text-gray-900 group-hover:text-blue-600 transition-colors"
+              >
                 {{ tool.name }}
               </h3>
-              <p class="mt-1 text-xs text-gray-500 line-clamp-2">{{ tool.description }}</p>
+              <p class="mt-1 text-xs text-gray-500 line-clamp-2">
+                {{ tool.description }}
+              </p>
             </RouterLink>
           </div>
         </section>
@@ -240,7 +270,17 @@ const tools = [
             <span>⚡</span> Quick Actions
           </h2>
           <div class="bg-white rounded-xl shadow p-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <RouterLink
+                to="/factory"
+                class="flex items-center gap-3 p-4 rounded-lg bg-gradient-to-br from-indigo-50 to-blue-50 hover:from-indigo-100 hover:to-blue-100 transition-all border-2 border-indigo-200"
+              >
+                <span class="text-2xl">🏭</span>
+                <div>
+                  <div class="font-medium text-gray-900">Agent Factory</div>
+                  <div class="text-sm text-gray-600">Create custom AI agents</div>
+                </div>
+              </RouterLink>
               <RouterLink
                 to="/learning"
                 class="flex items-center gap-3 p-4 rounded-lg bg-gray-50 hover:bg-blue-50 transition-colors"

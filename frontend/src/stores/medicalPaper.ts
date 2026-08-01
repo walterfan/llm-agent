@@ -40,9 +40,7 @@ export const useMedicalPaperStore = defineStore('medicalPaper', () => {
   const activeTasks = computed(() =>
     tasks.value.filter((t) => t.status === 'running' || t.status === 'pending')
   )
-  const completedTasks = computed(() =>
-    tasks.value.filter((t) => t.status === 'completed')
-  )
+  const completedTasks = computed(() => tasks.value.filter((t) => t.status === 'completed'))
 
   // ========================================================================
   // Actions

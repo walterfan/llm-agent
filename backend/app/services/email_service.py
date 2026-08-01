@@ -68,6 +68,7 @@ class EmailService:
                 else:
                     # Generate plain text from HTML (simple strip)
                     import re
+
                     text_content = re.sub(r"<[^>]+>", "", html_body)
                     text_part = MIMEText(text_content, "plain", "utf-8")
                     message.attach(text_part)
@@ -87,7 +88,9 @@ class EmailService:
 
         return results
 
-    async def _send_smtp(self, message: MIMEMultipart, recipient: str, retries: int = 3) -> None:
+    async def _send_smtp(
+        self, message: MIMEMultipart, recipient: str, retries: int = 3
+    ) -> None:
         """
         Send email via SMTP with retry logic.
 
@@ -123,9 +126,11 @@ class EmailService:
                         timeout=30.0,  # 30 second timeout
                     )
 
-                logger.info(f"Connecting to SMTP server {self.server}:{self.port} (SSL={self.use_ssl}, TLS={self.use_tls})")
+                logger.info(
+                    f"Connecting to SMTP server {self.server}:{self.port} (SSL={self.use_ssl}, TLS={self.use_tls})"
+                )
                 await smtp.connect()
-                
+
                 # For non-SSL connections, use STARTTLS if configured
                 if self.use_tls and not self.use_ssl:
                     logger.info("Upgrading connection with STARTTLS")
@@ -133,10 +138,10 @@ class EmailService:
 
                 logger.info(f"Logging in as {self.username}")
                 await smtp.login(self.username, self.password)
-                
+
                 logger.info(f"Sending message to {recipient}")
                 await smtp.send_message(message)
-                
+
                 await smtp.quit()
                 logger.info(f"✅ Email sent successfully to {recipient}")
 
@@ -144,14 +149,14 @@ class EmailService:
 
             except Exception as e:
                 last_error = e
-                wait_time = 2 ** attempt  # Exponential backoff: 1s, 2s, 4s
+                wait_time = 2**attempt  # Exponential backoff: 1s, 2s, 4s
                 logger.error(
                     f"SMTP send attempt {attempt + 1}/{retries} failed for {recipient}: {type(e).__name__}: {e}. "
                     f"Retrying in {wait_time}s..."
                 )
                 if attempt < retries - 1:
                     await asyncio.sleep(wait_time)
-                
+
                 # Ensure connection is closed
                 if smtp:
                     try:
@@ -214,5 +219,3 @@ class EmailService:
 
         pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
         return bool(re.match(pattern, email))
-
-

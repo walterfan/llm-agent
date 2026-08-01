@@ -56,7 +56,7 @@ class WeatherHelper:
         weather_provider = WeatherProviderFactory.create(
             provider_type=settings.WEATHER_PROVIDER,
             base_url=settings.WEATHER_BASE_URL,
-            api_key=settings.WEATHER_API_KEY
+            api_key=settings.WEATHER_API_KEY,
         )
 
         # Get city name for provider
@@ -66,15 +66,16 @@ class WeatherHelper:
 
         # Fetch with extensions="all" to get forecast
         weather_data: WeatherData = await weather_provider.fetch_weather(
-            city_code,
-            extensions="all"
+            city_code, extensions="all"
         )
 
         if not weather_data.forecast or not weather_data.forecast.casts:
             raise ValueError(f"No forecast data available for city: {city_code}")
 
-        logger.info(f"📊 Weather API returned {len(weather_data.forecast.casts)} forecast cast(s) for city {city_code}")
-        
+        logger.info(
+            f"📊 Weather API returned {len(weather_data.forecast.casts)} forecast cast(s) for city {city_code}"
+        )
+
         # Parse forecast data
         forecasts = []
         today = datetime.now().date()
@@ -122,4 +123,3 @@ class WeatherHelper:
         """
         labels = {0: "今天", 1: "明天", 2: "后天"}
         return labels.get(day_offset, f"+{day_offset}天")
-

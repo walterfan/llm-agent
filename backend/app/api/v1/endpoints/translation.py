@@ -42,7 +42,9 @@ async def _get_source_from_request(request: Request) -> tuple[str, bool, str]:
     Parse request as either JSON (url) or multipart (file). Return (source_text, truncated, output_mode).
     Raises HTTPException 400 if neither/both or invalid.
     """
-    content_type = (request.headers.get("content-type") or "").split(";")[0].strip().lower()
+    content_type = (
+        (request.headers.get("content-type") or "").split(";")[0].strip().lower()
+    )
     output_mode = "chinese_only"
 
     if content_type == "application/json":
@@ -81,7 +83,11 @@ async def _get_source_from_request(request: Request) -> tuple[str, bool, str]:
         file: UploadFile | None = form.get("file")
         if isinstance(file, list):
             file = file[0] if file else None
-        output_mode = _parse_output_mode(form.get("output_mode") if isinstance(form.get("output_mode"), str) else None)
+        output_mode = _parse_output_mode(
+            form.get("output_mode")
+            if isinstance(form.get("output_mode"), str)
+            else None
+        )
         if not file or not file.filename:
             raise HTTPException(
                 status_code=400,
@@ -129,7 +135,9 @@ async def translate(
     Returns translated_markdown, explanation, and summary.
     """
     try:
-        source_text, source_truncated, output_mode = await _get_source_from_request(request)
+        source_text, source_truncated, output_mode = await _get_source_from_request(
+            request
+        )
     except HTTPException:
         raise
 
@@ -145,7 +153,9 @@ async def translate(
         )
     except Exception as e:
         logger.exception("Translation failed: %s", e)
-        raise HTTPException(status_code=500, detail="Translation failed. Please try again.") from e
+        raise HTTPException(
+            status_code=500, detail="Translation failed. Please try again."
+        ) from e
 
     return TranslationResponse(
         translated_markdown=result.translated_markdown,
@@ -165,7 +175,9 @@ async def translate_stream(
     Same input as POST / (JSON url or multipart file).
     """
     try:
-        source_text, source_truncated, output_mode = await _get_source_from_request(request)
+        source_text, source_truncated, output_mode = await _get_source_from_request(
+            request
+        )
     except HTTPException:
         raise
 

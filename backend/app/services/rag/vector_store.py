@@ -17,6 +17,7 @@ logger = logging.getLogger("rag.vector_store")
 @dataclass
 class VectorSearchResult:
     """A single vector search result."""
+
     chunk_id: str
     content: str
     score: float
@@ -32,13 +33,11 @@ class BaseVectorStore(ABC):
 
     @property
     @abstractmethod
-    def is_available(self) -> bool:
-        ...
+    def is_available(self) -> bool: ...
 
     @property
     @abstractmethod
-    def backend_name(self) -> str:
-        ...
+    def backend_name(self) -> str: ...
 
     @abstractmethod
     def upsert_chunks(
@@ -47,12 +46,10 @@ class BaseVectorStore(ABC):
         texts: list[str],
         embeddings: list[list[float]],
         metadatas: list[dict],
-    ) -> None:
-        ...
+    ) -> None: ...
 
     @abstractmethod
-    def delete_by_metadata(self, key: str, value: str) -> None:
-        ...
+    def delete_by_metadata(self, key: str, value: str) -> None: ...
 
     @abstractmethod
     def search(
@@ -60,12 +57,10 @@ class BaseVectorStore(ABC):
         query_embedding: list[float],
         top_k: int,
         filter_metadata: Optional[dict] = None,
-    ) -> list[VectorSearchResult]:
-        ...
+    ) -> list[VectorSearchResult]: ...
 
     @abstractmethod
-    def count(self, filter_metadata: Optional[dict] = None) -> int:
-        ...
+    def count(self, filter_metadata: Optional[dict] = None) -> int: ...
 
     @abstractmethod
     def get_metadatas(self, filter_metadata: Optional[dict] = None) -> list[dict]:
@@ -76,6 +71,7 @@ class BaseVectorStore(ABC):
 # ---------------------------------------------------------------------------
 # ChromaDB backend
 # ---------------------------------------------------------------------------
+
 
 class ChromaVectorStore(BaseVectorStore):
     """ChromaDB-based vector store (embedded, on-disk)."""
@@ -97,7 +93,9 @@ class ChromaVectorStore(BaseVectorStore):
             metadata={"hnsw:space": "cosine"},
         )
         self._ready = True
-        logger.info(f"ChromaDB initialized: {self._persist_dir}, chunks={self._collection.count()}")
+        logger.info(
+            f"ChromaDB initialized: {self._persist_dir}, chunks={self._collection.count()}"
+        )
 
     @property
     def is_available(self) -> bool:
@@ -108,7 +106,9 @@ class ChromaVectorStore(BaseVectorStore):
         return "chromadb"
 
     def upsert_chunks(self, ids, texts, embeddings, metadatas):
-        self._collection.upsert(ids=ids, embeddings=embeddings, documents=texts, metadatas=metadatas)
+        self._collection.upsert(
+            ids=ids, embeddings=embeddings, documents=texts, metadatas=metadatas
+        )
 
     def delete_by_metadata(self, key: str, value: str) -> None:
         self._collection.delete(where={key: value})
@@ -129,12 +129,14 @@ class ChromaVectorStore(BaseVectorStore):
             for i, doc in enumerate(results["documents"][0]):
                 meta = results["metadatas"][0][i] if results["metadatas"] else {}
                 distance = results["distances"][0][i] if results["distances"] else 1.0
-                out.append(VectorSearchResult(
-                    chunk_id=results["ids"][0][i] if results["ids"] else "",
-                    content=doc,
-                    score=1.0 - distance,
-                    metadata=meta,
-                ))
+                out.append(
+                    VectorSearchResult(
+                        chunk_id=results["ids"][0][i] if results["ids"] else "",
+                        content=doc,
+                        score=1.0 - distance,
+                        metadata=meta,
+                    )
+                )
         return out
 
     def count(self, filter_metadata=None):
@@ -145,7 +147,9 @@ class ChromaVectorStore(BaseVectorStore):
         return self._collection.count()
 
     def get_metadatas(self, filter_metadata=None):
-        where = {k: str(v) for k, v in filter_metadata.items()} if filter_metadata else None
+        where = (
+            {k: str(v) for k, v in filter_metadata.items()} if filter_metadata else None
+        )
         kwargs: dict[str, Any] = {"include": ["metadatas"]}
         if where:
             kwargs["where"] = where
@@ -156,6 +160,7 @@ class ChromaVectorStore(BaseVectorStore):
 # ---------------------------------------------------------------------------
 # pgvector backend
 # ---------------------------------------------------------------------------
+
 
 class PgVectorStore(BaseVectorStore):
     """PostgreSQL + pgvector based vector store.
@@ -176,7 +181,9 @@ class PgVectorStore(BaseVectorStore):
 
         with self._engine.connect() as conn:
             conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
-            conn.execute(text("""
+            conn.execute(
+                text(
+                    """
                 CREATE TABLE IF NOT EXISTS document_chunks (
                     id TEXT PRIMARY KEY,
                     content TEXT NOT NULL,
@@ -186,13 +193,23 @@ class PgVectorStore(BaseVectorStore):
                     user_id TEXT NOT NULL,
                     chunk_index INTEGER NOT NULL DEFAULT 0
                 )
-            """))
-            conn.execute(text("""
+            """
+                )
+            )
+            conn.execute(
+                text(
+                    """
                 CREATE INDEX IF NOT EXISTS idx_chunks_user_id ON document_chunks (user_id)
-            """))
-            conn.execute(text("""
+            """
+                )
+            )
+            conn.execute(
+                text(
+                    """
                 CREATE INDEX IF NOT EXISTS idx_chunks_doc_id ON document_chunks (doc_id)
-            """))
+            """
+                )
+            )
             conn.commit()
 
         self._ready = True
@@ -213,14 +230,16 @@ class PgVectorStore(BaseVectorStore):
             for chunk_id, content, emb, meta in zip(ids, texts, embeddings, metadatas):
                 emb_str = "[" + ",".join(str(x) for x in emb) + "]"
                 conn.execute(
-                    text("""
+                    text(
+                        """
                         INSERT INTO document_chunks (id, content, embedding, doc_id, title, user_id, chunk_index)
                         VALUES (:id, :content, :embedding::vector, :doc_id, :title, :user_id, :chunk_index)
                         ON CONFLICT (id) DO UPDATE SET
                             content = EXCLUDED.content,
                             embedding = EXCLUDED.embedding,
                             title = EXCLUDED.title
-                    """),
+                    """
+                    ),
                     {
                         "id": chunk_id,
                         "content": content,
@@ -239,7 +258,9 @@ class PgVectorStore(BaseVectorStore):
         col_map = {"doc_id": "doc_id", "user_id": "user_id"}
         col = col_map.get(key, key)
         with self._engine.connect() as conn:
-            conn.execute(text(f"DELETE FROM document_chunks WHERE {col} = :val"), {"val": value})
+            conn.execute(
+                text(f"DELETE FROM document_chunks WHERE {col} = :val"), {"val": value}
+            )
             conn.commit()
 
     def search(self, query_embedding, top_k, filter_metadata=None):

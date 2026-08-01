@@ -37,8 +37,12 @@ class GetAbstractInput(BaseModel):
 
 
 class FormatCitationInput(BaseModel):
-    reference: dict[str, Any] = Field(description="Reference dict with pmid, title, authors, journal, year")
-    style: str = Field(default="vancouver", description="Citation style: vancouver, apa, ama")
+    reference: dict[str, Any] = Field(
+        description="Reference dict with pmid, title, authors, journal, year"
+    )
+    style: str = Field(
+        default="vancouver", description="Citation style: vancouver, apa, ama"
+    )
 
 
 def create_literature_tools() -> list[StructuredTool]:

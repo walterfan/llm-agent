@@ -46,7 +46,6 @@ COACH_PROMPTS = {
 
 请用温暖、鼓励的语气回复。如果有知识库内容可以参考，请基于这些内容回答。
 回复使用中文。""",
-
     CoachMode.TUTOR: """你是一位耐心的学习导师（Tutor）。你的职责是：
 - 深入讲解用户提问的知识点
 - 用通俗易懂的方式解释复杂概念
@@ -58,7 +57,6 @@ COACH_PROMPTS = {
 如果有知识库中的相关内容，请优先基于这些内容进行讲解，并标注来源。
 如果知识库中没有相关内容，请基于你的知识回答，但要说明这不是来自用户的知识库。
 回复使用中文。""",
-
     CoachMode.QUIZ: """你是一位学习测验官（Quiz Master）。你的职责是：
 - 根据用户的学习内容出题测验
 - 题目类型包括：选择题、填空题、简答题、判断题
@@ -115,9 +113,7 @@ def _build_progress_context(user_id: int, goal_id: Optional[str], db: Session) -
         parts = ["📊 当前学习进度:"]
         for goal in goals[:3]:  # Limit to 3 goals
             sessions = (
-                db.query(StudySession)
-                .filter(StudySession.goal_id == goal.id)
-                .all()
+                db.query(StudySession).filter(StudySession.goal_id == goal.id).all()
             )
             total_minutes = sum(s.duration_minutes for s in sessions)
             total_sessions = len(sessions)
@@ -191,9 +187,7 @@ def _load_conversation_history(
         if not session:
             return []
 
-        messages = ChatService.get_messages(
-            db, session_id, limit=MAX_HISTORY_MESSAGES
-        )
+        messages = ChatService.get_messages(db, session_id, limit=MAX_HISTORY_MESSAGES)
 
         history = []
         for msg in messages:
@@ -206,7 +200,9 @@ def _load_conversation_history(
         return history
 
     except Exception as e:
-        logger.warning(f"Failed to load conversation history for session {session_id}: {e}")
+        logger.warning(
+            f"Failed to load conversation history for session {session_id}: {e}"
+        )
         return []
 
 

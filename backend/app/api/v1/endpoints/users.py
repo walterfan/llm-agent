@@ -82,21 +82,20 @@ def change_password(
     Requires authentication.
     """
     logger.info(f"📥 [API] Change password request for user: {current_user.email}")
-    
+
     success, message = UserService.change_password(
-        db, 
-        current_user, 
-        password_data.current_password, 
-        password_data.new_password
+        db, current_user, password_data.current_password, password_data.new_password
     )
-    
+
     if not success:
-        logger.warning(f"📥 [API] Change password failed for: {current_user.email} - {message}")
+        logger.warning(
+            f"📥 [API] Change password failed for: {current_user.email} - {message}"
+        )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=message,
         )
-    
+
     logger.info(f"📥 [API] Password changed successfully for: {current_user.email}")
     return {"message": message}
 
@@ -112,5 +111,3 @@ def delete_current_user_account(
     This action is irreversible. Requires authentication.
     """
     UserService.delete_user(db, current_user)
-
-

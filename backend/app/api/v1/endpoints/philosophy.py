@@ -29,7 +29,9 @@ async def chat(
     current_user: User = Depends(get_current_active_user),
 ):
     if not request.message or not request.message.strip():
-        raise HTTPException(status_code=400, detail="message must be a non-empty string")
+        raise HTTPException(
+            status_code=400, detail="message must be a non-empty string"
+        )
     try:
         service = PhilosophyMasterService()
         return await service.chat(request)
@@ -37,7 +39,9 @@ async def chat(
         raise HTTPException(status_code=400, detail=str(e)) from e
     except Exception as e:
         logger.exception("Philosophy chat failed: %s", e)
-        raise HTTPException(status_code=500, detail="Philosophy Master failed. Please try again.") from e
+        raise HTTPException(
+            status_code=500, detail="Philosophy Master failed. Please try again."
+        ) from e
 
 
 @router.post("/chat/stream")
@@ -46,7 +50,9 @@ async def chat_stream(
     current_user: User = Depends(get_current_active_user),
 ):
     if not request.message or not request.message.strip():
-        raise HTTPException(status_code=400, detail="message must be a non-empty string")
+        raise HTTPException(
+            status_code=400, detail="message must be a non-empty string"
+        )
 
     async def event_generator():
         try:
@@ -64,4 +70,3 @@ async def chat_stream(
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "Connection": "keep-alive"},
     )
-

@@ -21,6 +21,7 @@ import DateTimeTool from '@/views/tools/DateTimeTool.vue'
 import NotesTool from '@/views/tools/NotesTool.vue'
 import TasksTool from '@/views/tools/TasksTool.vue'
 import RemindersTool from '@/views/tools/RemindersTool.vue'
+import AgentFactory from '@/views/AgentFactory.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -156,6 +157,13 @@ const routes: Array<RouteRecordRaw> = [
     component: LearningPlan,
     meta: { requiresAuth: true },
   },
+  // AI Agent Factory
+  {
+    path: '/factory',
+    name: 'agent-factory',
+    component: AgentFactory,
+    meta: { requiresAuth: true },
+  },
   // Tool pages
   {
     path: '/tools/calculator',
@@ -225,5 +233,3 @@ router.beforeEach((to, _from, next) => {
 })
 
 export default router
-
-

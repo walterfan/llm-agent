@@ -15,18 +15,19 @@ from app.services.secretary_agent.tracing import trace_tool_call
 
 class DateTimeInput(BaseModel):
     """Input schema for datetime tool."""
+
     timezone: Optional[str] = Field(
         default="Asia/Shanghai",
-        description="Timezone name (e.g., 'Asia/Shanghai', 'UTC', 'America/New_York')"
+        description="Timezone name (e.g., 'Asia/Shanghai', 'UTC', 'America/New_York')",
     )
     format: Optional[str] = Field(
-        default=None,
-        description="Custom format string (e.g., '%Y-%m-%d %H:%M:%S')"
+        default=None, description="Custom format string (e.g., '%Y-%m-%d %H:%M:%S')"
     )
 
 
 class DateTimeResponse(BaseModel):
     """Response schema for datetime tool."""
+
     datetime: str = Field(description="Formatted datetime string")
     date: str = Field(description="Date in YYYY-MM-DD format")
     time: str = Field(description="Time in HH:MM:SS format")
@@ -49,16 +50,15 @@ WEEKDAY_CHINESE = {
 
 @trace_tool_call
 def get_current_datetime(
-    timezone: str = "Asia/Shanghai",
-    format: Optional[str] = None
+    timezone: str = "Asia/Shanghai", format: Optional[str] = None
 ) -> DateTimeResponse:
     """
     Get the current date and time.
-    
+
     Args:
         timezone: Timezone name (default: Asia/Shanghai)
         format: Optional custom format string
-        
+
     Returns:
         DateTimeResponse with current date/time information
     """
@@ -68,9 +68,9 @@ def get_current_datetime(
         # Fallback to UTC if timezone is invalid
         tz = ZoneInfo("UTC")
         timezone = "UTC"
-    
+
     now = datetime.now(tz)
-    
+
     # Format datetime
     if format:
         try:
@@ -79,7 +79,7 @@ def get_current_datetime(
             formatted = now.isoformat()
     else:
         formatted = now.strftime("%Y-%m-%d %H:%M:%S %Z")
-    
+
     return DateTimeResponse(
         datetime=formatted,
         date=now.strftime("%Y-%m-%d"),

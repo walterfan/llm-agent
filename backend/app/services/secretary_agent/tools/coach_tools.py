@@ -22,19 +22,24 @@ logger = logging.getLogger("secretary_agent.coach_tools")
 
 class QueryKnowledgeInput(BaseModel):
     """Input for querying the knowledge base."""
+
     query: str = Field(..., description="Search query text")
     top_k: int = Field(default=3, description="Number of results to return")
 
 
 class CreateGoalInput(BaseModel):
     """Input for creating a learning goal."""
+
     subject: str = Field(..., description="Subject/topic of the goal")
     description: Optional[str] = Field(None, description="Detailed description")
-    daily_target_minutes: int = Field(default=30, description="Daily study target in minutes")
+    daily_target_minutes: int = Field(
+        default=30, description="Daily study target in minutes"
+    )
 
 
 class LogStudySessionInput(BaseModel):
     """Input for logging a study session."""
+
     goal_id: Optional[str] = Field(None, description="Associated learning goal ID")
     duration_minutes: int = Field(..., description="Duration in minutes")
     notes: Optional[str] = Field(None, description="Session notes")
@@ -43,6 +48,7 @@ class LogStudySessionInput(BaseModel):
 
 class GetProgressInput(BaseModel):
     """Input for getting progress report."""
+
     goal_id: str = Field(..., description="Learning goal ID")
 
 
@@ -179,11 +185,7 @@ def get_progress(
     if not goal:
         return f"未找到目标 (ID: {goal_id})。请检查目标 ID 是否正确。"
 
-    sessions = (
-        db.query(StudySession)
-        .filter(StudySession.goal_id == goal_id)
-        .all()
-    )
+    sessions = db.query(StudySession).filter(StudySession.goal_id == goal_id).all()
 
     total_sessions = len(sessions)
     total_minutes = sum(s.duration_minutes for s in sessions)
@@ -195,6 +197,7 @@ def get_progress(
     if session_dates:
         today = datetime.utcnow().date()
         from datetime import timedelta
+
         if session_dates[-1] >= today - timedelta(days=1):
             streak = 1
             for i in range(len(session_dates) - 2, -1, -1):

@@ -10,7 +10,7 @@ class CacheService:
     def __init__(self, maxsize: int = 1000, ttl: int = 3600):
         """
         Initialize cache service.
-        
+
         Args:
             maxsize: Maximum number of cached items (LRU eviction)
             ttl: Time to live in seconds (default 1 hour)
@@ -20,10 +20,10 @@ class CacheService:
     def get(self, key: str) -> Any | None:
         """
         Get value from cache.
-        
+
         Args:
             key: Cache key
-            
+
         Returns:
             Cached value or None if not found/expired
         """
@@ -32,7 +32,7 @@ class CacheService:
     def set(self, key: str, value: Any) -> None:
         """
         Set value in cache.
-        
+
         Args:
             key: Cache key
             value: Value to cache
@@ -42,7 +42,7 @@ class CacheService:
     def delete(self, key: str) -> None:
         """
         Delete value from cache.
-        
+
         Args:
             key: Cache key
         """
@@ -68,10 +68,10 @@ weather_cache: CacheService | None = None
 def get_weather_cache(ttl: int = 3600) -> CacheService:
     """
     Get or create weather cache instance.
-    
+
     Args:
         ttl: Cache TTL in seconds
-        
+
     Returns:
         CacheService instance
     """
@@ -79,4 +79,3 @@ def get_weather_cache(ttl: int = 3600) -> CacheService:
     if weather_cache is None:
         weather_cache = CacheService(maxsize=1000, ttl=ttl)
     return weather_cache
-

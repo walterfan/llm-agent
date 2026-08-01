@@ -26,24 +26,42 @@ CONSORT_ITEMS = [
     ("6a", "Completely defined pre-specified primary and secondary outcome measures"),
     ("6b", "Any changes to trial outcomes after the trial commenced, with reasons"),
     ("7a", "How sample size was determined"),
-    ("7b", "When applicable, explanation of any interim analyses and stopping guidelines"),
+    (
+        "7b",
+        "When applicable, explanation of any interim analyses and stopping guidelines",
+    ),
     ("8a", "Method used to generate the random allocation sequence"),
     ("8b", "Type of randomisation; details of any restriction"),
     ("9", "Mechanism used to implement the random allocation sequence"),
     ("10", "Who generated the random allocation sequence, who enrolled, who assigned"),
     ("11a", "If done, who was blinded after assignment and how"),
     ("11b", "If relevant, description of the similarity of interventions"),
-    ("12a", "Statistical methods used to compare groups for primary and secondary outcomes"),
-    ("12b", "Methods for additional analyses, such as subgroup analyses and adjusted analyses"),
-    ("13a", "For each group, numbers of participants randomly assigned, received treatment, analysed"),
-    ("13b", "For each group, losses and exclusions after randomisation, together with reasons"),
+    (
+        "12a",
+        "Statistical methods used to compare groups for primary and secondary outcomes",
+    ),
+    (
+        "12b",
+        "Methods for additional analyses, such as subgroup analyses and adjusted analyses",
+    ),
+    (
+        "13a",
+        "For each group, numbers of participants randomly assigned, received treatment, analysed",
+    ),
+    (
+        "13b",
+        "For each group, losses and exclusions after randomisation, together with reasons",
+    ),
     ("14a", "Dates defining the periods of recruitment and follow-up"),
     ("14b", "Why the trial ended or was stopped"),
 ]
 
 # STROBE checklist items (22 items for observational studies)
 STROBE_ITEMS = [
-    ("1", "Indicate the study's design with a commonly used term in the title or abstract"),
+    (
+        "1",
+        "Indicate the study's design with a commonly used term in the title or abstract",
+    ),
     ("2", "Provide in the abstract an informative and balanced summary"),
     ("3", "Explain the scientific background and rationale for the investigation"),
     ("4", "State specific objectives, including any prespecified hypotheses"),
@@ -58,7 +76,10 @@ STROBE_ITEMS = [
     ("13", "Report numbers of individuals at each stage of study"),
     ("14", "Give characteristics of study participants"),
     ("15", "Report numbers of outcome events or summary measures"),
-    ("16", "Give unadjusted estimates and, if applicable, confounder-adjusted estimates"),
+    (
+        "16",
+        "Give unadjusted estimates and, if applicable, confounder-adjusted estimates",
+    ),
     ("17", "Report other analyses done"),
     ("18", "Summarise key results with reference to study objectives"),
     ("19", "Discuss limitations of the study"),
@@ -83,7 +104,10 @@ PRISMA_ITEMS = [
     ("12", "Describe methods used for assessing risk of bias"),
     ("13", "State the principal summary measures"),
     ("14", "Describe the methods of handling data and combining results"),
-    ("15", "Specify any assessment of risk of bias that may affect the cumulative evidence"),
+    (
+        "15",
+        "Specify any assessment of risk of bias that may affect the cumulative evidence",
+    ),
     ("16", "Describe methods of additional analyses"),
     ("17", "Give numbers of studies screened, assessed, and included"),
     ("18", "For each study, present characteristics and data"),

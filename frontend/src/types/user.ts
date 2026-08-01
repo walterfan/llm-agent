@@ -74,5 +74,3 @@ export interface SignupResponse {
 export interface ApiError {
   detail: string
 }
-
-

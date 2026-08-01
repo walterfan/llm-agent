@@ -86,11 +86,56 @@ export const useAuthStore = defineStore('auth', () => {
       user.value = updatedUser
       // Update user in localStorage
       if (authService.getToken()) {
-        authService.saveAuth(authService.getToken()!, authService.getRefreshToken() || '', updatedUser)
+        authService.saveAuth(
+          authService.getToken()!,
+          authService.getRefreshToken() || '',
+          updatedUser
+        )
       }
       return updatedUser
     } catch (err: any) {
       const message = err.response?.data?.detail || 'Update failed. Please try again.'
+      error.value = message
+      throw new Error(message)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function changePassword(data: { current_password: string; new_password: string }) {
+    loading.value = true
+    error.value = null
+
+    try {
+      await userService.changePassword(data)
+      return true
+    } catch (err: any) {
+      const message = err.response?.data?.detail || 'Password change failed. Please try again.'
+      error.value = message
+      throw new Error(message)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function updateDressProfile(data: any) {
+    loading.value = true
+    error.value = null
+
+    try {
+      const updatedUser = await userService.updateDressProfile(data)
+      user.value = updatedUser
+      // Update user in localStorage
+      if (authService.getToken()) {
+        authService.saveAuth(
+          authService.getToken()!,
+          authService.getRefreshToken() || '',
+          updatedUser
+        )
+      }
+      return updatedUser
+    } catch (err: any) {
+      const message = err.response?.data?.detail || 'Failed to update dress profile'
       error.value = message
       throw new Error(message)
     } finally {
@@ -118,8 +163,7 @@ export const useAuthStore = defineStore('auth', () => {
   // Role-based access control helpers
   const isSuperAdmin = computed(() => user.value?.role === UserRole.SUPER_ADMIN)
   const isAdmin = computed(
-    () =>
-      user.value?.role === UserRole.SUPER_ADMIN || user.value?.role === UserRole.ADMIN
+    () => user.value?.role === UserRole.SUPER_ADMIN || user.value?.role === UserRole.ADMIN
   )
   const isUser = computed(
     () =>
@@ -159,10 +203,10 @@ export const useAuthStore = defineStore('auth', () => {
     logout,
     loadUser,
     updateProfile,
+    updateDressProfile,
+    changePassword,
     clearError,
     init,
     hasRole,
   }
 })
-
-

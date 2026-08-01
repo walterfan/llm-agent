@@ -25,10 +25,11 @@ def get_current_user(
 ) -> User:
     """Dependency to get the current authenticated user from JWT token."""
     import logging
+
     logger = logging.getLogger(__name__)
-    
+
     logger.debug("🔐 [AUTH-HEADER] Starting header-based authentication")
-    
+
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -36,7 +37,9 @@ def get_current_user(
     )
 
     # Log token info (first/last 10 chars only for security)
-    token_preview = f"{token[:10]}...{token[-10:]}" if len(token) > 20 else "TOKEN_TOO_SHORT"
+    token_preview = (
+        f"{token[:10]}...{token[-10:]}" if len(token) > 20 else "TOKEN_TOO_SHORT"
+    )
     logger.debug(f"🔑 [AUTH-HEADER] Token received: {token_preview}")
 
     # Decode token
@@ -58,23 +61,31 @@ def get_current_user(
     try:
         user = UserService.get_user_by_id(db, int(user_id))
         if user is None:
-            logger.warning(f"❌ [AUTH-HEADER] User not found in database: user_id={user_id}")
+            logger.warning(
+                f"❌ [AUTH-HEADER] User not found in database: user_id={user_id}"
+            )
             raise credentials_exception
-            
-        logger.debug(f"✅ [AUTH-HEADER] User found: {user.email} (id={user.id}, active={user.is_active})")
-        
+
+        logger.debug(
+            f"✅ [AUTH-HEADER] User found: {user.email} (id={user.id}, active={user.is_active})"
+        )
+
     except ValueError as e:
         logger.warning(f"❌ [AUTH-HEADER] Invalid user_id format: {user_id} - {e}")
         raise credentials_exception
 
     if not user.is_active:
-        logger.warning(f"❌ [AUTH-HEADER] User account is inactive: {user.email} (id={user.id})")
+        logger.warning(
+            f"❌ [AUTH-HEADER] User account is inactive: {user.email} (id={user.id})"
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Account is inactive",
         )
 
-    logger.info(f"✅ [AUTH-HEADER] Authentication successful: {user.email} (id={user.id})")
+    logger.info(
+        f"✅ [AUTH-HEADER] Authentication successful: {user.email} (id={user.id})"
+    )
     return user
 
 
@@ -84,15 +95,16 @@ def get_current_user_from_query(
 ) -> User:
     """
     Dependency to get the current authenticated user from query parameter.
-    
+
     This is used for EventSource/SSE endpoints where headers cannot be set.
     For security, this should only be used for streaming endpoints.
     """
     import logging
+
     logger = logging.getLogger(__name__)
-    
+
     logger.debug("🔐 [AUTH-QUERY] Starting query parameter authentication")
-    
+
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials. Please provide a valid token.",
@@ -103,7 +115,9 @@ def get_current_user_from_query(
         raise credentials_exception
 
     # Log token info (first/last 10 chars only for security)
-    token_preview = f"{token[:10]}...{token[-10:]}" if len(token) > 20 else "TOKEN_TOO_SHORT"
+    token_preview = (
+        f"{token[:10]}...{token[-10:]}" if len(token) > 20 else "TOKEN_TOO_SHORT"
+    )
     logger.debug(f"🔑 [AUTH-QUERY] Token received: {token_preview}")
 
     # Decode token
@@ -125,23 +139,31 @@ def get_current_user_from_query(
     try:
         user = UserService.get_user_by_id(db, int(user_id))
         if user is None:
-            logger.warning(f"❌ [AUTH-QUERY] User not found in database: user_id={user_id}")
+            logger.warning(
+                f"❌ [AUTH-QUERY] User not found in database: user_id={user_id}"
+            )
             raise credentials_exception
-            
-        logger.debug(f"✅ [AUTH-QUERY] User found: {user.email} (id={user.id}, active={user.is_active})")
-        
+
+        logger.debug(
+            f"✅ [AUTH-QUERY] User found: {user.email} (id={user.id}, active={user.is_active})"
+        )
+
     except ValueError as e:
         logger.warning(f"❌ [AUTH-QUERY] Invalid user_id format: {user_id} - {e}")
         raise credentials_exception
 
     if not user.is_active:
-        logger.warning(f"❌ [AUTH-QUERY] User account is inactive: {user.email} (id={user.id})")
+        logger.warning(
+            f"❌ [AUTH-QUERY] User account is inactive: {user.email} (id={user.id})"
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Account is inactive",
         )
 
-    logger.info(f"✅ [AUTH-QUERY] Authentication successful: {user.email} (id={user.id})")
+    logger.info(
+        f"✅ [AUTH-QUERY] Authentication successful: {user.email} (id={user.id})"
+    )
     return user
 
 
@@ -151,8 +173,7 @@ def get_current_active_user(
     """Dependency to ensure the current user is active."""
     if not current_user.is_active:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Inactive user"
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user"
         )
     return current_user
 
@@ -169,16 +190,16 @@ ROLE_HIERARCHY = {
 def require_role(required_role: UserRole):
     """
     Dependency factory for role-based access control.
-    
+
     Returns a dependency function that checks if the current user has
     the required role or higher in the hierarchy.
-    
+
     Args:
         required_role: The minimum role required to access the endpoint
-        
+
     Returns:
         A dependency function that validates the user's role
-        
+
     Example:
         @router.get("/admin/users")
         async def list_users(
@@ -186,19 +207,20 @@ def require_role(required_role: UserRole):
         ):
             ...
     """
+
     def role_checker(
         current_user: Annotated[User, Depends(get_current_active_user)]
     ) -> User:
         user_level = ROLE_HIERARCHY.get(current_user.role, 0)
         required_level = ROLE_HIERARCHY.get(required_role, 0)
-        
+
         if user_level < required_level:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Insufficient permissions. Required role: {required_role.value}"
+                detail=f"Insufficient permissions. Required role: {required_role.value}",
             )
         return current_user
-    
+
     return role_checker
 
 
@@ -226,18 +248,19 @@ def require_user(
 
 # --- Permission-Based Authorization ---
 
+
 def require_permission(permission_name: str):
     """
     Dependency factory for permission-based access control.
-    
+
     Checks if the user's role has the specified permission in the database.
-    
+
     Args:
         permission_name: Permission name (e.g., "user.read", "role.create")
-    
+
     Returns:
         A dependency function that validates the user's permission
-        
+
     Example:
         @router.get("/users")
         async def list_users(
@@ -245,9 +268,10 @@ def require_permission(permission_name: str):
         ):
             ...
     """
+
     def permission_checker(
         db: Annotated[Session, Depends(get_db)],
-        current_user: Annotated[User, Depends(get_current_active_user)]
+        current_user: Annotated[User, Depends(get_current_active_user)],
     ) -> User:
         if not PermissionChecker.has_permission(db, current_user, permission_name):
             logger.warning(
@@ -257,21 +281,24 @@ def require_permission(permission_name: str):
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Insufficient permissions. Required: {permission_name}",
             )
-        logger.debug(f"✅ [PERMISSION] User {current_user.email} has permission: {permission_name}")
+        logger.debug(
+            f"✅ [PERMISSION] User {current_user.email} has permission: {permission_name}"
+        )
         return current_user
+
     return permission_checker
 
 
 def require_any_permission(*permission_names: str):
     """
     Dependency factory requiring ANY of the specified permissions.
-    
+
     Args:
         *permission_names: Variable number of permission names
-    
+
     Returns:
         A dependency function that validates the user has at least one permission
-        
+
     Example:
         @router.get("/users")
         async def list_users(
@@ -279,11 +306,14 @@ def require_any_permission(*permission_names: str):
         ):
             ...
     """
+
     def permission_checker(
         db: Annotated[Session, Depends(get_db)],
-        current_user: Annotated[User, Depends(get_current_active_user)]
+        current_user: Annotated[User, Depends(get_current_active_user)],
     ) -> User:
-        if not PermissionChecker.has_any_permission(db, current_user, list(permission_names)):
+        if not PermissionChecker.has_any_permission(
+            db, current_user, list(permission_names)
+        ):
             logger.warning(
                 f"❌ [PERMISSION] User {current_user.email} denied access - missing any of: {permission_names}"
             )
@@ -291,21 +321,24 @@ def require_any_permission(*permission_names: str):
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Insufficient permissions. Required any of: {', '.join(permission_names)}",
             )
-        logger.debug(f"✅ [PERMISSION] User {current_user.email} has at least one permission from: {permission_names}")
+        logger.debug(
+            f"✅ [PERMISSION] User {current_user.email} has at least one permission from: {permission_names}"
+        )
         return current_user
+
     return permission_checker
 
 
 def require_all_permissions(*permission_names: str):
     """
     Dependency factory requiring ALL of the specified permissions.
-    
+
     Args:
         *permission_names: Variable number of permission names
-    
+
     Returns:
         A dependency function that validates the user has all permissions
-        
+
     Example:
         @router.post("/users")
         async def create_user(
@@ -313,11 +346,14 @@ def require_all_permissions(*permission_names: str):
         ):
             ...
     """
+
     def permission_checker(
         db: Annotated[Session, Depends(get_db)],
-        current_user: Annotated[User, Depends(get_current_active_user)]
+        current_user: Annotated[User, Depends(get_current_active_user)],
     ) -> User:
-        if not PermissionChecker.has_all_permissions(db, current_user, list(permission_names)):
+        if not PermissionChecker.has_all_permissions(
+            db, current_user, list(permission_names)
+        ):
             logger.warning(
                 f"❌ [PERMISSION] User {current_user.email} denied access - missing some of: {permission_names}"
             )
@@ -325,8 +361,9 @@ def require_all_permissions(*permission_names: str):
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Insufficient permissions. Required all of: {', '.join(permission_names)}",
             )
-        logger.debug(f"✅ [PERMISSION] User {current_user.email} has all permissions: {permission_names}")
+        logger.debug(
+            f"✅ [PERMISSION] User {current_user.email} has all permissions: {permission_names}"
+        )
         return current_user
+
     return permission_checker
-
-

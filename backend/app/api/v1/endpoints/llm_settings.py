@@ -11,7 +11,11 @@ from app.core.config import settings
 from app.db.base import get_db
 from app.models.llm_settings import LLMSettings
 from app.models.user import User
-from app.schemas.llm_settings import LLMSettingsResponse, LLMSettingsUpdate, mask_api_key
+from app.schemas.llm_settings import (
+    LLMSettingsResponse,
+    LLMSettingsUpdate,
+    mask_api_key,
+)
 
 logger = logging.getLogger(__name__)
 

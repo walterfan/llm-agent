@@ -7,9 +7,9 @@
     <div class="flex gap-2 items-center">
       <select
         :value="hour"
-        @change="updateHour"
         class="block w-20 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
         :disabled="disabled"
+        @change="updateHour"
       >
         <option v-for="h in 24" :key="h - 1" :value="h - 1">
           {{ String(h - 1).padStart(2, '0') }}
@@ -18,32 +18,36 @@
       <span class="text-gray-500">:</span>
       <select
         :value="minute"
-        @change="updateMinute"
         class="block w-20 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
         :disabled="disabled"
+        @change="updateMinute"
       >
         <option v-for="m in minutes" :key="m" :value="m">
           {{ String(m).padStart(2, '0') }}
         </option>
       </select>
     </div>
-    <p v-if="error" class="mt-1 text-sm text-red-600">{{ error }}</p>
-    <p v-if="hint" class="mt-1 text-sm text-gray-500">{{ hint }}</p>
+    <p v-if="error" class="mt-1 text-sm text-red-600">
+      {{ error }}
+    </p>
+    <p v-if="hint" class="mt-1 text-sm text-gray-500">
+      {{ hint }}
+    </p>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue';
-import { parseTime, formatTime } from '@/types/emailPreferences';
+import { ref, watch, computed } from 'vue'
+import { parseTime, formatTime } from '@/types/emailPreferences'
 
 interface Props {
-  modelValue: string | null;
-  label?: string;
-  showTimezone?: boolean;
-  disabled?: boolean;
-  error?: string;
-  hint?: string;
-  minuteStep?: number; // Step for minutes (e.g., 15 for 00, 15, 30, 45)
+  modelValue: string | null
+  label?: string
+  showTimezone?: boolean
+  disabled?: boolean
+  error?: string
+  hint?: string
+  minuteStep?: number // Step for minutes (e.g., 15 for 00, 15, 30, 45)
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -53,56 +57,56 @@ const props = withDefaults(defineProps<Props>(), {
   error: '',
   hint: '',
   minuteStep: 1,
-});
+})
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string];
-}>();
+  'update:modelValue': [value: string]
+}>()
 
 // State
-const hour = ref(8); // Default 08:00
-const minute = ref(0);
+const hour = ref(8) // Default 08:00
+const minute = ref(0)
 
 // Computed
 const minutes = computed(() => {
-  const result = [];
+  const result = []
   for (let i = 0; i < 60; i += props.minuteStep) {
-    result.push(i);
+    result.push(i)
   }
-  return result;
-});
+  return result
+})
 
 // Initialize from modelValue
 watch(
   () => props.modelValue,
   (newValue) => {
     if (newValue) {
-      const parsed = parseTime(newValue);
+      const parsed = parseTime(newValue)
       if (parsed) {
-        hour.value = parsed.hour;
-        minute.value = parsed.minute;
+        hour.value = parsed.hour
+        minute.value = parsed.minute
       }
     }
   },
   { immediate: true }
-);
+)
 
 // Update handlers
 function updateHour(event: Event) {
-  const target = event.target as HTMLSelectElement;
-  hour.value = parseInt(target.value, 10);
-  emitValue();
+  const target = event.target as HTMLSelectElement
+  hour.value = parseInt(target.value, 10)
+  emitValue()
 }
 
 function updateMinute(event: Event) {
-  const target = event.target as HTMLSelectElement;
-  minute.value = parseInt(target.value, 10);
-  emitValue();
+  const target = event.target as HTMLSelectElement
+  minute.value = parseInt(target.value, 10)
+  emitValue()
 }
 
 function emitValue() {
-  const timeStr = formatTime(hour.value, minute.value);
-  emit('update:modelValue', timeStr);
+  const timeStr = formatTime(hour.value, minute.value)
+  emit('update:modelValue', timeStr)
 }
 </script>
 
@@ -116,5 +120,3 @@ function emitValue() {
   padding-right: 2.5rem;
 }
 </style>
-
-

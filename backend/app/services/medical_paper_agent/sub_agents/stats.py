@@ -42,13 +42,17 @@ def create_stats_tools() -> list[StructuredTool]:
             args_schema=ChiSquareInput,
         ),
         StructuredTool.from_function(
-            func=lambda times, events, groups=None: run_survival_analysis(times, events, groups),
+            func=lambda times, events, groups=None: run_survival_analysis(
+                times, events, groups
+            ),
             name="run_survival_analysis",
             description="Run Kaplan-Meier survival analysis with optional log-rank test.",
             args_schema=SurvivalInput,
         ),
         StructuredTool.from_function(
-            func=lambda effect_size, alpha=0.05, power=0.80, test_type="two_sample_ttest": calculate_sample_size(effect_size, alpha, power, test_type),
+            func=lambda effect_size, alpha=0.05, power=0.80, test_type="two_sample_ttest": calculate_sample_size(
+                effect_size, alpha, power, test_type
+            ),
             name="calculate_sample_size",
             description="Calculate required sample size for a given effect size, alpha, and power.",
             args_schema=SampleSizeInput,

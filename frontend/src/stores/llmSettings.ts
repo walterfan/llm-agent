@@ -35,7 +35,9 @@ export const useLLMSettingsStore = defineStore('llmSettings', () => {
       settings.value = await llmSettingsService.updateSettings(data)
       maskedKeys.value = await llmSettingsService.getMaskedKeys()
       successMessage.value = 'Settings saved successfully'
-      setTimeout(() => { successMessage.value = null }, 3000)
+      setTimeout(() => {
+        successMessage.value = null
+      }, 3000)
     } catch (err: any) {
       error.value = err.response?.data?.detail || 'Failed to save LLM settings'
       throw err

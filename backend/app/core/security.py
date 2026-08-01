@@ -29,7 +29,9 @@ def get_password_hash(password: str) -> str:
     return hashed.decode("utf-8")
 
 
-def create_access_token(subject: str | Any, expires_delta: timedelta | None = None) -> str:
+def create_access_token(
+    subject: str | Any, expires_delta: timedelta | None = None
+) -> str:
     """Create a JWT access token."""
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
@@ -39,29 +41,34 @@ def create_access_token(subject: str | Any, expires_delta: timedelta | None = No
         )
 
     to_encode = {"exp": expire, "sub": str(subject)}
-    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    encoded_jwt = jwt.encode(
+        to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM
+    )
     return encoded_jwt
 
 
-def create_refresh_token(subject: str | Any, expires_delta: timedelta | None = None) -> str:
+def create_refresh_token(
+    subject: str | Any, expires_delta: timedelta | None = None
+) -> str:
     """Create a JWT refresh token with a longer expiration."""
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(
-            days=settings.REFRESH_TOKEN_EXPIRE_DAYS
-        )
+        expire = datetime.utcnow() + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
 
     to_encode = {"exp": expire, "sub": str(subject), "type": "refresh"}
-    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    encoded_jwt = jwt.encode(
+        to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM
+    )
     return encoded_jwt
 
 
 def decode_access_token(token: str) -> dict[str, Any] | None:
     """Decode and verify a JWT access token."""
     import logging
+
     logger = logging.getLogger(__name__)
-    
+
     try:
         logger.debug(f"🔓 [JWT] Attempting to decode token (length: {len(token)})")
         payload = jwt.decode(
@@ -78,5 +85,3 @@ def decode_access_token(token: str) -> dict[str, Any] | None:
     except JWTError as e:
         logger.warning(f"❌ [JWT] Token decode error: {type(e).__name__}: {e}")
         return None
-
-

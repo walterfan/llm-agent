@@ -2,7 +2,7 @@
  * Learning records API service
  */
 
-import api from './api';
+import api from './api'
 import type {
   LearningRecord,
   LearningRecordCreate,
@@ -10,18 +10,16 @@ import type {
   LearningRecordListResponse,
   LearningRecordType,
   LearningStatistics,
-} from '@/types/secretary';
+} from '@/types/secretary'
 
-const BASE_PATH = '/learning';
+const BASE_PATH = '/learning'
 
 /**
  * Save a learning record (confirm save)
  */
-async function confirmLearning(
-  data: LearningRecordCreate
-): Promise<LearningRecord> {
-  const response = await api.post<LearningRecord>(`${BASE_PATH}/confirm`, data);
-  return response.data;
+async function confirmLearning(data: LearningRecordCreate): Promise<LearningRecord> {
+  const response = await api.post<LearningRecord>(`${BASE_PATH}/confirm`, data)
+  return response.data
 }
 
 /**
@@ -37,47 +35,36 @@ async function listRecords(
     page,
     page_size: pageSize,
     favorites_only: favoritesOnly,
-  };
-  if (type) {
-    params.type = type;
   }
-  
-  const response = await api.get<LearningRecordListResponse>(
-    `${BASE_PATH}/records`,
-    { params }
-  );
-  return response.data;
+  if (type) {
+    params.type = type
+  }
+
+  const response = await api.get<LearningRecordListResponse>(`${BASE_PATH}/records`, { params })
+  return response.data
 }
 
 /**
  * Get a single learning record
  */
 async function getRecord(recordId: string): Promise<LearningRecord> {
-  const response = await api.get<LearningRecord>(
-    `${BASE_PATH}/records/${recordId}`
-  );
-  return response.data;
+  const response = await api.get<LearningRecord>(`${BASE_PATH}/records/${recordId}`)
+  return response.data
 }
 
 /**
  * Update a learning record
  */
-async function updateRecord(
-  recordId: string,
-  data: LearningRecordUpdate
-): Promise<LearningRecord> {
-  const response = await api.patch<LearningRecord>(
-    `${BASE_PATH}/records/${recordId}`,
-    data
-  );
-  return response.data;
+async function updateRecord(recordId: string, data: LearningRecordUpdate): Promise<LearningRecord> {
+  const response = await api.patch<LearningRecord>(`${BASE_PATH}/records/${recordId}`, data)
+  return response.data
 }
 
 /**
  * Delete a learning record
  */
 async function deleteRecord(recordId: string): Promise<void> {
-  await api.delete(`${BASE_PATH}/records/${recordId}`);
+  await api.delete(`${BASE_PATH}/records/${recordId}`)
 }
 
 /**
@@ -93,46 +80,37 @@ async function searchRecords(
     q: query,
     page,
     page_size: pageSize,
-  };
-  if (type) {
-    params.type = type;
   }
-  
-  const response = await api.get<LearningRecordListResponse>(
-    `${BASE_PATH}/search`,
-    { params }
-  );
-  return response.data;
+  if (type) {
+    params.type = type
+  }
+
+  const response = await api.get<LearningRecordListResponse>(`${BASE_PATH}/search`, { params })
+  return response.data
 }
 
 /**
  * Mark a record as reviewed
  */
 async function markReviewed(recordId: string): Promise<LearningRecord> {
-  const response = await api.post<LearningRecord>(
-    `${BASE_PATH}/records/${recordId}/review`
-  );
-  return response.data;
+  const response = await api.post<LearningRecord>(`${BASE_PATH}/records/${recordId}/review`)
+  return response.data
 }
 
 /**
  * Toggle favorite status
  */
 async function toggleFavorite(recordId: string): Promise<LearningRecord> {
-  const response = await api.post<LearningRecord>(
-    `${BASE_PATH}/records/${recordId}/favorite`
-  );
-  return response.data;
+  const response = await api.post<LearningRecord>(`${BASE_PATH}/records/${recordId}/favorite`)
+  return response.data
 }
 
 /**
  * Get learning statistics
  */
 async function getStatistics(): Promise<LearningStatistics> {
-  const response = await api.get<LearningStatistics>(
-    `${BASE_PATH}/statistics`
-  );
-  return response.data;
+  const response = await api.get<LearningStatistics>(`${BASE_PATH}/statistics`)
+  return response.data
 }
 
 export default {
@@ -145,4 +123,4 @@ export default {
   markReviewed,
   toggleFavorite,
   getStatistics,
-};
+}

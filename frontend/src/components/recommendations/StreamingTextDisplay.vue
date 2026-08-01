@@ -1,28 +1,28 @@
 <script setup lang="ts">
-import { ref, computed, onUnmounted } from 'vue';
+import { ref, computed, onUnmounted } from 'vue'
 
 const props = defineProps<{
-  text: string;
-  isStreaming: boolean;
-}>();
+  text: string
+  isStreaming: boolean
+}>()
 
-const showCursor = ref(true);
+const showCursor = ref(true)
 
 // Blinking cursor effect
-let cursorInterval: number | undefined;
+let cursorInterval: number | undefined
 if (props.isStreaming) {
   cursorInterval = setInterval(() => {
-    showCursor.value = !showCursor.value;
-  }, 500);
+    showCursor.value = !showCursor.value
+  }, 500)
 }
 
 onUnmounted(() => {
   if (cursorInterval) {
-    clearInterval(cursorInterval);
+    clearInterval(cursorInterval)
   }
-});
+})
 
-const displayText = computed(() => props.text || '');
+const displayText = computed(() => props.text || '')
 </script>
 
 <template>
@@ -56,8 +56,3 @@ const displayText = computed(() => props.text || '');
   margin-left: 2px;
 }
 </style>
-
-
-
-
-

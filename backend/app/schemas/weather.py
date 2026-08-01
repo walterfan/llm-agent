@@ -27,7 +27,9 @@ class ForecastData(BaseModel):
     province: str = Field(..., description="Province name")
     adcode: str = Field(..., description="Administrative division code")
     reporttime: str = Field(..., description="Forecast report timestamp")
-    casts: list[ForecastCast] = Field(default_factory=list, description="Forecast for next 3-4 days")
+    casts: list[ForecastCast] = Field(
+        default_factory=list, description="Forecast for next 3-4 days"
+    )
 
 
 class WeatherData(BaseModel):
@@ -45,7 +47,9 @@ class WeatherData(BaseModel):
     wind_power: str = Field(..., description="Wind power level")
     report_time: str = Field(..., description="Weather report timestamp")
     cached: bool = Field(default=False, description="Whether data is from cache")
-    forecast: ForecastData | None = Field(None, description="Forecast data if requested")
+    forecast: ForecastData | None = Field(
+        None, description="Forecast data if requested"
+    )
 
 
 class WeatherResponse(BaseModel):
@@ -60,5 +64,7 @@ class WeatherQuery(BaseModel):
     """Query parameters for weather request."""
 
     city: str = Field(..., description="City name or AD code", min_length=1)
-    extensions: str = Field(default="base", description="Weather type: base (current) or all (current + forecast)")
-
+    extensions: str = Field(
+        default="base",
+        description="Weather type: base (current) or all (current + forecast)",
+    )

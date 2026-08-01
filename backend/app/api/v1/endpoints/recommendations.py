@@ -44,7 +44,9 @@ async def generate_recommendation(
             city=request.city,
             days=request.days,
         )
-        logger.info(f"📤 Returning {len(recommendations.recommendations)} day(s) of recommendations to client")
+        logger.info(
+            f"📤 Returning {len(recommendations.recommendations)} day(s) of recommendations to client"
+        )
         return recommendations
     except ValueError as e:
         logger.error(f"Validation error: {e}")
@@ -52,8 +54,7 @@ async def generate_recommendation(
     except Exception as e:
         logger.error(f"Failed to generate recommendations: {e}")
         raise HTTPException(
-            status_code=500,
-            detail="抱歉，推荐服务暂时不可用，请稍后再试。"
+            status_code=500, detail="抱歉，推荐服务暂时不可用，请稍后再试。"
         )
 
 
@@ -63,7 +64,9 @@ async def list_recommendations(
     current_user: Annotated[User, Depends(get_current_active_user)],
     limit: int = Query(20, ge=1, le=100, description="Maximum results to return"),
     offset: int = Query(0, ge=0, description="Pagination offset"),
-    start_date: str | None = Query(None, description="Filter by start date (ISO format)"),
+    start_date: str | None = Query(
+        None, description="Filter by start date (ISO format)"
+    ),
     end_date: str | None = Query(None, description="Filter by end date (ISO format)"),
 ):
     """
@@ -79,36 +82,37 @@ async def list_recommendations(
             limit=limit,
             offset=offset,
             start_date=start_date,
-            end_date=end_date
+            end_date=end_date,
         )
 
         # Convert to response format
         items = []
         for rec in recommendations:
             response_data = rec.response
-            items.append(RecommendationResponse(
-                id=rec.id,
-                user_id=rec.user_id,
-                city=rec.city,
-                weather_data=rec.weather_data,
-                clothing_items=response_data.get('clothing_items', []),
-                advice=response_data.get('advice', ''),
-                weather_warnings=response_data.get('weather_warnings'),
-                emoji_summary=response_data.get('emoji_summary', ''),
-                cached=False,
-                cost_estimate=rec.cost_estimate,
-                created_at=rec.created_at
-            ))
+            items.append(
+                RecommendationResponse(
+                    id=rec.id,
+                    user_id=rec.user_id,
+                    city=rec.city,
+                    weather_data=rec.weather_data,
+                    clothing_items=response_data.get("clothing_items", []),
+                    advice=response_data.get("advice", ""),
+                    weather_warnings=response_data.get("weather_warnings"),
+                    emoji_summary=response_data.get("emoji_summary", ""),
+                    cached=False,
+                    cost_estimate=rec.cost_estimate,
+                    created_at=rec.created_at,
+                )
+            )
 
         return RecommendationListResponse(
-            items=items,
-            total=total,
-            limit=limit,
-            offset=offset
+            items=items, total=total, limit=limit, offset=offset
         )
     except Exception as e:
         logger.error(f"Failed to list recommendations: {e}")
-        raise HTTPException(status_code=500, detail="Failed to retrieve recommendations")
+        raise HTTPException(
+            status_code=500, detail="Failed to retrieve recommendations"
+        )
 
 
 @router.get("/stream", response_class=StreamingResponse)
@@ -125,9 +129,9 @@ async def generate_recommendation_stream(
     This endpoint streams the recommendation generation process in real-time,
     allowing the frontend to display progressive updates as the AI generates
     the response.
-    
+
     **Note**: Uses GET method because EventSource only supports GET requests.
-    
+
     **Authentication**: Due to EventSource limitations, pass token as query parameter:
     `/stream?city=340100&token=your_jwt_token`
 
@@ -156,10 +160,10 @@ async def generate_recommendation_stream(
     **Frontend Usage** (JavaScript):
     ```javascript
     const eventSource = new EventSource('/api/v1/recommendations/stream?city=340100&token=YOUR_TOKEN');
-    
+
     eventSource.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        
+
         if (data.type === 'token') {
             // Append token to UI
             displayToken(data.content);
@@ -170,29 +174,30 @@ async def generate_recommendation_stream(
     };
     ```
     """
-    logger.info(f"🌊 [STREAM] Request received: method={request.method}, url={request.url}, user={current_user.email}")
-    logger.debug(f"🌊 [STREAM] Query params: city={city}, date={date}, has_token={'token' in request.url.query}")
+    logger.info(
+        f"🌊 [STREAM] Request received: method={request.method}, url={request.url}, user={current_user.email}"
+    )
+    logger.debug(
+        f"🌊 [STREAM] Query params: city={city}, date={date}, has_token={'token' in request.url.query}"
+    )
     try:
         service = StreamingRecommendationService(db)
-        
+
         return StreamingResponse(
             service.generate_recommendation_stream(
-                user=current_user,
-                city=city,
-                date=date
+                user=current_user, city=city, date=date
             ),
             media_type="text/event-stream",
             headers={
                 "Cache-Control": "no-cache",
                 "Connection": "keep-alive",
                 "X-Accel-Buffering": "no",  # Disable nginx buffering
-            }
+            },
         )
     except Exception as e:
         logger.error(f"Failed to start streaming recommendation: {e}")
         raise HTTPException(
-            status_code=500,
-            detail="Failed to start streaming recommendation"
+            status_code=500, detail="Failed to start streaming recommendation"
         )
 
 
@@ -213,7 +218,9 @@ async def generate_recommendation_stream_3days(
     **Authentication**: pass token as query parameter:
     `/stream/3days?city=430100&token=your_jwt_token`
     """
-    logger.info(f"🌊 [STREAM-3D] Request received: method={request.method}, url={request.url}, user={current_user.email}")
+    logger.info(
+        f"🌊 [STREAM-3D] Request received: method={request.method}, url={request.url}, user={current_user.email}"
+    )
     try:
         service = StreamingRecommendationService(db)
         return StreamingResponse(
@@ -232,8 +239,7 @@ async def generate_recommendation_stream_3days(
     except Exception as e:
         logger.error(f"Failed to start 3-day streaming recommendation: {e}")
         raise HTTPException(
-            status_code=500,
-            detail="Failed to start 3-day streaming recommendation"
+            status_code=500, detail="Failed to start 3-day streaming recommendation"
         )
 
 
@@ -250,7 +256,9 @@ async def get_recommendation(
     """
     try:
         service = RecommendationService(db)
-        recommendation = service.get_recommendation_by_id(recommendation_id, current_user.id)
+        recommendation = service.get_recommendation_by_id(
+            recommendation_id, current_user.id
+        )
 
         if not recommendation:
             raise HTTPException(status_code=404, detail="Recommendation not found")
@@ -261,17 +269,16 @@ async def get_recommendation(
             user_id=recommendation.user_id,
             city=recommendation.city,
             weather_data=recommendation.weather_data,
-            clothing_items=response_data.get('clothing_items', []),
-            advice=response_data.get('advice', ''),
-            weather_warnings=response_data.get('weather_warnings'),
-            emoji_summary=response_data.get('emoji_summary', ''),
+            clothing_items=response_data.get("clothing_items", []),
+            advice=response_data.get("advice", ""),
+            weather_warnings=response_data.get("weather_warnings"),
+            emoji_summary=response_data.get("emoji_summary", ""),
             cached=False,
             cost_estimate=recommendation.cost_estimate,
-            created_at=recommendation.created_at
+            created_at=recommendation.created_at,
         )
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Failed to get recommendation: {e}")
         raise HTTPException(status_code=500, detail="Failed to retrieve recommendation")
-

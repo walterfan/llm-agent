@@ -34,9 +34,7 @@ const form = ref<AddJobRequest>(defaultForm())
 const deleteConfirmId = ref<string | null>(null)
 
 // ========== Computed ==========
-const selectedJobType = computed(() =>
-  store.jobTypes.find((jt) => jt.id === form.value.job_type)
-)
+const selectedJobType = computed(() => store.jobTypes.find((jt) => jt.id === form.value.job_type))
 
 const triggerSummary = computed(() => {
   if (form.value.trigger_type === 'interval') {
@@ -48,7 +46,8 @@ const triggerSummary = computed(() => {
   } else {
     const parts: string[] = []
     if (form.value.hour !== undefined) parts.push(`${String(form.value.hour).padStart(2, '0')}`)
-    if (form.value.minute !== undefined) parts.push(`:${String(form.value.minute).padStart(2, '0')}`)
+    if (form.value.minute !== undefined)
+      parts.push(`:${String(form.value.minute).padStart(2, '0')}`)
     if (form.value.day_of_week) parts.push(` (${form.value.day_of_week})`)
     return parts.length ? `At ${parts.join('')}` : 'Not configured'
   }
@@ -157,29 +156,33 @@ function formatTime(iso: string | null): string {
 
 function statusBadgeClass(status: string): string {
   switch (status) {
-    case 'success': return 'bg-green-100 text-green-800'
-    case 'error': return 'bg-red-100 text-red-800'
-    case 'missed': return 'bg-yellow-100 text-yellow-800'
-    default: return 'bg-gray-100 text-gray-800'
+    case 'success':
+      return 'bg-green-100 text-green-800'
+    case 'error':
+      return 'bg-red-100 text-red-800'
+    case 'missed':
+      return 'bg-yellow-100 text-yellow-800'
+    default:
+      return 'bg-gray-100 text-gray-800'
   }
 }
 
 function agentBadgeClass(agent: string): string {
   switch (agent) {
-    case 'secretary': return 'bg-blue-100 text-blue-800'
-    case 'recommendation': return 'bg-purple-100 text-purple-800'
-    case 'coach': return 'bg-green-100 text-green-800'
-    default: return 'bg-gray-100 text-gray-800'
+    case 'secretary':
+      return 'bg-blue-100 text-blue-800'
+    case 'recommendation':
+      return 'bg-purple-100 text-purple-800'
+    case 'coach':
+      return 'bg-green-100 text-green-800'
+    default:
+      return 'bg-gray-100 text-gray-800'
   }
 }
 
 // ========== Lifecycle ==========
 onMounted(async () => {
-  await Promise.all([
-    store.fetchJobs(),
-    store.fetchJobTypes(),
-    store.fetchHistory(),
-  ])
+  await Promise.all([store.fetchJobs(), store.fetchJobTypes(), store.fetchHistory()])
 })
 </script>
 
@@ -190,18 +193,14 @@ onMounted(async () => {
       <div class="mb-6 flex items-center justify-between">
         <div>
           <h1 class="text-3xl font-bold text-gray-900">⏰ Job Scheduler</h1>
-          <p class="mt-1 text-gray-600">
-            Manage scheduled jobs that trigger AI agents
-          </p>
+          <p class="mt-1 text-gray-600">Manage scheduled jobs that trigger AI agents</p>
         </div>
         <div class="flex items-center gap-3">
           <!-- Scheduler Status Badge -->
           <span
             :class="[
               'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium',
-              store.schedulerRunning
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800',
+              store.schedulerRunning ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800',
             ]"
           >
             <span
@@ -215,13 +214,24 @@ onMounted(async () => {
           </span>
           <!-- Refresh Button -->
           <button
-            @click="store.fetchJobs(); store.fetchHistory()"
             :disabled="store.loading"
             class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
             title="Refresh"
+            @click="store.fetchJobs(); store.fetchHistory()"
           >
-            <svg class="w-5 h-5" :class="{ 'animate-spin': store.loading }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            <svg
+              class="w-5 h-5"
+              :class="{ 'animate-spin': store.loading }"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
             </svg>
           </button>
         </div>
@@ -229,13 +239,19 @@ onMounted(async () => {
 
       <!-- Alert Messages -->
       <Transition name="fade">
-        <div v-if="store.error" class="mb-4 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-2">
+        <div
+          v-if="store.error"
+          class="mb-4 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-2"
+        >
           <span class="text-red-500">❌</span>
           <span class="text-red-800 text-sm">{{ store.error }}</span>
         </div>
       </Transition>
       <Transition name="fade">
-        <div v-if="store.successMessage" class="mb-4 bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-2">
+        <div
+          v-if="store.successMessage"
+          class="mb-4 bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-2"
+        >
           <span class="text-green-500">✅</span>
           <span class="text-green-800 text-sm">{{ store.successMessage }}</span>
         </div>
@@ -244,15 +260,15 @@ onMounted(async () => {
       <!-- Tabs -->
       <div class="flex gap-1 mb-6 bg-gray-100 p-1 rounded-lg w-fit">
         <button
-          v-for="tab in (['jobs', 'create', 'history'] as const)"
+          v-for="tab in ['jobs', 'create', 'history'] as const"
           :key="tab"
-          @click="tab === 'create' ? openCreateTab() : (activeTab = tab)"
           :class="[
             'px-4 py-2 rounded-md text-sm font-medium transition-all',
             activeTab === tab
               ? 'bg-white text-gray-900 shadow-sm'
               : 'text-gray-600 hover:text-gray-900',
           ]"
+          @click="tab === 'create' ? openCreateTab() : (activeTab = tab)"
         >
           {{ tab === 'jobs' ? '📋 Jobs' : tab === 'create' ? '➕ Create' : '📜 History' }}
         </button>
@@ -265,8 +281,18 @@ onMounted(async () => {
         <!-- Search Bar -->
         <div class="mb-4">
           <div class="relative">
-            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            <svg
+              class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
             </svg>
             <input
               v-model="store.searchQuery"
@@ -282,11 +308,31 @@ onMounted(async () => {
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
               <tr>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Job</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trigger</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Next Run</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th
+                  class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Job
+                </th>
+                <th
+                  class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Trigger
+                </th>
+                <th
+                  class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Next Run
+                </th>
+                <th
+                  class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Status
+                </th>
+                <th
+                  class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
@@ -296,11 +342,17 @@ onMounted(async () => {
                 class="hover:bg-gray-50 transition-colors"
               >
                 <td class="px-4 py-3">
-                  <div class="text-sm font-medium text-gray-900">{{ job.name }}</div>
-                  <div class="text-xs text-gray-500 font-mono">{{ job.id }}</div>
+                  <div class="text-sm font-medium text-gray-900">
+                    {{ job.name }}
+                  </div>
+                  <div class="text-xs text-gray-500 font-mono">
+                    {{ job.id }}
+                  </div>
                 </td>
                 <td class="px-4 py-3">
-                  <code class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-700">{{ job.trigger }}</code>
+                  <code class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-700">{{
+                    job.trigger
+                  }}</code>
                 </td>
                 <td class="px-4 py-3 text-sm text-gray-600">
                   {{ formatTime(job.next_run_time) }}
@@ -321,55 +373,90 @@ onMounted(async () => {
                   <div class="flex items-center justify-end gap-1">
                     <!-- Trigger Now -->
                     <button
-                      @click="store.triggerJob(job.id)"
                       class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
                       title="Run Now"
+                      @click="store.triggerJob(job.id)"
                     >
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                        />
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
                       </svg>
                     </button>
                     <!-- Pause / Resume -->
                     <button
                       v-if="job.next_run_time"
-                      @click="store.pauseJob(job.id)"
                       class="p-1.5 text-yellow-600 hover:bg-yellow-50 rounded-md transition-colors"
                       title="Pause"
+                      @click="store.pauseJob(job.id)"
                     >
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
                       </svg>
                     </button>
                     <button
                       v-else
-                      @click="store.resumeJob(job.id)"
                       class="p-1.5 text-green-600 hover:bg-green-50 rounded-md transition-colors"
                       title="Resume"
+                      @click="store.resumeJob(job.id)"
                     >
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                        />
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
                       </svg>
                     </button>
                     <!-- Edit -->
                     <button
-                      @click="editJob(job)"
                       class="p-1.5 text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
                       title="Edit"
+                      @click="editJob(job)"
                     >
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        />
                       </svg>
                     </button>
                     <!-- Delete -->
                     <button
-                      @click="confirmDelete(job.id)"
                       class="p-1.5 text-red-600 hover:bg-red-50 rounded-md transition-colors"
                       title="Delete"
+                      @click="confirmDelete(job.id)"
                     >
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
                       </svg>
                     </button>
                   </div>
@@ -397,7 +484,7 @@ onMounted(async () => {
             {{ isEditing ? `Edit Job: ${editingJobId}` : 'Create New Job' }}
           </h2>
 
-          <form @submit.prevent="handleSubmit" class="space-y-6">
+          <form class="space-y-6" @submit.prevent="handleSubmit">
             <!-- Row 1: Job ID + Name -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -409,7 +496,9 @@ onMounted(async () => {
                   placeholder="e.g., morning_reminder_check"
                   class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
                 />
-                <p class="mt-1 text-xs text-gray-500">Unique identifier, lowercase with underscores</p>
+                <p class="mt-1 text-xs text-gray-500">
+                  Unique identifier, lowercase with underscores
+                </p>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Display Name</label>
@@ -437,16 +526,18 @@ onMounted(async () => {
                   ]"
                 >
                   <input
+                    v-model="form.job_type"
                     type="radio"
                     :value="jt.id"
-                    v-model="form.job_type"
-                    @change="applyDefaults"
                     class="mt-0.5 mr-3"
+                    @change="applyDefaults"
                   />
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2">
                       <span class="text-sm font-medium text-gray-900">{{ jt.id }}</span>
-                      <span :class="['text-xs px-1.5 py-0.5 rounded-full', agentBadgeClass(jt.agent)]">
+                      <span
+                        :class="['text-xs px-1.5 py-0.5 rounded-full', agentBadgeClass(jt.agent)]"
+                      >
                         {{ jt.agent }}
                       </span>
                     </div>
@@ -461,11 +552,21 @@ onMounted(async () => {
               <label class="block text-sm font-medium text-gray-700 mb-1">Trigger Type *</label>
               <div class="flex gap-4">
                 <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="radio" value="interval" v-model="form.trigger_type" class="text-blue-600" />
+                  <input
+                    v-model="form.trigger_type"
+                    type="radio"
+                    value="interval"
+                    class="text-blue-600"
+                  />
                   <span class="text-sm">⏱️ Interval (every N minutes/hours)</span>
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="radio" value="cron" v-model="form.trigger_type" class="text-blue-600" />
+                  <input
+                    v-model="form.trigger_type"
+                    type="radio"
+                    value="cron"
+                    class="text-blue-600"
+                  />
                   <span class="text-sm">🕐 Cron (at specific time)</span>
                 </label>
               </div>
@@ -562,12 +663,10 @@ onMounted(async () => {
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
               <div class="text-sm text-blue-800">
                 <strong>Preview:</strong>
-                Job <code class="bg-blue-100 px-1 rounded">{{ form.job_id || '...' }}</code>
-                will run <strong>{{ triggerSummary }}</strong>
-                executing <code class="bg-blue-100 px-1 rounded">{{ form.job_type }}</code>
-                <span v-if="selectedJobType">
-                  ({{ selectedJobType.agent }} agent)
-                </span>
+                Job <code class="bg-blue-100 px-1 rounded">{{ form.job_id || '...' }}</code> will
+                run <strong>{{ triggerSummary }}</strong> executing
+                <code class="bg-blue-100 px-1 rounded">{{ form.job_type }}</code>
+                <span v-if="selectedJobType"> ({{ selectedJobType.agent }} agent) </span>
               </div>
             </div>
 
@@ -582,8 +681,8 @@ onMounted(async () => {
               </button>
               <button
                 type="button"
-                @click="activeTab = 'jobs'; resetForm()"
                 class="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-medium transition-colors"
+                @click="activeTab = 'jobs'; resetForm()"
               >
                 Cancel
               </button>
@@ -599,10 +698,7 @@ onMounted(async () => {
         <div class="bg-white rounded-lg shadow overflow-hidden">
           <div class="px-4 py-3 bg-gray-50 border-b flex items-center justify-between">
             <h3 class="text-sm font-medium text-gray-700">Recent Executions</h3>
-            <button
-              @click="store.fetchHistory()"
-              class="text-xs text-blue-600 hover:text-blue-800"
-            >
+            <button class="text-xs text-blue-600 hover:text-blue-800" @click="store.fetchHistory()">
               Refresh
             </button>
           </div>
@@ -615,10 +711,18 @@ onMounted(async () => {
           <table v-else class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
               <tr>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Job ID</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Executed At</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Details</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Job ID
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Status
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Executed At
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Details
+                </th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-200">
@@ -627,14 +731,23 @@ onMounted(async () => {
                 :key="idx"
                 class="hover:bg-gray-50"
               >
-                <td class="px-4 py-3 text-sm font-mono text-gray-900">{{ entry.job_id }}</td>
+                <td class="px-4 py-3 text-sm font-mono text-gray-900">
+                  {{ entry.job_id }}
+                </td>
                 <td class="px-4 py-3">
-                  <span :class="['inline-flex px-2 py-0.5 rounded-full text-xs font-medium', statusBadgeClass(entry.status)]">
+                  <span
+                    :class="[
+                      'inline-flex px-2 py-0.5 rounded-full text-xs font-medium',
+                      statusBadgeClass(entry.status),
+                    ]"
+                  >
                     {{ entry.status === 'success' ? '✅' : entry.status === 'error' ? '❌' : '⚠️' }}
                     {{ entry.status }}
                   </span>
                 </td>
-                <td class="px-4 py-3 text-sm text-gray-600">{{ formatTime(entry.executed_at) }}</td>
+                <td class="px-4 py-3 text-sm text-gray-600">
+                  {{ formatTime(entry.executed_at) }}
+                </td>
                 <td class="px-4 py-3 text-xs text-gray-500 max-w-xs truncate">
                   {{ entry.error || entry.retval || '—' }}
                 </td>
@@ -657,19 +770,19 @@ onMounted(async () => {
             <h3 class="text-lg font-semibold text-gray-900 mb-2">Delete Job</h3>
             <p class="text-sm text-gray-600 mb-4">
               Are you sure you want to delete
-              <code class="bg-gray-100 px-1 rounded">{{ deleteConfirmId }}</code>?
-              This action cannot be undone.
+              <code class="bg-gray-100 px-1 rounded">{{ deleteConfirmId }}</code
+              >? This action cannot be undone.
             </p>
             <div class="flex justify-end gap-3">
               <button
-                @click="cancelDelete"
                 class="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+                @click="cancelDelete"
               >
                 Cancel
               </button>
               <button
-                @click="executeDelete"
                 class="px-4 py-2 text-sm text-white bg-red-600 rounded-lg hover:bg-red-700"
+                @click="executeDelete"
               >
                 Delete
               </button>

@@ -308,5 +308,3 @@ export const useRBACStore = defineStore('rbac', () => {
     clearCurrent,
   }
 })
-
-

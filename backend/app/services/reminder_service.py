@@ -16,7 +16,7 @@ from app.models.reminder import Reminder, ReminderStatus, ReminderRepeat
 
 class ReminderService:
     """Service for managing reminders."""
-    
+
     @staticmethod
     def create_reminder(
         db: Session,
@@ -30,7 +30,7 @@ class ReminderService:
     ) -> Reminder:
         """
         Create a new reminder.
-        
+
         Args:
             db: Database session
             user_id: Owner user ID
@@ -40,7 +40,7 @@ class ReminderService:
             repeat: Repeat frequency
             tags: Optional list of tags
             session_id: Optional chat session ID
-            
+
         Returns:
             Created Reminder object
         """
@@ -53,13 +53,13 @@ class ReminderService:
             tags=tags or [],
             session_id=session_id,
         )
-        
+
         db.add(reminder)
         db.commit()
         db.refresh(reminder)
-        
+
         return reminder
-    
+
     @staticmethod
     def get_reminder(
         db: Session,
@@ -68,23 +68,27 @@ class ReminderService:
     ) -> Optional[Reminder]:
         """
         Get a reminder by ID.
-        
+
         Args:
             db: Database session
             reminder_id: Reminder ID
             user_id: Owner user ID
-            
+
         Returns:
             Reminder if found and owned by user, None otherwise
         """
-        return db.query(Reminder).filter(
-            and_(
-                Reminder.id == reminder_id,
-                Reminder.user_id == user_id,
-                Reminder.deleted_at.is_(None),
+        return (
+            db.query(Reminder)
+            .filter(
+                and_(
+                    Reminder.id == reminder_id,
+                    Reminder.user_id == user_id,
+                    Reminder.deleted_at.is_(None),
+                )
             )
-        ).first()
-    
+            .first()
+        )
+
     @staticmethod
     def list_reminders(
         db: Session,
@@ -96,7 +100,7 @@ class ReminderService:
     ) -> Tuple[List[Reminder], int]:
         """
         List user's reminders with pagination.
-        
+
         Args:
             db: Database session
             user_id: Owner user ID
@@ -104,7 +108,7 @@ class ReminderService:
             include_past: Include past/triggered reminders
             limit: Maximum number of reminders
             offset: Number of reminders to skip
-            
+
         Returns:
             Tuple of (reminders list, total count)
         """
@@ -114,29 +118,35 @@ class ReminderService:
                 Reminder.deleted_at.is_(None),
             )
         )
-        
+
         if status_filter:
-            status_val = status_filter.value if isinstance(status_filter, ReminderStatus) else status_filter
+            status_val = (
+                status_filter.value
+                if isinstance(status_filter, ReminderStatus)
+                else status_filter
+            )
             query = query.filter(Reminder.status == status_val)
         elif not include_past:
             # Only show pending or snoozed reminders
             query = query.filter(
-                Reminder.status.in_([
-                    ReminderStatus.pending.value,
-                    ReminderStatus.snoozed.value,
-                ])
+                Reminder.status.in_(
+                    [
+                        ReminderStatus.pending.value,
+                        ReminderStatus.snoozed.value,
+                    ]
+                )
             )
-        
+
         # Count before pagination
         total = query.count()
-        
+
         # Order by remind_at
         query = query.order_by(Reminder.remind_at.asc())
-        
+
         reminders = query.offset(offset).limit(limit).all()
-        
+
         return reminders, total
-    
+
     @staticmethod
     def get_due_reminders(
         db: Session,
@@ -144,35 +154,40 @@ class ReminderService:
     ) -> List[Reminder]:
         """
         Get reminders that are due to trigger.
-        
+
         Args:
             db: Database session
             user_id: Owner user ID
-            
+
         Returns:
             List of due reminders
         """
         now = datetime.utcnow()
-        
-        return db.query(Reminder).filter(
-            and_(
-                Reminder.user_id == user_id,
-                Reminder.deleted_at.is_(None),
-                or_(
-                    # Pending and due
-                    and_(
-                        Reminder.status == ReminderStatus.pending.value,
-                        Reminder.remind_at <= now,
+
+        return (
+            db.query(Reminder)
+            .filter(
+                and_(
+                    Reminder.user_id == user_id,
+                    Reminder.deleted_at.is_(None),
+                    or_(
+                        # Pending and due
+                        and_(
+                            Reminder.status == ReminderStatus.pending.value,
+                            Reminder.remind_at <= now,
+                        ),
+                        # Snoozed and snooze time passed
+                        and_(
+                            Reminder.status == ReminderStatus.snoozed.value,
+                            Reminder.snoozed_until <= now,
+                        ),
                     ),
-                    # Snoozed and snooze time passed
-                    and_(
-                        Reminder.status == ReminderStatus.snoozed.value,
-                        Reminder.snoozed_until <= now,
-                    ),
-                ),
+                )
             )
-        ).order_by(Reminder.remind_at.asc()).all()
-    
+            .order_by(Reminder.remind_at.asc())
+            .all()
+        )
+
     @staticmethod
     def get_upcoming_reminders(
         db: Session,
@@ -181,28 +196,33 @@ class ReminderService:
     ) -> List[Reminder]:
         """
         Get reminders coming up within specified hours.
-        
+
         Args:
             db: Database session
             user_id: Owner user ID
             within_hours: Hours to look ahead
-            
+
         Returns:
             List of upcoming reminders
         """
         now = datetime.utcnow()
         cutoff = now + timedelta(hours=within_hours)
-        
-        return db.query(Reminder).filter(
-            and_(
-                Reminder.user_id == user_id,
-                Reminder.deleted_at.is_(None),
-                Reminder.status == ReminderStatus.pending.value,
-                Reminder.remind_at > now,
-                Reminder.remind_at <= cutoff,
+
+        return (
+            db.query(Reminder)
+            .filter(
+                and_(
+                    Reminder.user_id == user_id,
+                    Reminder.deleted_at.is_(None),
+                    Reminder.status == ReminderStatus.pending.value,
+                    Reminder.remind_at > now,
+                    Reminder.remind_at <= cutoff,
+                )
             )
-        ).order_by(Reminder.remind_at.asc()).all()
-    
+            .order_by(Reminder.remind_at.asc())
+            .all()
+        )
+
     @staticmethod
     def trigger_reminder(
         db: Session,
@@ -211,20 +231,20 @@ class ReminderService:
     ) -> Optional[Reminder]:
         """
         Mark a reminder as triggered.
-        
+
         Returns:
             Updated Reminder if found, None otherwise
         """
         reminder = ReminderService.get_reminder(db, reminder_id, user_id)
         if not reminder:
             return None
-        
+
         reminder.trigger()
         db.commit()
         db.refresh(reminder)
-        
+
         return reminder
-    
+
     @staticmethod
     def snooze_reminder(
         db: Session,
@@ -234,28 +254,28 @@ class ReminderService:
     ) -> Optional[Reminder]:
         """
         Snooze a reminder.
-        
+
         Args:
             db: Database session
             reminder_id: Reminder ID
             user_id: Owner user ID
             snooze_minutes: Minutes to snooze
-            
+
         Returns:
             Updated Reminder if found, None otherwise
         """
         reminder = ReminderService.get_reminder(db, reminder_id, user_id)
         if not reminder:
             return None
-        
+
         snooze_until = datetime.utcnow() + timedelta(minutes=snooze_minutes)
         reminder.snooze(snooze_until)
-        
+
         db.commit()
         db.refresh(reminder)
-        
+
         return reminder
-    
+
     @staticmethod
     def dismiss_reminder(
         db: Session,
@@ -264,20 +284,20 @@ class ReminderService:
     ) -> Optional[Reminder]:
         """
         Dismiss a reminder.
-        
+
         Returns:
             Updated Reminder if found, None otherwise
         """
         reminder = ReminderService.get_reminder(db, reminder_id, user_id)
         if not reminder:
             return None
-        
+
         reminder.dismiss()
         db.commit()
         db.refresh(reminder)
-        
+
         return reminder
-    
+
     @staticmethod
     def update_reminder(
         db: Session,
@@ -291,14 +311,14 @@ class ReminderService:
     ) -> Optional[Reminder]:
         """
         Update a reminder.
-        
+
         Returns:
             Updated Reminder if found, None otherwise
         """
         reminder = ReminderService.get_reminder(db, reminder_id, user_id)
         if not reminder:
             return None
-        
+
         if title is not None:
             reminder.title = title
         if description is not None:
@@ -306,18 +326,23 @@ class ReminderService:
         if remind_at is not None:
             reminder.remind_at = remind_at
             # Reset status if rescheduled
-            if reminder.status in [ReminderStatus.triggered.value, ReminderStatus.dismissed.value]:
+            if reminder.status in [
+                ReminderStatus.triggered.value,
+                ReminderStatus.dismissed.value,
+            ]:
                 reminder.status = ReminderStatus.pending.value
         if repeat is not None:
-            reminder.repeat = repeat.value if isinstance(repeat, ReminderRepeat) else repeat
+            reminder.repeat = (
+                repeat.value if isinstance(repeat, ReminderRepeat) else repeat
+            )
         if tags is not None:
             reminder.tags = tags
-        
+
         db.commit()
         db.refresh(reminder)
-        
+
         return reminder
-    
+
     @staticmethod
     def delete_reminder(
         db: Session,
@@ -326,15 +351,15 @@ class ReminderService:
     ) -> bool:
         """
         Soft delete a reminder.
-        
+
         Returns:
             True if deleted, False if not found
         """
         reminder = ReminderService.get_reminder(db, reminder_id, user_id)
         if not reminder:
             return False
-        
+
         reminder.soft_delete()
         db.commit()
-        
+
         return True

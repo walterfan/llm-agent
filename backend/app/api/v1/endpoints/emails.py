@@ -36,21 +36,23 @@ async def _send_email_background_task(
 ):
     """
     Background task to generate recommendations and send emails.
-    
+
     This runs asynchronously after the API returns, preventing timeout issues.
     """
     from app.db.session import SessionLocal
-    
+
     db = SessionLocal()
     try:
-        logger.info(f"📧 Background task started: user_id={user_id}, city={city}, days={days}, recipients={len(recipient_emails)}")
-        
+        logger.info(
+            f"📧 Background task started: user_id={user_id}, city={city}, days={days}, recipients={len(recipient_emails)}"
+        )
+
         # Get user from database
         user = db.query(User).filter(User.id == user_id).first()
         if not user:
             logger.error(f"❌ Background task: User {user_id} not found")
             return
-        
+
         # Generate recommendations
         recommendation_service = RecommendationService(db)
         try:
@@ -60,7 +62,9 @@ async def _send_email_background_task(
                 city=city,
                 days=days,
             )
-            logger.info(f"✅ Generated {len(multi_day_recommendation.recommendations)} recommendations")
+            logger.info(
+                f"✅ Generated {len(multi_day_recommendation.recommendations)} recommendations"
+            )
         except Exception as e:
             logger.error(f"❌ Failed to generate recommendations: {e}", exc_info=True)
             # Log failed attempt
@@ -96,7 +100,9 @@ async def _send_email_background_task(
 
         # Send emails
         email_service = EmailService()
-        logger.info(f"📤 Sending emails to {len(recipient_emails)} recipient(s): {', '.join(recipient_emails)}")
+        logger.info(
+            f"📤 Sending emails to {len(recipient_emails)} recipient(s): {', '.join(recipient_emails)}"
+        )
         results = await email_service.send_email(
             to_emails=recipient_emails,
             subject=f"未来{days}天穿衣推荐 - {multi_day_recommendation.city}",
@@ -124,7 +130,7 @@ async def _send_email_background_task(
             db.add(email_log)
 
         db.commit()
-        
+
         success_count = sum(1 for status in results.values() if status == "sent")
         failed_count = len(results) - success_count
         logger.info(
@@ -167,7 +173,9 @@ def update_email_preferences(
     """
     from app.services.user_service import UserService
 
-    updated_user = UserService.update_email_preferences(db, current_user, preferences_update)
+    updated_user = UserService.update_email_preferences(
+        db, current_user, preferences_update
+    )
     preferences = UserService.get_email_preferences(db, updated_user)
     return EmailPreferencesResponse(**preferences)
 
@@ -188,16 +196,20 @@ async def send_recommendation_email(
     Requires authentication. Manual email sends are always allowed regardless of
     email_notifications_enabled setting (which only controls scheduled daily emails).
     """
-    
+
     # Validate request
     if not request.recipient_emails:
-        logger.warning(f"User {current_user.id} attempted to send email with no recipients")
-        raise HTTPException(status_code=400, detail="At least one recipient email is required")
-    
+        logger.warning(
+            f"User {current_user.id} attempted to send email with no recipients"
+        )
+        raise HTTPException(
+            status_code=400, detail="At least one recipient email is required"
+        )
+
     # Get days from request, default to 3
-    days = getattr(request, 'days', 3) or 3
+    days = getattr(request, "days", 3) or 3
     days = max(1, min(days, 3))  # Clamp to 1-3
-    
+
     logger.info(
         f"📧 Email request received: user_id={current_user.id}, user_email={current_user.email}, "
         f"city={request.city}, days={days}, recipients={len(request.recipient_emails)}"
@@ -255,4 +267,3 @@ def get_email_logs(
         total=total,
         items=[EmailLogResponse.model_validate(log) for log in logs],
     )
-

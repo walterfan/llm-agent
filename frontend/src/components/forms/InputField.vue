@@ -54,5 +54,3 @@ const inputClass = computed(() => {
     </p>
   </div>
 </template>
-
-

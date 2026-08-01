@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import type { ToolInfo } from '@/types/secretary';
+import type { ToolInfo } from '@/types/secretary'
 
 const props = defineProps<{
-  tools: ToolInfo[];
-}>();
+  tools: ToolInfo[]
+}>()
 
 const emit = defineEmits<{
-  (e: 'select', tool: ToolInfo): void;
-}>();
+  (e: 'select', tool: ToolInfo): void
+}>()
 
 const toolIcons: Record<string, string> = {
   learn_word: '📝',
@@ -19,63 +19,50 @@ const toolIcons: Record<string, string> = {
   get_weather: '🌤️',
   calculate: '🔢',
   get_datetime: '📅',
-};
+}
 
 function getIcon(toolName: string): string {
-  return toolIcons[toolName] || '🔧';
+  return toolIcons[toolName] || '🔧'
 }
 
 function getCategoryLabel(category: string): string {
   switch (category) {
     case 'learning':
-      return '学习工具';
+      return '学习工具'
     case 'utility':
-      return '实用工具';
+      return '实用工具'
     default:
-      return category;
+      return category
   }
 }
 
 // Group tools by category
 const groupedTools = computed(() => {
-  const groups: Record<string, ToolInfo[]> = {};
+  const groups: Record<string, ToolInfo[]> = {}
   for (const tool of props.tools) {
     if (!groups[tool.category]) {
-      groups[tool.category] = [];
+      groups[tool.category] = []
     }
-    groups[tool.category].push(tool);
+    groups[tool.category].push(tool)
   }
-  return groups;
-});
+  return groups
+})
 
-import { computed } from 'vue';
+import { computed } from 'vue'
 </script>
 
 <template>
   <div class="p-4">
-    <h3 class="text-lg font-semibold text-gray-800 mb-4">
-      可用工具
-    </h3>
-    
-    <div
-      v-if="tools.length === 0"
-      class="text-gray-500 text-center py-4"
-    >
-      加载工具列表...
-    </div>
-    
-    <div
-      v-else
-      class="space-y-4"
-    >
-      <div
-        v-for="(categoryTools, category) in groupedTools"
-        :key="category"
-      >
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">可用工具</h3>
+
+    <div v-if="tools.length === 0" class="text-gray-500 text-center py-4">加载工具列表...</div>
+
+    <div v-else class="space-y-4">
+      <div v-for="(categoryTools, category) in groupedTools" :key="category">
         <h4 class="text-sm font-medium text-gray-600 mb-2">
           {{ getCategoryLabel(category) }}
         </h4>
-        
+
         <div class="grid grid-cols-2 gap-2">
           <button
             v-for="tool in categoryTools"

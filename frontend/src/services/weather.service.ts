@@ -2,8 +2,8 @@
  * Weather API service
  */
 
-import api from './api';
-import type { WeatherResponse } from '@/types/weather';
+import api from './api'
+import type { WeatherResponse } from '@/types/weather'
 
 export const weatherService = {
   /**
@@ -15,22 +15,21 @@ export const weatherService = {
     try {
       const response = await api.get<WeatherResponse>('/weather', {
         params: { city, extensions },
-      });
-      return response.data;
+      })
+      return response.data
     } catch (error: any) {
       // Handle API errors
       if (error.response?.data) {
-        return error.response.data;
+        return error.response.data
       }
-      
+
       // Network or other errors
       return {
         success: false,
         error: error.message || 'Failed to fetch weather data',
-      };
+      }
     }
   },
-};
+}
 
-export default weatherService;
-
+export default weatherService

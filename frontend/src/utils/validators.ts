@@ -38,5 +38,3 @@ export function validateFullName(name: string): string | null {
   }
   return null
 }
-
-

@@ -83,35 +83,31 @@ onMounted(async () => {
           </p>
         </div>
         <button
-          @click="showCreateForm = !showCreateForm"
           class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
+          @click="showCreateForm = !showCreateForm"
         >
           {{ showCreateForm ? 'Cancel' : 'New Paper' }}
         </button>
       </div>
 
       <!-- Error Banner -->
-      <div
-        v-if="store.error"
-        class="mb-6 bg-red-50 border border-red-200 rounded-md p-4"
-      >
+      <div v-if="store.error" class="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
         <div class="flex">
           <div class="flex-1">
-            <p class="text-sm text-red-700">{{ store.error }}</p>
+            <p class="text-sm text-red-700">
+              {{ store.error }}
+            </p>
           </div>
-          <button @click="store.clearError()" class="text-red-400 hover:text-red-600">
+          <button class="text-red-400 hover:text-red-600" @click="store.clearError()">
             &times;
           </button>
         </div>
       </div>
 
       <!-- Create Task Form -->
-      <div
-        v-if="showCreateForm"
-        class="mb-8 bg-white shadow rounded-lg p-6"
-      >
+      <div v-if="showCreateForm" class="mb-8 bg-white shadow rounded-lg p-6">
         <h2 class="text-lg font-medium mb-4">Create New Paper</h2>
-        <form @submit.prevent="handleCreateTask" class="space-y-4">
+        <form class="space-y-4" @submit.prevent="handleCreateTask">
           <div>
             <label class="block text-sm font-medium text-gray-700">Title</label>
             <input
@@ -171,11 +167,13 @@ onMounted(async () => {
             <div
               v-for="task in store.tasks"
               :key="task.id"
-              @click="handleSelectTask(task.id)"
               class="bg-white shadow rounded-lg p-4 cursor-pointer hover:ring-2 hover:ring-indigo-500 transition"
               :class="{ 'ring-2 ring-indigo-500': store.currentTask?.id === task.id }"
+              @click="handleSelectTask(task.id)"
             >
-              <h3 class="text-sm font-medium text-gray-900 truncate">{{ task.title }}</h3>
+              <h3 class="text-sm font-medium text-gray-900 truncate">
+                {{ task.title }}
+              </h3>
               <div class="mt-2 flex items-center gap-2">
                 <span
                   class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
@@ -188,8 +186,7 @@ onMounted(async () => {
                 </span>
               </div>
               <p class="mt-1 text-xs text-gray-400">
-                {{ task.paper_type.toUpperCase() }} &middot;
-                Rev {{ task.revision_round }}
+                {{ task.paper_type.toUpperCase() }} &middot; Rev {{ task.revision_round }}
               </p>
             </div>
           </div>
@@ -205,7 +202,9 @@ onMounted(async () => {
             <!-- Task header -->
             <div class="px-6 pt-6 pb-4">
               <div class="flex items-center justify-between">
-                <h2 class="text-lg font-medium">{{ store.currentTask.title }}</h2>
+                <h2 class="text-lg font-medium">
+                  {{ store.currentTask.title }}
+                </h2>
                 <span
                   class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                   :class="statusColors[store.currentTask.status] || 'bg-gray-100'"
@@ -221,13 +220,13 @@ onMounted(async () => {
                 <button
                   v-for="tab in detailTabs"
                   :key="tab.key"
-                  @click="activeTab = tab.key"
                   :class="[
                     'whitespace-nowrap py-3 px-1 border-b-2 text-sm font-medium transition-colors',
                     activeTab === tab.key
                       ? 'border-indigo-500 text-indigo-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
                   ]"
+                  @click="activeTab = tab.key"
                 >
                   {{ tab.label }}
                 </button>
@@ -239,14 +238,17 @@ onMounted(async () => {
               <!-- Streaming output (shown on all tabs when active) -->
               <div v-if="store.isStreaming" class="mb-6">
                 <div class="flex items-center gap-2 mb-2">
-                  <div class="animate-spin h-4 w-4 border-2 border-indigo-500 border-t-transparent rounded-full" />
+                  <div
+                    class="animate-spin h-4 w-4 border-2 border-indigo-500 border-t-transparent rounded-full"
+                  />
                   <span class="text-sm text-gray-600">
                     {{ store.currentAgent ? `Running: ${store.currentAgent}` : 'Processing...' }}
                   </span>
                 </div>
                 <pre
                   class="bg-gray-900 text-green-400 text-xs p-4 rounded-md overflow-auto max-h-64"
-                >{{ store.streamingText }}</pre>
+                  >{{ store.streamingText }}</pre
+                >
               </div>
 
               <!-- Overview Tab -->
@@ -272,31 +274,31 @@ onMounted(async () => {
 
                 <div>
                   <h3 class="text-sm font-medium text-gray-500 mb-1">Research Question</h3>
-                  <p class="text-sm">{{ store.currentTask.research_question }}</p>
+                  <p class="text-sm">
+                    {{ store.currentTask.research_question }}
+                  </p>
                 </div>
               </div>
 
               <!-- Literature Tab -->
               <div v-if="activeTab === 'literature'">
-                <div
-                  v-if="store.currentTask.references && store.currentTask.references.length > 0"
-                >
+                <div v-if="store.currentTask.references && store.currentTask.references.length > 0">
                   <h3 class="text-sm font-medium text-gray-700 mb-3">
                     References ({{ store.currentTask.references.length }})
                   </h3>
                   <ul class="space-y-2 text-sm text-gray-600">
                     <li
-                      v-for="(ref, idx) in store.currentTask.references"
+                      v-for="(reference, idx) in store.currentTask.references"
                       :key="idx"
                       class="p-3 bg-gray-50 rounded-md"
                     >
                       <span class="font-medium text-gray-800">[{{ idx + 1 }}]</span>
-                      {{ ref.title || ref.pmid || 'Reference' }}
-                      <span v-if="ref.authors" class="block text-xs text-gray-400 mt-1">
-                        {{ ref.authors }}
+                      {{ reference.title || reference.pmid || 'Reference' }}
+                      <span v-if="reference.authors" class="block text-xs text-gray-400 mt-1">
+                        {{ reference.authors }}
                       </span>
-                      <span v-if="ref.journal" class="text-xs text-gray-400">
-                        {{ ref.journal }}{{ ref.year ? ` (${ref.year})` : '' }}
+                      <span v-if="reference.journal" class="text-xs text-gray-400">
+                        {{ reference.journal }}{{ reference.year ? ` (${reference.year})` : '' }}
                       </span>
                     </li>
                   </ul>
@@ -309,10 +311,13 @@ onMounted(async () => {
               <!-- Statistics Tab -->
               <div v-if="activeTab === 'statistics'">
                 <div v-if="store.currentTask.stats_report">
-                  <h3 class="text-sm font-medium text-gray-700 mb-3">Statistical Analysis Report</h3>
+                  <h3 class="text-sm font-medium text-gray-700 mb-3">
+                    Statistical Analysis Report
+                  </h3>
                   <pre
                     class="bg-gray-50 text-sm p-4 rounded-md overflow-auto max-h-96 text-gray-700"
-                  >{{ JSON.stringify(store.currentTask.stats_report, null, 2) }}</pre>
+                    >{{ JSON.stringify(store.currentTask.stats_report, null, 2) }}</pre
+                  >
                 </div>
                 <div v-else class="text-center text-gray-400 py-12">
                   No statistics yet. Analysis results will appear here.
@@ -382,7 +387,13 @@ onMounted(async () => {
                       }"
                     >
                       <span class="flex-shrink-0 mt-0.5">
-                        {{ item.status === 'passed' ? '&#10003;' : item.status === 'warning' ? '!' : '&#10007;' }}
+                        {{
+                          item.status === 'passed'
+                            ? '&#10003;'
+                            : item.status === 'warning'
+                              ? '!'
+                              : '&#10007;'
+                        }}
                       </span>
                       <span>{{ item.description || item.name || `Item ${idx + 1}` }}</span>
                     </div>

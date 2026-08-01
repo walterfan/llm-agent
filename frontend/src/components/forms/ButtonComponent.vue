@@ -38,5 +38,3 @@ const buttonClass = computed(() => {
     <slot />
   </button>
 </template>
-
-

@@ -19,6 +19,7 @@ from pydantic import BaseModel, Field
 
 class Reference(BaseModel):
     """A single literature reference from PubMed."""
+
     pmid: str
     title: str
     authors: list[str]
@@ -30,6 +31,7 @@ class Reference(BaseModel):
 
 class LiteratureOutput(BaseModel):
     """Output from the Literature Agent."""
+
     references: list[Reference] = []
     search_strategy: str = ""
     total_found: int = 0
@@ -38,6 +40,7 @@ class LiteratureOutput(BaseModel):
 
 class AnalysisResult(BaseModel):
     """A single statistical analysis result."""
+
     test_name: str
     statistic: float
     p_value: float
@@ -48,6 +51,7 @@ class AnalysisResult(BaseModel):
 
 class StatsOutput(BaseModel):
     """Output from the Stats Agent."""
+
     primary_analysis: Optional[AnalysisResult] = None
     secondary_analyses: list[AnalysisResult] = []
     sensitivity_analyses: list[AnalysisResult] = []
@@ -56,6 +60,7 @@ class StatsOutput(BaseModel):
 
 class ComplianceItem(BaseModel):
     """A single compliance checklist item."""
+
     item_id: str
     description: str
     status: Literal["PASS", "WARN", "FAIL"]
@@ -65,6 +70,7 @@ class ComplianceItem(BaseModel):
 
 class ComplianceOutput(BaseModel):
     """Output from the Compliance Agent."""
+
     checklist_type: str  # CONSORT, STROBE, PRISMA
     total_items: int = 0
     passed: int = 0
@@ -76,6 +82,7 @@ class ComplianceOutput(BaseModel):
 
 class ManuscriptSection(BaseModel):
     """A single section of the manuscript."""
+
     section_type: str  # introduction, methods, results, discussion, abstract
     title: str
     content: str
@@ -85,6 +92,7 @@ class ManuscriptSection(BaseModel):
 
 class ManuscriptOutput(BaseModel):
     """Output from the Writer Agent."""
+
     sections: list[ManuscriptSection] = []
     total_word_count: int = 0
 
@@ -96,6 +104,7 @@ class ManuscriptOutput(BaseModel):
 
 class A2AErrorMedical(BaseModel):
     """Error info for medical paper A2A messages."""
+
     code: str  # VALIDATION_ERROR, TOOL_ERROR, TIMEOUT, RATE_LIMIT, LLM_ERROR
     message: str
     recoverable: bool = False
@@ -104,6 +113,7 @@ class A2AErrorMedical(BaseModel):
 
 class A2AMetricsMedical(BaseModel):
     """Metrics for medical paper A2A messages."""
+
     latency_ms: int = 0
     tokens_in: int = 0
     tokens_out: int = 0
@@ -117,6 +127,7 @@ class A2AMessageMedical(BaseModel):
     Extends the secretary agent A2A contract with medical-paper-specific
     output types while maintaining the same core structure.
     """
+
     protocol: str = "a2a.medical.v1"
     id: str = ""
     correlation_id: Optional[str] = None
@@ -199,7 +210,9 @@ class TaskResponse(BaseModel):
     user_id: int
     title: str
     paper_type: str = Field(description="Paper type: rct, cohort, meta_analysis")
-    status: str = Field(description="Task status: pending, running, revision, completed, failed")
+    status: str = Field(
+        description="Task status: pending, running, revision, completed, failed"
+    )
     research_question: str
     study_design: Optional[dict[str, Any]] = None
     current_step: Optional[str] = Field(
@@ -226,12 +239,14 @@ class TaskResponse(BaseModel):
 
 class TaskListResponse(BaseModel):
     """Response for listing medical paper tasks."""
+
     tasks: list[TaskResponse]
     total: int
 
 
 class TemplateInfo(BaseModel):
     """Information about a paper template."""
+
     paper_type: str
     name: str
     description: str
@@ -240,4 +255,5 @@ class TemplateInfo(BaseModel):
 
 class TemplateListResponse(BaseModel):
     """Response for listing paper templates."""
+
     templates: list[TemplateInfo]

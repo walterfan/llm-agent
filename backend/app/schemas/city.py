@@ -17,7 +17,9 @@ class CityBase(BaseModel):
 class CitySearchResult(CityBase):
     """City search result with display name."""
 
-    display_name: str = Field(..., description="Formatted display name for disambiguation")
+    display_name: str = Field(
+        ..., description="Formatted display name for disambiguation"
+    )
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -37,6 +39,7 @@ class CityDetail(CityBase):
 class CitySearchResponse(BaseModel):
     """Response for city search endpoint."""
 
-    cities: list[CitySearchResult] = Field(default_factory=list, description="List of matching cities")
+    cities: list[CitySearchResult] = Field(
+        default_factory=list, description="List of matching cities"
+    )
     total: int = Field(..., description="Total number of results")
-

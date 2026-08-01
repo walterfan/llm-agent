@@ -39,10 +39,7 @@ class RecommendationService:
         self.db = db
 
     async def generate_recommendation(
-        self,
-        user: User,
-        city: str,
-        date: str | None = None
+        self, user: User, city: str, date: str | None = None
     ) -> RecommendationResponse:
         """
         Generate a personalized dress recommendation for the user.
@@ -73,11 +70,13 @@ class RecommendationService:
         cached = recommendation_cache.get(cache_key)
         if cached:
             logger.info(f"Cache hit for user={user.id}, city={city}, date={date}")
-            cached['cached'] = True
+            cached["cached"] = True
             return RecommendationResponse(**cached)
 
         # Generate new recommendation
-        logger.info(f"Cache miss - generating recommendation for user={user.id}, city={city}")
+        logger.info(
+            f"Cache miss - generating recommendation for user={user.id}, city={city}"
+        )
 
         # Build prompt
         prompt = self._build_prompt(user, weather_data, date)
@@ -89,7 +88,7 @@ class RecommendationService:
             api_key=settings.LLM_API_KEY,
             model=settings.LLM_MODEL,
             verify_ssl=settings.LLM_VERIFY_SSL,
-            timeout=settings.LLM_TIMEOUT
+            timeout=settings.LLM_TIMEOUT,
         )
 
         try:
@@ -97,7 +96,7 @@ class RecommendationService:
                 prompt=prompt,
                 response_model=RecommendationOutput,
                 max_retries=3,
-                temperature=0.7
+                temperature=0.7,
             )
         except Exception as e:
             logger.error(f"LLM generation failed: {e}")
@@ -113,7 +112,7 @@ class RecommendationService:
             response=llm_response.model_dump(),
             cost_estimate=None,  # Calculate if tokens available
             tokens_used=None,
-            created_at=datetime.utcnow()
+            created_at=datetime.utcnow(),
         )
         self.db.add(recommendation)
         self.db.commit()
@@ -124,17 +123,17 @@ class RecommendationService:
 
         # Build response
         response_data = {
-            'id': recommendation.id,
-            'user_id': user.id,
-            'city': weather_data.city,
-            'weather_data': weather_data.model_dump(),
-            'clothing_items': llm_response.clothing_items,
-            'advice': llm_response.advice,
-            'weather_warnings': llm_response.weather_warnings,
-            'emoji_summary': llm_response.emoji_summary,
-            'cached': False,
-            'cost_estimate': recommendation.cost_estimate,
-            'created_at': recommendation.created_at
+            "id": recommendation.id,
+            "user_id": user.id,
+            "city": weather_data.city,
+            "weather_data": weather_data.model_dump(),
+            "clothing_items": llm_response.clothing_items,
+            "advice": llm_response.advice,
+            "weather_warnings": llm_response.weather_warnings,
+            "emoji_summary": llm_response.emoji_summary,
+            "cached": False,
+            "cost_estimate": recommendation.cost_estimate,
+            "created_at": recommendation.created_at,
         }
 
         # Cache the result
@@ -162,15 +161,21 @@ class RecommendationService:
             ValueError: If profile is incomplete or city not found
         """
         days = max(1, min(int(days), 3))
-        logger.info(f"Generating {days}-day recommendations for user={user.id}, city={city}")
+        logger.info(
+            f"Generating {days}-day recommendations for user={user.id}, city={city}"
+        )
 
         # Get multi-day weather forecast
         weather_helper = WeatherHelper(self.db)
         try:
             forecasts = await weather_helper.get_forecast(city, days=days)
-            logger.info(f"✅ Fetched {len(forecasts)} day(s) of weather forecast for city {city}")
+            logger.info(
+                f"✅ Fetched {len(forecasts)} day(s) of weather forecast for city {city}"
+            )
             for i, forecast in enumerate(forecasts):
-                logger.debug(f"  Day {i+1}: {forecast['date_label']} - {forecast['weather_text']}, {forecast['temperature_low']}°C - {forecast['temperature_high']}°C")
+                logger.debug(
+                    f"  Day {i+1}: {forecast['date_label']} - {forecast['weather_text']}, {forecast['temperature_low']}°C - {forecast['temperature_high']}°C"
+                )
         except Exception as e:
             logger.error(f"Failed to fetch 3-day forecast: {e}")
             raise ValueError(f"Unable to fetch weather forecast for city {city}")
@@ -196,7 +201,7 @@ class RecommendationService:
                 user=user,
                 forecast=forecast_data,
                 date_label=date_label,
-                forecast_date=forecast_date
+                forecast_date=forecast_date,
             )
 
             # Call LLM
@@ -206,15 +211,17 @@ class RecommendationService:
                 api_key=settings.LLM_API_KEY,
                 model=settings.LLM_MODEL,
                 verify_ssl=settings.LLM_VERIFY_SSL,
-                timeout=settings.LLM_TIMEOUT
+                timeout=settings.LLM_TIMEOUT,
             )
 
             try:
-                llm_response: RecommendationOutput = await llm_provider.generate_completion(
-                    prompt=prompt,
-                    response_model=RecommendationOutput,
-                    max_retries=3,
-                    temperature=0.7
+                llm_response: RecommendationOutput = (
+                    await llm_provider.generate_completion(
+                        prompt=prompt,
+                        response_model=RecommendationOutput,
+                        max_retries=3,
+                        temperature=0.7,
+                    )
                 )
             except Exception as e:
                 logger.error(f"LLM generation failed for {date_label}: {e}")
@@ -223,7 +230,7 @@ class RecommendationService:
                     clothing_items=["根据天气选择合适的衣物"],
                     advice=f"{date_label}天气{forecast_data['weather_text']}，温度{forecast_data['temperature_low']}°C-{forecast_data['temperature_high']}°C，请注意保暖。",
                     weather_warnings=None,
-                    emoji_summary="👔🧥"
+                    emoji_summary="👔🧥",
                 )
 
             # Save to database
@@ -236,7 +243,7 @@ class RecommendationService:
                 response=llm_response.model_dump(),
                 cost_estimate=None,
                 tokens_used=None,
-                created_at=datetime.utcnow()
+                created_at=datetime.utcnow(),
             )
             self.db.add(recommendation)
             self.db.flush()  # Get the ID without committing
@@ -253,44 +260,43 @@ class RecommendationService:
                 emoji_summary=llm_response.emoji_summary,
                 cached=False,
                 cost_estimate=None,
-                created_at=recommendation.created_at
+                created_at=recommendation.created_at,
             )
 
             # Build weather summary
             weather_summary = f"{forecast_data['weather_text']}，{forecast_data['temperature_low']}°C - {forecast_data['temperature_high']}°C"
 
-            daily_recommendations.append(DailyRecommendation(
-                date=forecast_date.isoformat(),
-                date_label=date_label,
-                recommendation=rec_response,
-                weather_summary=weather_summary
-            ))
+            daily_recommendations.append(
+                DailyRecommendation(
+                    date=forecast_date.isoformat(),
+                    date_label=date_label,
+                    recommendation=rec_response,
+                    weather_summary=weather_summary,
+                )
+            )
 
         self.db.commit()
 
-        logger.info(f"✅ Successfully generated {len(daily_recommendations)} day(s) of recommendations for user {user.id}")
-        
+        logger.info(
+            f"✅ Successfully generated {len(daily_recommendations)} day(s) of recommendations for user {user.id}"
+        )
+
         response = MultiDayRecommendationResponse(
-            user=UserBasicInfo(
-                id=user.id,
-                email=user.email,
-                full_name=user.full_name
-            ),
+            user=UserBasicInfo(id=user.id, email=user.email, full_name=user.full_name),
             city=city_name,
             city_code=city,
             recommendations=daily_recommendations,
             email_sent=False,
-            generated_at=datetime.utcnow()
+            generated_at=datetime.utcnow(),
         )
-        
-        logger.debug(f"📦 MultiDayRecommendationResponse: {len(response.recommendations)} recommendations")
+
+        logger.debug(
+            f"📦 MultiDayRecommendationResponse: {len(response.recommendations)} recommendations"
+        )
         return response
 
     async def generate_for_user_multi_day(
-        self,
-        target_user: User,
-        city_code: str,
-        days: int = 3
+        self, target_user: User, city_code: str, days: int = 3
     ) -> list[Recommendation]:
         """
         Generate multi-day recommendations for a specific user.
@@ -309,7 +315,9 @@ class RecommendationService:
             ValueError: If user profile incomplete or city invalid
             Exception: If weather fetch or LLM generation fails
         """
-        logger.info(f"Admin generating {days}-day recommendations for user {target_user.id} (city: {city_code})")
+        logger.info(
+            f"Admin generating {days}-day recommendations for user {target_user.id} (city: {city_code})"
+        )
 
         # Get multi-day weather forecast
         weather_helper = WeatherHelper(self.db)
@@ -317,7 +325,9 @@ class RecommendationService:
             forecasts = await weather_helper.get_forecast(city_code, days=days)
         except Exception as e:
             logger.error(f"Failed to fetch {days}-day forecast: {e}")
-            raise ValueError(f"Unable to fetch weather forecast for city {city_code}") from e
+            raise ValueError(
+                f"Unable to fetch weather forecast for city {city_code}"
+            ) from e
 
         if not forecasts:
             raise ValueError(f"No forecast data available for city {city_code}")
@@ -337,7 +347,7 @@ class RecommendationService:
                 user=target_user,
                 forecast=forecast,
                 date_label=date_label,
-                forecast_date=forecast_date
+                forecast_date=forecast_date,
             )
 
             # Call LLM
@@ -348,14 +358,14 @@ class RecommendationService:
                     api_key=settings.LLM_API_KEY,
                     model=settings.LLM_MODEL,
                     verify_ssl=settings.LLM_VERIFY_SSL,
-                    timeout=settings.LLM_TIMEOUT
+                    timeout=settings.LLM_TIMEOUT,
                 )
 
                 result = await llm_provider.generate_completion(
                     prompt=prompt,
                     response_model=RecommendationOutput,
                     max_retries=3,
-                    temperature=0.7
+                    temperature=0.7,
                 )
 
                 # Estimate cost
@@ -411,11 +421,7 @@ class RecommendationService:
         return recommendations
 
     def _build_multi_day_prompt(
-        self,
-        user: User,
-        forecast: dict,
-        date_label: str,
-        forecast_date: date
+        self, user: User, forecast: dict, date_label: str, forecast_date: date
     ) -> str:
         """
         Build prompt for multi-day recommendation with date context.
@@ -432,7 +438,9 @@ class RecommendationService:
         # Get day of week
         weekday = forecast_date.strftime("%A")
         weekday_zh = PromptService.get_weekday_zh(weekday)
-        temperature_adjustment = PromptService.get_temperature_adjustment(user.temperature_sensitivity)
+        temperature_adjustment = PromptService.get_temperature_adjustment(
+            user.temperature_sensitivity
+        )
 
         return PromptService.get_multi_day_prompt(
             date_label=date_label,
@@ -464,7 +472,7 @@ class RecommendationService:
             weather_provider = WeatherProviderFactory.create(
                 provider_type=settings.WEATHER_PROVIDER,
                 base_url=settings.WEATHER_BASE_URL,
-                api_key=settings.WEATHER_API_KEY
+                api_key=settings.WEATHER_API_KEY,
             )
 
             # Try to resolve city to AD code
@@ -480,14 +488,18 @@ class RecommendationService:
                 return None
 
             ad_code = city_obj.ad_code
-            weather_data = await weather_provider.fetch_weather(ad_code, extensions="base")
+            weather_data = await weather_provider.fetch_weather(
+                ad_code, extensions="base"
+            )
             return weather_data
 
         except Exception as e:
             logger.error(f"Failed to fetch weather: {e}")
             return None
 
-    def _build_prompt(self, user: User, weather: WeatherData, date: str | None = None) -> str:
+    def _build_prompt(
+        self, user: User, weather: WeatherData, date: str | None = None
+    ) -> str:
         """Build the prompt for LLM."""
         # Handle date - default to today if not provided
         if date is None:
@@ -500,7 +512,7 @@ class RecommendationService:
             # If date is already a datetime object, use it directly
             date_obj = date
             date_str = date_obj.strftime("%Y-%m-%d")
-        
+
         # Get day of week
         weekday = date_obj.strftime("%A")
         day_of_week = PromptService.get_weekday_zh(weekday)
@@ -523,7 +535,9 @@ class RecommendationService:
             other_preferences=user.other_preferences,
         )
 
-    def _generate_fallback_recommendation(self, weather: WeatherData) -> RecommendationOutput:
+    def _generate_fallback_recommendation(
+        self, weather: WeatherData
+    ) -> RecommendationOutput:
         """Generate a fallback recommendation when LLM fails."""
         temp = weather.temperature_float
         fallback = PromptService.get_fallback_recommendation(temp)
@@ -533,17 +547,25 @@ class RecommendationService:
             clothing_items=fallback["clothing"],
             advice=fallback["advice"],
             weather_warnings=warnings if warnings else None,
-            emoji_summary=fallback["emoji"]
+            emoji_summary=fallback["emoji"],
         )
 
     def _build_cache_key(self, user_id: int, date: str, weather: WeatherData) -> str:
         """Build a cache key for the recommendation."""
         # Hash weather conditions to detect significant changes
-        weather_str = f"{weather.temperature_float}|{weather.weather}|{weather.wind_power}"
+        weather_str = (
+            f"{weather.temperature_float}|{weather.weather}|{weather.wind_power}"
+        )
         weather_hash = hashlib.md5(weather_str.encode()).hexdigest()[:8]
         return f"recommendation:{user_id}:{date}:{weather_hash}"
 
-    def _log_cost(self, user_id: int, recommendation_id: str, prompt_tokens: int, completion_tokens: int):
+    def _log_cost(
+        self,
+        user_id: int,
+        recommendation_id: str,
+        prompt_tokens: int,
+        completion_tokens: int,
+    ):
         """Log cost for monitoring."""
         # Placeholder cost calculation (adjust based on actual provider pricing)
         # DeepSeek example: ¥0.001/1K input tokens, ¥0.002/1K output tokens
@@ -559,7 +581,7 @@ class RecommendationService:
             completion_tokens=completion_tokens,
             total_tokens=prompt_tokens + completion_tokens,
             estimated_cost=total_cost,
-            created_at=datetime.utcnow()
+            created_at=datetime.utcnow(),
         )
         self.db.add(cost_log)
         self.db.commit()
@@ -570,7 +592,7 @@ class RecommendationService:
         limit: int = 20,
         offset: int = 0,
         start_date: str | None = None,
-        end_date: str | None = None
+        end_date: str | None = None,
     ) -> tuple[list[Recommendation], int]:
         """
         Get user's recommendation history.
@@ -588,8 +610,7 @@ class RecommendationService:
         # Lazy cleanup: delete recommendations older than 14 days
         cutoff_date = datetime.utcnow() - timedelta(days=14)
         self.db.query(Recommendation).filter(
-            Recommendation.user_id == user_id,
-            Recommendation.created_at < cutoff_date
+            Recommendation.user_id == user_id, Recommendation.created_at < cutoff_date
         ).delete()
         self.db.commit()
 
@@ -597,19 +618,33 @@ class RecommendationService:
         query = self.db.query(Recommendation).filter(Recommendation.user_id == user_id)
 
         if start_date:
-            query = query.filter(Recommendation.created_at >= datetime.fromisoformat(start_date))
+            query = query.filter(
+                Recommendation.created_at >= datetime.fromisoformat(start_date)
+            )
         if end_date:
-            query = query.filter(Recommendation.created_at <= datetime.fromisoformat(end_date))
+            query = query.filter(
+                Recommendation.created_at <= datetime.fromisoformat(end_date)
+            )
 
         total = query.count()
-        recommendations = query.order_by(Recommendation.created_at.desc()).offset(offset).limit(limit).all()
+        recommendations = (
+            query.order_by(Recommendation.created_at.desc())
+            .offset(offset)
+            .limit(limit)
+            .all()
+        )
 
         return recommendations, total
 
-    def get_recommendation_by_id(self, recommendation_id: str, user_id: int) -> Recommendation | None:
+    def get_recommendation_by_id(
+        self, recommendation_id: str, user_id: int
+    ) -> Recommendation | None:
         """Get a specific recommendation by ID (with ownership check)."""
-        return self.db.query(Recommendation).filter(
-            Recommendation.id == recommendation_id,
-            Recommendation.user_id == user_id
-        ).first()
-
+        return (
+            self.db.query(Recommendation)
+            .filter(
+                Recommendation.id == recommendation_id,
+                Recommendation.user_id == user_id,
+            )
+            .first()
+        )

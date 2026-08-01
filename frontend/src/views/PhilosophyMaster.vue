@@ -1,16 +1,22 @@
 <script setup lang="ts">
-import { computed, ref, nextTick } from 'vue';
-import AppHeader from '@/components/layout/AppHeader.vue';
-import { chatStream, type PhilosophyPreset, type PhilosophyStreamEvent } from '@/services/philosophy.service';
+import { computed, ref, nextTick } from 'vue'
+import AppHeader from '@/components/layout/AppHeader.vue'
+import {
+  usePhilosophyStore,
+  type PhilosophyPreset,
+  type PhilosophyStreamEvent,
+} from '@/stores/philosophy'
 
-type ChatMsg = { role: 'user' | 'assistant'; content: string };
+const philosophyStore = usePhilosophyStore()
 
-const messages = ref<ChatMsg[]>([]);
-const input = ref('');
-const context = ref('');
-const streamingText = ref('');
-const loading = ref(false);
-const error = ref<string | null>(null);
+type ChatMsg = { role: 'user' | 'assistant'; content: string }
+
+const messages = ref<ChatMsg[]>([])
+const input = ref('')
+const context = ref('')
+const streamingText = ref('')
+const loading = ref(false)
+const error = ref<string | null>(null)
 
 const preset = ref<PhilosophyPreset>({
   school: 'mixed',
@@ -18,47 +24,47 @@ const preset = ref<PhilosophyPreset>({
   depth: 'medium',
   mode: 'advice',
   multi_perspective: false,
-});
+})
 
-const canSend = computed(() => !!input.value.trim() && !loading.value);
+const canSend = computed(() => !!input.value.trim() && !loading.value)
 
 async function send() {
-  if (!canSend.value) return;
-  const message = input.value.trim();
-  input.value = '';
-  error.value = null;
-  streamingText.value = '';
-  loading.value = true;
+  if (!canSend.value) return
+  const message = input.value.trim()
+  input.value = ''
+  error.value = null
+  streamingText.value = ''
+  loading.value = true
 
-  messages.value.push({ role: 'user', content: message });
+  messages.value.push({ role: 'user', content: message })
 
   const onEvent = (ev: PhilosophyStreamEvent) => {
     if (ev.type === 'token') {
-      streamingText.value += ev.content ?? '';
+      streamingText.value += ev.content ?? ''
     } else if (ev.type === 'error') {
-      error.value = ev.content || 'Error';
+      error.value = ev.content || 'Error'
     } else if (ev.type === 'done') {
       if (streamingText.value.trim()) {
-        messages.value.push({ role: 'assistant', content: streamingText.value });
+        messages.value.push({ role: 'assistant', content: streamingText.value })
       }
-      streamingText.value = '';
-      loading.value = false;
+      streamingText.value = ''
+      loading.value = false
     }
-    nextTick(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }));
-  };
+    nextTick(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }))
+  }
 
   try {
-    await chatStream(
+    await philosophyStore.chatStream(
       {
         message,
         preset: preset.value,
         context: context.value?.trim() ? context.value.trim() : undefined,
       },
       onEvent
-    );
+    )
   } catch (e) {
-    loading.value = false;
-    error.value = e instanceof Error ? e.message : String(e);
+    loading.value = false
+    error.value = e instanceof Error ? e.message : String(e)
   }
 }
 </script>
@@ -122,7 +128,11 @@ async function send() {
           </div>
           <div class="flex items-end">
             <label class="flex items-center gap-2 text-sm text-gray-700">
-              <input v-model="preset.multi_perspective" type="checkbox" class="rounded text-primary-600" />
+              <input
+                v-model="preset.multi_perspective"
+                type="checkbox"
+                class="rounded text-primary-600"
+              />
               多视角
             </label>
           </div>
@@ -145,20 +155,29 @@ async function send() {
           <div v-for="(m, idx) in messages" :key="idx" class="flex">
             <div
               class="max-w-[85%] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap"
-              :class="m.role === 'user' ? 'ml-auto bg-primary-600 text-white' : 'mr-auto bg-gray-100 text-gray-900'"
+              :class="
+                m.role === 'user'
+                  ? 'ml-auto bg-primary-600 text-white'
+                  : 'mr-auto bg-gray-100 text-gray-900'
+              "
             >
               {{ m.content }}
             </div>
           </div>
 
           <div v-if="streamingText" class="flex">
-            <div class="mr-auto max-w-[85%] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap bg-gray-100 text-gray-900">
+            <div
+              class="mr-auto max-w-[85%] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap bg-gray-100 text-gray-900"
+            >
               {{ streamingText }}
             </div>
           </div>
         </div>
 
-        <div v-if="error" class="mt-4 p-3 rounded border border-red-200 bg-red-50 text-red-700 text-sm">
+        <div
+          v-if="error"
+          class="mt-4 p-3 rounded border border-red-200 bg-red-50 text-red-700 text-sm"
+        >
           {{ error }}
         </div>
 
@@ -182,4 +201,3 @@ async function send() {
     </main>
   </div>
 </template>
-

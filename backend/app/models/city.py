@@ -36,4 +36,3 @@ class City(Base):
         elif self.province_zh:
             return f"{self.location_name_zh} ({self.province_zh})"
         return self.location_name_zh
-

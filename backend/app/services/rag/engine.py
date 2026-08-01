@@ -25,6 +25,7 @@ logger = logging.getLogger("rag_engine")
 @dataclass
 class RAGResult:
     """Result from a RAG query."""
+
     content: str
     score: float
     metadata: dict = field(default_factory=dict)
@@ -33,6 +34,7 @@ class RAGResult:
 @dataclass
 class RAGQueryResponse:
     """Full response from a RAG query."""
+
     results: list[RAGResult]
     query: str
     total: int
@@ -96,7 +98,9 @@ class RAGEngine:
         if "postgresql" in db_lower or "postgres" in db_lower:
             return "pgvector"
         if "sqlite" in db_lower:
-            logger.info("SQLite detected — RAG (vector search) is disabled. Use PostgreSQL to enable pgvector.")
+            logger.info(
+                "SQLite detected — RAG (vector search) is disabled. Use PostgreSQL to enable pgvector."
+            )
             return "disabled"
 
         return "disabled"
@@ -131,9 +135,11 @@ class RAGEngine:
 
             if store_type == "pgvector":
                 from app.services.rag.vector_store import PgVectorStore
+
                 self._store = PgVectorStore(database_url=database_url)
             elif store_type == "chromadb":
                 from app.services.rag.vector_store import ChromaVectorStore
+
                 self._store = ChromaVectorStore(persist_dir=persist_dir)
             else:
                 self._init_error = f"Unknown vector store type: {store_type}"
@@ -190,7 +196,9 @@ class RAGEngine:
                 for i in range(len(chunks))
             ]
 
-            self._store.upsert_chunks(ids=ids, texts=chunks, embeddings=embeddings, metadatas=metadatas)
+            self._store.upsert_chunks(
+                ids=ids, texts=chunks, embeddings=embeddings, metadatas=metadatas
+            )
 
             logger.info(
                 f"Added document '{title}' (id={doc_id}): "
@@ -245,7 +253,9 @@ class RAGEngine:
                 f"RAG query for user {user_id}: '{query_text[:50]}...' "
                 f"→ {len(rag_results)} results"
             )
-            return RAGQueryResponse(results=rag_results, query=query_text, total=len(rag_results))
+            return RAGQueryResponse(
+                results=rag_results, query=query_text, total=len(rag_results)
+            )
 
         except Exception as e:
             logger.error(f"RAG query failed: {e}", exc_info=True)
@@ -253,7 +263,11 @@ class RAGEngine:
 
     def get_stats(self, user_id: Optional[int] = None) -> dict[str, Any]:
         if not self._available:
-            return {"available": False, "total_chunks": 0, "backend": self._backend_name}
+            return {
+                "available": False,
+                "total_chunks": 0,
+                "backend": self._backend_name,
+            }
 
         try:
             total_chunks = self._store.count()

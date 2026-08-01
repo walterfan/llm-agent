@@ -115,12 +115,16 @@ class ScheduledEmailService:
             logger.info(f"📬 Recipients for user {user_id}: {len(recipients)} email(s)")
 
             # 2. Generate 3-day recommendations
-            logger.info(f"🔄 Generating 3-day recommendations for city {user.preferred_city}")
+            logger.info(
+                f"🔄 Generating 3-day recommendations for city {user.preferred_city}"
+            )
             try:
-                multi_day_recommendation = await self.recommendation_service.generate_multi_day(
-                    user=user,
-                    city=user.preferred_city,
-                    days=3,
+                multi_day_recommendation = (
+                    await self.recommendation_service.generate_multi_day(
+                        user=user,
+                        city=user.preferred_city,
+                        days=3,
+                    )
                 )
                 logger.info(
                     f"✅ Generated {len(multi_day_recommendation.recommendations)} recommendations"
@@ -149,12 +153,16 @@ class ScheduledEmailService:
                 }
 
             # 3. Render email template
-            logger.info(f"📝 Rendering email template for {multi_day_recommendation.city}")
-            html_body, text_body = self.template_service.render_multi_day_recommendation_email(
-                user_name=user.full_name or "用户",
-                city=multi_day_recommendation.city,
-                recommendations=multi_day_recommendation.recommendations,
-                unsubscribe_url=f"#unsubscribe-{user_id}",  # TODO: Implement unsubscribe
+            logger.info(
+                f"📝 Rendering email template for {multi_day_recommendation.city}"
+            )
+            html_body, text_body = (
+                self.template_service.render_multi_day_recommendation_email(
+                    user_name=user.full_name or "用户",
+                    city=multi_day_recommendation.city,
+                    recommendations=multi_day_recommendation.recommendations,
+                    unsubscribe_url=f"#unsubscribe-{user_id}",  # TODO: Implement unsubscribe
+                )
             )
 
             # Get first recommendation ID for logging
@@ -165,7 +173,9 @@ class ScheduledEmailService:
             )
 
             # 4. Send emails
-            logger.info(f"📤 Sending scheduled emails to {len(recipients)} recipient(s)")
+            logger.info(
+                f"📤 Sending scheduled emails to {len(recipients)} recipient(s)"
+            )
             results = await self.email_service.send_email(
                 to_emails=recipients,
                 subject=f"每日穿衣推荐 - {multi_day_recommendation.city}",
@@ -262,15 +272,17 @@ class ScheduledEmailService:
 
         for user in users:
             try:
-                logger.info(f"📧 Sending scheduled email for user {user.id} ({user.email})")
+                logger.info(
+                    f"📧 Sending scheduled email for user {user.id} ({user.email})"
+                )
                 result = await self.send_scheduled_email(user.id)
-                
+
                 processed_count += 1
                 if result["status"] == "success":
                     success_count += 1
                 else:
                     failed_count += 1
-                    
+
             except Exception as e:
                 logger.error(
                     f"❌ Failed to send scheduled email for user {user.id}: {e}",
@@ -283,11 +295,9 @@ class ScheduledEmailService:
             f"📊 Completed scheduled emails for hour {hour:02d}:00: "
             f"{success_count} success, {failed_count} failed, {processed_count} total"
         )
-        
+
         return {
             "processed_count": processed_count,
             "success_count": success_count,
             "failed_count": failed_count,
         }
-
-

@@ -39,6 +39,7 @@ oauth2_scheme_optional = OAuth2PasswordBearer(
 # Flexible Authentication: JWT or Cronjob Token
 # ============================================================================
 
+
 def verify_scheduler_access(
     request: Request,
     db: Annotated[Session, Depends(get_db)],
@@ -82,6 +83,7 @@ def verify_scheduler_access(
 # Legacy Cronjob Endpoints
 # ============================================================================
 
+
 @router.post("/send-scheduled-emails")
 async def send_scheduled_emails(
     db: Annotated[Session, Depends(get_db)],
@@ -122,6 +124,7 @@ async def send_scheduled_emails(
 # ============================================================================
 # Scheduler Management API
 # ============================================================================
+
 
 @router.get("/jobs")
 async def list_jobs(
@@ -212,27 +215,34 @@ async def get_job_history(
 # Add / Remove Jobs
 # ============================================================================
 
+
 class AddJobRequest(BaseModel):
     """Request body for adding a dynamic job."""
 
-    job_id: str = Field(..., description="Unique job identifier", min_length=1, max_length=100)
+    job_id: str = Field(
+        ..., description="Unique job identifier", min_length=1, max_length=100
+    )
     job_type: str = Field(
         ...,
         description="Job type to execute",
     )
-    trigger_type: str = Field(
-        "interval", description="Trigger type: cron | interval"
+    trigger_type: str = Field("interval", description="Trigger type: cron | interval")
+    name: str | None = Field(
+        None, description="Human-readable job name", max_length=200
     )
-    name: str | None = Field(None, description="Human-readable job name", max_length=200)
     description: str | None = Field(None, description="Job description", max_length=500)
     # Interval trigger params
-    seconds: int | None = Field(None, ge=10, le=86400, description="Interval in seconds (min 10)")
+    seconds: int | None = Field(
+        None, ge=10, le=86400, description="Interval in seconds (min 10)"
+    )
     minutes: int | None = Field(None, ge=1, le=1440, description="Interval in minutes")
     hours: int | None = Field(None, ge=1, le=24, description="Interval in hours")
     # Cron trigger params
     hour: int | None = Field(None, ge=0, le=23, description="Cron hour (0-23)")
     minute: int | None = Field(None, ge=0, le=59, description="Cron minute (0-59)")
-    day_of_week: str | None = Field(None, description="Cron day of week (e.g., 'mon-fri', '0-4')")
+    day_of_week: str | None = Field(
+        None, description="Cron day of week (e.g., 'mon-fri', '0-4')"
+    )
 
 
 # Available job types and their descriptions
@@ -274,11 +284,7 @@ async def list_job_types(
     Returns job type metadata including description, associated agent,
     and default trigger configuration.
     """
-    return {
-        "job_types": [
-            {"id": k, **v} for k, v in JOB_TYPE_REGISTRY.items()
-        ]
-    }
+    return {"job_types": [{"id": k, **v} for k, v in JOB_TYPE_REGISTRY.items()]}
 
 
 @router.post("/jobs")
@@ -412,6 +418,7 @@ async def remove_job(
 # Health Check
 # ============================================================================
 
+
 @router.get("/health")
 async def health_check():
     """Health check endpoint for scheduler and cronjob monitoring."""
@@ -420,6 +427,8 @@ async def health_check():
     return {
         "status": "healthy",
         "scheduler_running": scheduler_service.is_running,
-        "jobs_count": len(scheduler_service.list_jobs()) if scheduler_service.is_running else 0,
+        "jobs_count": (
+            len(scheduler_service.list_jobs()) if scheduler_service.is_running else 0
+        ),
         "timestamp": datetime.now().isoformat(),
     }

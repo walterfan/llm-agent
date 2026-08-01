@@ -31,7 +31,7 @@ logging.getLogger("httpx").setLevel(logging.WARNING)  # Reduce HTTP client noise
 
 class RequestLoggingMiddleware(BaseHTTPMiddleware):
     """Middleware to log all HTTP requests with method, path, status code, and duration."""
-    
+
     async def dispatch(self, request: Request, call_next):
         # Get request details
         start_time = time.time()
@@ -39,31 +39,33 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         method = request.method
         path = request.url.path
         query = str(request.url.query) if request.url.query else ""
-        
+
         # Log incoming request
         if query:
             logger.info(f"📨 [HTTP] {method} {path}?{query} from {client_ip}")
         else:
             logger.info(f"📨 [HTTP] {method} {path} from {client_ip}")
-        
+
         # Process request
         try:
             response = await call_next(request)
-            
+
             # Calculate duration
             duration_ms = (time.time() - start_time) * 1000
-            
+
             # Log response with status code and duration
             status_emoji = "✅" if response.status_code < 400 else "❌"
             logger.info(
                 f"{status_emoji} [HTTP] {method} {path} -> {response.status_code} ({duration_ms:.2f}ms)"
             )
-            
+
             return response
         except Exception as exc:
             # Log error
             duration_ms = (time.time() - start_time) * 1000
-            logger.error(f"💥 [HTTP] {method} {path} -> ERROR ({duration_ms:.2f}ms): {str(exc)}")
+            logger.error(
+                f"💥 [HTTP] {method} {path} -> ERROR ({duration_ms:.2f}ms): {str(exc)}"
+            )
             raise
 
 
@@ -128,6 +130,7 @@ def metrics():
     """Prometheus metrics endpoint."""
     from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
     from fastapi.responses import Response
+
     return Response(
         content=generate_latest(),
         media_type=CONTENT_TYPE_LATEST,
@@ -143,10 +146,10 @@ FRONTEND_DIST = Path(__file__).parent.parent.parent / "frontend" / "dist"
 if FRONTEND_DIST.exists():
     # Mount static assets
     app.mount("/assets", StaticFiles(directory=FRONTEND_DIST / "assets"), name="assets")
-    
+
     # Serve index.html for all non-API routes (SPA fallback)
     from fastapi.responses import FileResponse
-    
+
     @app.get("/{full_path:path}")
     async def serve_spa(full_path: str):
         """
@@ -155,16 +158,13 @@ if FRONTEND_DIST.exists():
         """
         # If it's an API route, let FastAPI handle it (404)
         if full_path.startswith("api/"):
-            return JSONResponse(
-                status_code=404,
-                content={"detail": "Not Found"}
-            )
-        
+            return JSONResponse(status_code=404, content={"detail": "Not Found"})
+
         # Check if file exists in dist
         file_path = FRONTEND_DIST / full_path
         if file_path.is_file():
             return FileResponse(file_path)
-        
+
         # Otherwise, serve index.html (SPA fallback)
         index_file = FRONTEND_DIST / "index.html"
         if index_file.exists():
@@ -172,8 +172,11 @@ if FRONTEND_DIST.exists():
         else:
             return JSONResponse(
                 status_code=404,
-                content={"detail": "Frontend not built. Run: cd frontend && npm run build"}
+                content={
+                    "detail": "Frontend not built. Run: cd frontend && npm run build"
+                },
             )
+
 else:
     logger.warning(f"Frontend dist directory not found: {FRONTEND_DIST}")
     logger.warning("Frontend will not be served. Run: cd frontend && npm run build")
@@ -250,5 +253,3 @@ if __name__ == "__main__":
         port=8000,
         reload=True,
     )
-
-

@@ -33,22 +33,22 @@ async def generate_multi_day_recommendation_for_user(
 ) -> MultiDayRecommendationResponse:
     """
     Generate 3-day AI Recommendations for a specific user (admin only).
-    
+
     This endpoint allows administrators to:
     - Select any user in the system
     - Generate recommendations for today, tomorrow, and the day after tomorrow
     - Optionally send the recommendations via email
-    
+
     **Permission Required**: `recommendation.admin`
-    
+
     **Rate Limit**: 10 requests/hour per admin (TODO: implement rate limiting)
-    
+
     Args:
         request: AdminGenerateMultiDayRequest with user_id, city_code, send_email
-    
+
     Returns:
         MultiDayRecommendationResponse with 3 daily recommendations
-    
+
     Raises:
         404: User not found
         400: User profile incomplete or city invalid
@@ -58,7 +58,7 @@ async def generate_multi_day_recommendation_for_user(
         f"Admin {admin_user.email} (id={admin_user.id}) generating 3-day recommendations "
         f"for user_id={request.user_id}, city_code={request.city_code}"
     )
-    
+
     # Get target user
     target_user = UserService.get_user_by_id(db, request.user_id)
     if not target_user:
@@ -67,7 +67,7 @@ async def generate_multi_day_recommendation_for_user(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"User with id {request.user_id} not found",
         )
-    
+
     # Check if target user has complete profile
     if not target_user.gender or not target_user.age:
         logger.warning(f"User {target_user.id} has incomplete profile")
@@ -75,14 +75,12 @@ async def generate_multi_day_recommendation_for_user(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="User profile is incomplete. Gender and age are required for recommendations.",
         )
-    
+
     # Generate 3-day recommendations
     rec_service = RecommendationService(db)
     try:
         recommendations = await rec_service.generate_for_user_multi_day(
-            target_user=target_user,
-            city_code=request.city_code,
-            days=3
+            target_user=target_user, city_code=request.city_code, days=3
         )
     except ValueError as e:
         logger.error(f"Failed to generate recommendations: {e}")
@@ -96,7 +94,7 @@ async def generate_multi_day_recommendation_for_user(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to generate recommendations. Please try again later.",
         )
-    
+
     # Build daily recommendation responses
     daily_recommendations = []
     for rec in recommendations:
@@ -107,7 +105,7 @@ async def generate_multi_day_recommendation_for_user(
             f"最高{weather_data.get('temperature_high', 'N/A')}°C, "
             f"最低{weather_data.get('temperature_low', 'N/A')}°C"
         )
-        
+
         # Build RecommendationResponse from Recommendation model
         rec_response = RecommendationResponse(
             id=rec.id,
@@ -122,15 +120,17 @@ async def generate_multi_day_recommendation_for_user(
             cost_estimate=rec.cost_estimate,
             created_at=rec.created_at,
         )
-        
+
         daily_rec = DailyRecommendation(
-            date=weather_data.get("date", rec.forecast_date.isoformat() if rec.forecast_date else ""),
+            date=weather_data.get(
+                "date", rec.forecast_date.isoformat() if rec.forecast_date else ""
+            ),
             date_label=weather_data.get("date_label", ""),
             recommendation=rec_response,
             weather_summary=weather_summary,
         )
         daily_recommendations.append(daily_rec)
-    
+
     # Send email if requested
     email_sent = False
     if request.send_email:
@@ -145,10 +145,12 @@ async def generate_multi_day_recommendation_for_user(
             email_sent = True
             logger.info(f"✅ Email sent successfully to {target_user.email}")
         except Exception as e:
-            logger.error(f"Failed to send email to {target_user.email}: {e}", exc_info=True)
+            logger.error(
+                f"Failed to send email to {target_user.email}: {e}", exc_info=True
+            )
             # Don't fail the entire request if email fails
             logger.warning("Continuing without email notification")
-    
+
     # Build response
     response = MultiDayRecommendationResponse(
         user=UserBasicInfo(
@@ -162,11 +164,10 @@ async def generate_multi_day_recommendation_for_user(
         email_sent=email_sent,
         generated_at=datetime.utcnow(),
     )
-    
+
     logger.info(
         f"✅ Successfully generated 3-day recommendations for user {target_user.id}. "
         f"Email sent: {email_sent}"
     )
-    
-    return response
 
+    return response

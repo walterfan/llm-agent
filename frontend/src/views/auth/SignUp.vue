@@ -55,7 +55,10 @@ const handleSubmit = async () => {
   } catch (error: any) {
     const errorMessage = error.message || ''
     // Check if the error is about account pending approval
-    if (errorMessage.toLowerCase().includes('inactive') && errorMessage.toLowerCase().includes('pending')) {
+    if (
+      errorMessage.toLowerCase().includes('inactive') &&
+      errorMessage.toLowerCase().includes('pending')
+    ) {
       pendingApproval.value = true
     } else {
       serverError.value = errorMessage || 'Signup failed. Please try again.'
@@ -86,18 +89,25 @@ const handleSubmit = async () => {
             <div class="flex">
               <div class="flex-shrink-0">
                 <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                  <path
+                    fill-rule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                    clip-rule="evenodd"
+                  />
                 </svg>
               </div>
               <div class="ml-3">
                 <h3 class="text-sm font-medium text-blue-800">Account Created Successfully!</h3>
                 <div class="mt-2 text-sm text-blue-700">
                   <p>Your account has been created and is pending approval by an administrator.</p>
-                  <p class="mt-2">Please contact the administrator to activate your account. Once approved, you'll be able to sign in.</p>
+                  <p class="mt-2">
+                    Please contact the administrator to activate your account. Once approved, you'll
+                    be able to sign in.
+                  </p>
                 </div>
                 <div class="mt-4">
-                  <RouterLink 
-                    to="/signin" 
+                  <RouterLink
+                    to="/signin"
                     class="text-sm font-medium text-blue-600 hover:text-blue-500"
                   >
                     Go to Sign In →
@@ -107,9 +117,11 @@ const handleSubmit = async () => {
             </div>
           </div>
 
-          <form v-if="!pendingApproval" @submit.prevent="handleSubmit" class="space-y-6">
+          <form v-if="!pendingApproval" class="space-y-6" @submit.prevent="handleSubmit">
             <div v-if="serverError" class="rounded-md bg-red-50 p-4">
-              <p class="text-sm text-red-800">{{ serverError }}</p>
+              <p class="text-sm text-red-800">
+                {{ serverError }}
+              </p>
             </div>
 
             <InputField
@@ -155,5 +167,3 @@ const handleSubmit = async () => {
     </div>
   </AppLayout>
 </template>
-
-

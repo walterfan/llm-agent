@@ -44,10 +44,7 @@ export default {
    * Submit revision feedback for a task.
    */
   async reviseTask(taskId: string, request: RevisionRequest): Promise<PaperTask> {
-    const response = await api.post<PaperTask>(
-      `${BASE_PATH}/${taskId}/revise`,
-      request
-    )
+    const response = await api.post<PaperTask>(`${BASE_PATH}/${taskId}/revise`, request)
     return response.data
   },
 
@@ -62,20 +59,14 @@ export default {
   /**
    * Stream task progress via SSE.
    */
-  async *streamTask(
-    taskId: string,
-    token: string
-  ): AsyncGenerator<any, void, unknown> {
-    const response = await fetch(
-      `${api.defaults.baseURL}${BASE_PATH}/${taskId}/stream`,
-      {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: 'text/event-stream',
-        },
-      }
-    )
+  async *streamTask(taskId: string, token: string): AsyncGenerator<any, void, unknown> {
+    const response = await fetch(`${api.defaults.baseURL}${BASE_PATH}/${taskId}/stream`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'text/event-stream',
+      },
+    })
 
     if (!response.ok) {
       throw new Error(`Stream failed: ${response.status}`)

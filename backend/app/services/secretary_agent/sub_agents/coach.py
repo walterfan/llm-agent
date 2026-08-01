@@ -58,49 +58,57 @@ def create_coach_tools(
     tools: list[StructuredTool] = []
 
     # Query knowledge base
-    tools.append(StructuredTool.from_function(
-        func=partial(query_knowledge, user_id=user_id),
-        name="query_knowledge",
-        description=(
-            "Search the user's knowledge base using semantic search. "
-            "Use this when the user asks a question that might be answered "
-            "by their uploaded study materials."
-        ),
-        args_schema=QueryKnowledgeInput,
-    ))
+    tools.append(
+        StructuredTool.from_function(
+            func=partial(query_knowledge, user_id=user_id),
+            name="query_knowledge",
+            description=(
+                "Search the user's knowledge base using semantic search. "
+                "Use this when the user asks a question that might be answered "
+                "by their uploaded study materials."
+            ),
+            args_schema=QueryKnowledgeInput,
+        )
+    )
 
     # Create learning goal
-    tools.append(StructuredTool.from_function(
-        func=partial(create_goal, db=db, user_id=user_id),
-        name="create_goal",
-        description=(
-            "Create a new learning goal for the user. "
-            "Use when the user wants to set a study target or learning plan."
-        ),
-        args_schema=CreateGoalInput,
-    ))
+    tools.append(
+        StructuredTool.from_function(
+            func=partial(create_goal, db=db, user_id=user_id),
+            name="create_goal",
+            description=(
+                "Create a new learning goal for the user. "
+                "Use when the user wants to set a study target or learning plan."
+            ),
+            args_schema=CreateGoalInput,
+        )
+    )
 
     # Log study session
-    tools.append(StructuredTool.from_function(
-        func=partial(log_study_session, db=db, user_id=user_id),
-        name="log_study_session",
-        description=(
-            "Log a study session for the user. "
-            "Use when the user reports they have studied or wants to record study time."
-        ),
-        args_schema=LogStudySessionInput,
-    ))
+    tools.append(
+        StructuredTool.from_function(
+            func=partial(log_study_session, db=db, user_id=user_id),
+            name="log_study_session",
+            description=(
+                "Log a study session for the user. "
+                "Use when the user reports they have studied or wants to record study time."
+            ),
+            args_schema=LogStudySessionInput,
+        )
+    )
 
     # Get progress report
-    tools.append(StructuredTool.from_function(
-        func=partial(get_progress, db=db, user_id=user_id),
-        name="get_progress",
-        description=(
-            "Get a progress report for a specific learning goal. "
-            "Shows total sessions, study time, streaks, and completion status."
-        ),
-        args_schema=GetProgressInput,
-    ))
+    tools.append(
+        StructuredTool.from_function(
+            func=partial(get_progress, db=db, user_id=user_id),
+            name="get_progress",
+            description=(
+                "Get a progress report for a specific learning goal. "
+                "Shows total sessions, study time, streaks, and completion status."
+            ),
+            args_schema=GetProgressInput,
+        )
+    )
 
     return tools
 
@@ -139,8 +147,7 @@ def create_coach_agent(
     )
 
     logger.info(
-        f"Created CoachAgent with {len(tools)} tools: "
-        f"{[t.name for t in tools]}"
+        f"Created CoachAgent with {len(tools)} tools: " f"{[t.name for t in tools]}"
     )
 
     return agent

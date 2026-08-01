@@ -128,11 +128,13 @@ AGENT_INFO = Info(
     "Information about the Medical Paper agent",
 )
 
-AGENT_INFO.info({
-    "version": "1.0.0",
-    "framework": "langgraph",
-    "supported_types": "rct,cohort,meta_analysis",
-})
+AGENT_INFO.info(
+    {
+        "version": "1.0.0",
+        "framework": "langgraph",
+        "supported_types": "rct,cohort,meta_analysis",
+    }
+)
 
 
 # ============================================================================
@@ -179,9 +181,9 @@ def record_agent_tool_call(agent: str, tool_name: str, status: str):
 
 def record_compliance_score(paper_type: str, checklist_type: str, score: float):
     """Record a compliance score."""
-    COMPLIANCE_SCORE.labels(
-        paper_type=paper_type, checklist_type=checklist_type
-    ).set(score)
+    COMPLIANCE_SCORE.labels(paper_type=paper_type, checklist_type=checklist_type).set(
+        score
+    )
 
 
 def record_revision_rounds(paper_type: str, rounds: int):

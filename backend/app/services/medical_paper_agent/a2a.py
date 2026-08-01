@@ -16,6 +16,7 @@ from pydantic import BaseModel, Field
 
 class MedicalA2AStatus(str, Enum):
     """Status of a medical A2A message."""
+
     PENDING = "pending"
     OK = "ok"
     ERROR = "error"
@@ -23,11 +24,12 @@ class MedicalA2AStatus(str, Enum):
 
 class MedicalA2AErrorCode(str, Enum):
     """Error codes with associated retry strategies."""
+
     VALIDATION_ERROR = "VALIDATION_ERROR"  # Bad input, don't retry
-    TOOL_ERROR = "TOOL_ERROR"              # Tool failed, retry up to 3x
-    TIMEOUT = "TIMEOUT"                    # Timed out, retry 2x with longer timeout
-    RATE_LIMIT = "RATE_LIMIT"              # Rate limited, wait and retry
-    LLM_ERROR = "LLM_ERROR"               # LLM returned error, retry 2x
+    TOOL_ERROR = "TOOL_ERROR"  # Tool failed, retry up to 3x
+    TIMEOUT = "TIMEOUT"  # Timed out, retry 2x with longer timeout
+    RATE_LIMIT = "RATE_LIMIT"  # Rate limited, wait and retry
+    LLM_ERROR = "LLM_ERROR"  # LLM returned error, retry 2x
 
 
 # Retry configuration per error code
@@ -42,6 +44,7 @@ RETRY_CONFIG: dict[str, dict[str, Any]] = {
 
 class MedicalA2AError(BaseModel):
     """Structured error for medical A2A messages."""
+
     code: MedicalA2AErrorCode
     message: str
     recoverable: bool = False
@@ -50,6 +53,7 @@ class MedicalA2AError(BaseModel):
 
 class MedicalA2AMetrics(BaseModel):
     """Performance metrics for an A2A interaction."""
+
     latency_ms: float = 0
     tokens_in: int = 0
     tokens_out: int = 0
@@ -63,12 +67,11 @@ class MedicalA2AMessage(BaseModel):
     Every message between supervisor and sub-agents uses this contract
     for traceability and structured error handling.
     """
+
     protocol: str = "a2a.medical.v1"
     id: str = Field(default_factory=lambda: f"med_{uuid4().hex[:12]}")
     correlation_id: Optional[str] = None
-    timestamp: str = Field(
-        default_factory=lambda: datetime.utcnow().isoformat() + "Z"
-    )
+    timestamp: str = Field(default_factory=lambda: datetime.utcnow().isoformat() + "Z")
 
     sender: str
     receiver: str
@@ -143,7 +146,9 @@ def classify_error(error: Exception) -> MedicalA2AError:
             recoverable=True,
             retry_after=10,
         )
-    elif "validation" in error_msg.lower() or isinstance(error, (ValueError, TypeError)):
+    elif "validation" in error_msg.lower() or isinstance(
+        error, (ValueError, TypeError)
+    ):
         return MedicalA2AError(
             code=MedicalA2AErrorCode.VALIDATION_ERROR,
             message=error_msg,
@@ -167,4 +172,4 @@ def get_backoff_seconds(error: MedicalA2AError, attempt: int) -> float:
     """Get exponential backoff duration for a retry attempt."""
     config = RETRY_CONFIG.get(error.code, {"backoff": 1.0})
     base = config["backoff"]
-    return base * (2 ** attempt)
+    return base * (2**attempt)

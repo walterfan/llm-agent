@@ -37,6 +37,7 @@ DEFAULT_MAX_BACKUPS = 30
 
 class ConflictStrategy(str, Enum):
     """Strategy for handling conflicts during import."""
+
     SKIP = "skip"
     UPDATE = "update"
     ERROR = "error"
@@ -47,7 +48,11 @@ class BackupService:
     Manages SQLite database backup, export, and import operations.
     """
 
-    def __init__(self, backup_dir: str = DEFAULT_BACKUP_DIR, max_backups: int = DEFAULT_MAX_BACKUPS):
+    def __init__(
+        self,
+        backup_dir: str = DEFAULT_BACKUP_DIR,
+        max_backups: int = DEFAULT_MAX_BACKUPS,
+    ):
         self.backup_dir = Path(backup_dir)
         self.max_backups = max_backups
         self._ensure_backup_dir()
@@ -196,7 +201,9 @@ class BackupService:
 
         metadata = backup_data.get("_metadata")
         if not metadata or "tables" not in backup_data:
-            raise ValueError("Invalid backup file format. Expected '_metadata' and 'tables' keys.")
+            raise ValueError(
+                "Invalid backup file format. Expected '_metadata' and 'tables' keys."
+            )
 
         logger.info(
             f"📥 Importing from: {input_path} "
@@ -323,7 +330,9 @@ class BackupService:
             return result
 
         inspector = inspect(engine)
-        pk_columns = inspector.get_pk_constraint(table_name).get("constrained_columns", [])
+        pk_columns = inspector.get_pk_constraint(table_name).get(
+            "constrained_columns", []
+        )
         columns = list(rows[0].keys())
         col_list = ", ".join(columns)
         placeholders = ", ".join(f":{col}" for col in columns)
@@ -344,15 +353,21 @@ class BackupService:
                 elif conflict_strategy == ConflictStrategy.UPDATE:
                     if pk_columns:
                         # Check if row exists
-                        where_clause = " AND ".join(f"{pk} = :{pk}" for pk in pk_columns)
-                        check_sql = f"SELECT COUNT(*) FROM {table_name} WHERE {where_clause}"
+                        where_clause = " AND ".join(
+                            f"{pk} = :{pk}" for pk in pk_columns
+                        )
+                        check_sql = (
+                            f"SELECT COUNT(*) FROM {table_name} WHERE {where_clause}"
+                        )
                         pk_values = {pk: row[pk] for pk in pk_columns if pk in row}
                         exists = db.execute(text(check_sql), pk_values).scalar()
 
                         if exists:
                             # Update existing row
                             set_clause = ", ".join(
-                                f"{col} = :{col}" for col in columns if col not in pk_columns
+                                f"{col} = :{col}"
+                                for col in columns
+                                if col not in pk_columns
                             )
                             update_sql = f"UPDATE {table_name} SET {set_clause} WHERE {where_clause}"
                             if not dry_run:
@@ -372,7 +387,9 @@ class BackupService:
                         result["imported"] += 1
 
                 elif conflict_strategy == ConflictStrategy.ERROR:
-                    sql = f"INSERT INTO {table_name} ({col_list}) VALUES ({placeholders})"
+                    sql = (
+                        f"INSERT INTO {table_name} ({col_list}) VALUES ({placeholders})"
+                    )
                     if not dry_run:
                         db.execute(text(sql), row)
                     result["imported"] += 1
@@ -472,7 +489,9 @@ class BackupService:
 
         total_removed = json_removed + db_removed
         if total_removed > 0:
-            logger.info(f"🗑️ Rotated {total_removed} old backups ({json_removed} JSON, {db_removed} DB)")
+            logger.info(
+                f"🗑️ Rotated {total_removed} old backups ({json_removed} JSON, {db_removed} DB)"
+            )
 
         return {
             "json_removed": json_removed,
@@ -500,18 +519,22 @@ class BackupService:
             List of dicts with file info, sorted newest first.
         """
         backups = []
-        for f in sorted(self.backup_dir.iterdir(), key=lambda x: x.stat().st_mtime, reverse=True):
+        for f in sorted(
+            self.backup_dir.iterdir(), key=lambda x: x.stat().st_mtime, reverse=True
+        ):
             if f.is_file() and (f.suffix == ".json" or f.suffix == ".db"):
                 stat = f.stat()
-                backups.append({
-                    "filename": f.name,
-                    "path": str(f),
-                    "type": "json" if f.suffix == ".json" else "binary",
-                    "size_bytes": stat.st_size,
-                    "size_human": self._human_size(stat.st_size),
-                    "created_at": datetime.fromtimestamp(stat.st_mtime).isoformat(),
-                    "is_pre_import": f.name.startswith("pre_import_"),
-                })
+                backups.append(
+                    {
+                        "filename": f.name,
+                        "path": str(f),
+                        "type": "json" if f.suffix == ".json" else "binary",
+                        "size_bytes": stat.st_size,
+                        "size_human": self._human_size(stat.st_size),
+                        "created_at": datetime.fromtimestamp(stat.st_mtime).isoformat(),
+                        "is_pre_import": f.name.startswith("pre_import_"),
+                    }
+                )
         return backups
 
     def delete_backup(self, filename: str) -> dict[str, Any]:

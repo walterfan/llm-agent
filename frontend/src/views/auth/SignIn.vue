@@ -66,9 +66,11 @@ const handleSubmit = async () => {
 
       <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div class="bg-white px-6 py-8 shadow sm:rounded-lg sm:px-10">
-          <form @submit.prevent="handleSubmit" class="space-y-6">
+          <form class="space-y-6" @submit.prevent="handleSubmit">
             <div v-if="serverError" class="rounded-md bg-red-50 p-4">
-              <p class="text-sm text-red-800">{{ serverError }}</p>
+              <p class="text-sm text-red-800">
+                {{ serverError }}
+              </p>
             </div>
 
             <InputField
@@ -105,5 +107,3 @@ const handleSubmit = async () => {
     </div>
   </AppLayout>
 </template>
-
-

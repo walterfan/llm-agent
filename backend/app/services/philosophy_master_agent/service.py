@@ -16,7 +16,11 @@ from dataclasses import dataclass
 from typing import Any, AsyncIterator
 
 from app.core.config import settings
-from app.schemas.philosophy import PhilosophyChatRequest, PhilosophyChatResponse, PhilosophyPreset
+from app.schemas.philosophy import (
+    PhilosophyChatRequest,
+    PhilosophyChatResponse,
+    PhilosophyPreset,
+)
 from app.services.llm.provider_factory import LLMProviderFactory
 
 logger = logging.getLogger(__name__)
@@ -122,16 +126,24 @@ def _system_instructions() -> str:
 
 def _preset_instructions(p: NormalizedPreset) -> str:
     pieces: list[str] = []
-    pieces.append(f"风格预设：school={p.school}, tone={p.tone}, depth={p.depth}, mode={p.mode}, multi_perspective={p.multi_perspective}")
+    pieces.append(
+        f"风格预设：school={p.school}, tone={p.tone}, depth={p.depth}, mode={p.mode}, multi_perspective={p.multi_perspective}"
+    )
 
     if p.mode == "advice":
         pieces.append("请按以下结构输出：\n## 哲学视角\n## 可执行建议\n## 反思问题")
     elif p.mode == "compare":
-        pieces.append("请用 2-3 个不同哲学流派对同一问题进行对照分析，并给出每种视角的优势/局限与建议。")
+        pieces.append(
+            "请用 2-3 个不同哲学流派对同一问题进行对照分析，并给出每种视角的优势/局限与建议。"
+        )
     elif p.mode == "story":
-        pieces.append("请讲一个简短的哲学故事/寓言/典故，然后明确写出它对应到用户处境的启示与行动建议。")
+        pieces.append(
+            "请讲一个简短的哲学故事/寓言/典故，然后明确写出它对应到用户处境的启示与行动建议。"
+        )
     elif p.mode == "daily_practice":
-        pieces.append("请提供：一句原则/箴言 + 一个小练习（可在今天完成）+ 1-3 个反思问题。")
+        pieces.append(
+            "请提供：一句原则/箴言 + 一个小练习（可在今天完成）+ 1-3 个反思问题。"
+        )
 
     if p.multi_perspective and p.mode != "compare":
         pieces.append("额外要求：再补充 1-2 个不同流派的简短补充视角，并指出差异。")
@@ -179,7 +191,9 @@ class PhilosophyMasterService:
     async def chat(self, req: PhilosophyChatRequest) -> PhilosophyChatResponse:
         preset = _normalize_preset(req.preset)
         if _is_crisis_or_disallowed(req.message):
-            return PhilosophyChatResponse(content=_safe_refusal_message(), sections=None)
+            return PhilosophyChatResponse(
+                content=_safe_refusal_message(), sections=None
+            )
 
         prompt = _build_prompt(req.message, req.context, preset)
         chunks: list[str] = []
@@ -190,9 +204,14 @@ class PhilosophyMasterService:
         content = "".join(chunks).strip()
         return PhilosophyChatResponse(content=content, sections=None)
 
-    async def chat_stream(self, req: PhilosophyChatRequest) -> AsyncIterator[dict[str, Any]]:
+    async def chat_stream(
+        self, req: PhilosophyChatRequest
+    ) -> AsyncIterator[dict[str, Any]]:
         preset = _normalize_preset(req.preset)
-        yield {"type": "meta", "preset": json.loads(json.dumps(preset.__dict__))}  # JSON-safe
+        yield {
+            "type": "meta",
+            "preset": json.loads(json.dumps(preset.__dict__)),
+        }  # JSON-safe
 
         if _is_crisis_or_disallowed(req.message):
             safe = _safe_refusal_message()
@@ -211,5 +230,7 @@ class PhilosophyMasterService:
             yield {"type": "done"}
         except Exception as e:
             logger.exception("Philosophy streaming failed: %s", e)
-            yield {"type": "error", "content": "Philosophy Master failed. Please try again."}
-
+            yield {
+                "type": "error",
+                "content": "Philosophy Master failed. Please try again.",
+            }

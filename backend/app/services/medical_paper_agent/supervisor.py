@@ -105,9 +105,7 @@ class MedicalPaperSupervisor:
         """Create the LLM instance with SSL configuration."""
         http_client = httpx.AsyncClient(
             verify=getattr(settings, "LLM_VERIFY_SSL", True),
-            timeout=httpx.Timeout(
-                timeout=getattr(settings, "LLM_TIMEOUT", 60.0)
-            ),
+            timeout=httpx.Timeout(timeout=getattr(settings, "LLM_TIMEOUT", 60.0)),
         )
 
         return ChatOpenAI(

@@ -35,13 +35,16 @@ logger = logging.getLogger("secretary_agent")
 # Input / Output Schemas
 # ============================================================================
 
+
 class LearnArticleInput(BaseModel):
     """Input schema for learn_article tool."""
+
     url: str = Field(description="URL of the article to learn from")
 
 
 class ArticleSummary(BaseModel):
     """Structured summary output from LLM."""
+
     summary: str = Field(description="3-5 sentence summary in Chinese")
     key_points: list[str] = Field(description="Main takeaways in Chinese")
     tags: list[str] = Field(description="Auto-generated topic tags")
@@ -64,7 +67,9 @@ PDF_URL_SUFFIXES = (".pdf", ".PDF")
 class FetchResult:
     """Result of fetching a URL: content type and raw body."""
 
-    content_type: str  # "text/html", "application/pdf", or "text/plain" (raw text/markdown)
+    content_type: (
+        str  # "text/html", "application/pdf", or "text/plain" (raw text/markdown)
+    )
     body: str | bytes  # str for HTML or plain text, bytes for PDF
     final_url: str
 
@@ -231,7 +236,9 @@ async def extract_to_markdown(html: str, url: Optional[str] = None) -> dict[str,
 
 
 @trace_tool_call
-async def extract_from_pdf(pdf_bytes: bytes, url: Optional[str] = None) -> dict[str, Any]:
+async def extract_from_pdf(
+    pdf_bytes: bytes, url: Optional[str] = None
+) -> dict[str, Any]:
     """
     Extract text from a PDF document.
 
@@ -300,6 +307,7 @@ async def extract_from_pdf(pdf_bytes: bytes, url: Optional[str] = None) -> dict[
 # ============================================================================
 # Step 3: Bilingual Translation
 # ============================================================================
+
 
 def _split_paragraphs(text: str) -> list[str]:
     """Split text into paragraphs, preserving code blocks."""
@@ -408,6 +416,7 @@ async def translate_bilingual(
 # Step 4: Generate Summary
 # ============================================================================
 
+
 @trace_tool_call
 async def generate_summary(
     title: str,
@@ -462,6 +471,7 @@ async def generate_summary(
 # ============================================================================
 # Step 5: Generate Mindmap PlantUML
 # ============================================================================
+
 
 def _extract_headings(content: str) -> str:
     """Extract heading lines from markdown content for mindmap structure."""
@@ -529,6 +539,7 @@ async def generate_mindmap_plantuml(
 # Full Pipeline: learn_article tool
 # ============================================================================
 
+
 @trace_tool_call
 async def learn_article(url: str) -> str:
     """
@@ -593,9 +604,7 @@ async def learn_article(url: str) -> str:
 
     # Step 4: Summarize
     logger.info("[Article] Step 4: Generating summary")
-    summary = await generate_summary(
-        title=title, content=content, llm_call_fn=llm_fn
-    )
+    summary = await generate_summary(title=title, content=content, llm_call_fn=llm_fn)
 
     # Step 5: Generate mindmap
     logger.info("[Article] Step 5: Generating mindmap PlantUML")
@@ -643,6 +652,7 @@ async def learn_article(url: str) -> str:
 # ============================================================================
 # LLM Call Helper
 # ============================================================================
+
 
 @trace_llm_call(prompt_template="article_tools")
 async def _call_llm(prompt: str) -> str:

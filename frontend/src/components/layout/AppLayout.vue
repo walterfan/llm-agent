@@ -10,5 +10,3 @@ import AppHeader from './AppHeader.vue'
     </main>
   </div>
 </template>
-
-

@@ -8,7 +8,16 @@ from datetime import datetime
 from typing import Optional, List
 from uuid import uuid4
 
-from sqlalchemy import Column, String, Text, Integer, DateTime, Boolean, ForeignKey, JSON
+from sqlalchemy import (
+    Column,
+    String,
+    Text,
+    Integer,
+    DateTime,
+    Boolean,
+    ForeignKey,
+    JSON,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -18,7 +27,7 @@ from app.db.base import Base
 class Note(Base):
     """
     Note model for storing user notes and memos.
-    
+
     Attributes:
         id: Unique identifier (UUID)
         user_id: Owner of the note
@@ -32,44 +41,44 @@ class Note(Base):
         updated_at: Last update timestamp
         deleted_at: Soft delete timestamp
     """
-    
+
     __tablename__ = "notes"
-    
+
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
-    
+
     # Note content
     title = Column(String(255), nullable=True)
     content = Column(Text, nullable=False)
-    
+
     # Organization
     tags = Column(JSON, default=list)
     is_pinned = Column(Boolean, default=False, nullable=False)
     is_archived = Column(Boolean, default=False, nullable=False)
-    
+
     # Context
     session_id = Column(UUID(as_uuid=True), nullable=True, index=True)
-    
+
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     deleted_at = Column(DateTime, nullable=True)
-    
+
     # Relationships
     user = relationship("User", back_populates="notes")
-    
+
     def __repr__(self) -> str:
         return f"<Note(id={self.id}, title={self.title!r})>"
-    
+
     @property
     def is_deleted(self) -> bool:
         """Check if note is soft deleted."""
         return self.deleted_at is not None
-    
+
     def soft_delete(self) -> None:
         """Mark note as deleted."""
         self.deleted_at = datetime.utcnow()
-    
+
     def to_dict(self) -> dict:
         """Convert to dictionary."""
         return {

@@ -61,7 +61,9 @@ class KnowledgeDocument(Base):
             "id": str(self.id),
             "user_id": self.user_id,
             "title": self.title,
-            "content": self.content[:200] + "..." if len(self.content) > 200 else self.content,
+            "content": (
+                self.content[:200] + "..." if len(self.content) > 200 else self.content
+            ),
             "tags": self.tags or [],
             "source": self.source,
             "word_count": self.word_count,

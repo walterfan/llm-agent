@@ -61,7 +61,9 @@ def create_goal(
     db.commit()
     db.refresh(goal)
 
-    logger.info(f"Goal created: {payload.subject} (id={goal.id}, user={current_user.id})")
+    logger.info(
+        f"Goal created: {payload.subject} (id={goal.id}, user={current_user.id})"
+    )
     return goal
 
 
@@ -69,7 +71,9 @@ def create_goal(
 def list_goals(
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_active_user)],
-    goal_status: Optional[str] = Query(None, alias="status", description="Filter by status"),
+    goal_status: Optional[str] = Query(
+        None, alias="status", description="Filter by status"
+    ),
 ):
     """List learning goals for the current user."""
     query = db.query(LearningGoal).filter(LearningGoal.user_id == current_user.id)
@@ -126,7 +130,9 @@ def update_goal(
 # ============================================================================
 
 
-@router.post("/sessions", response_model=SessionResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/sessions", response_model=SessionResponse, status_code=status.HTTP_201_CREATED
+)
 def log_session(
     payload: SessionCreate,
     db: Annotated[Session, Depends(get_db)],
@@ -204,7 +210,9 @@ def get_progress(
     # Get all sessions for this goal
     sessions = (
         db.query(StudySession)
-        .filter(StudySession.goal_id == goal_id, StudySession.user_id == current_user.id)
+        .filter(
+            StudySession.goal_id == goal_id, StudySession.user_id == current_user.id
+        )
         .order_by(StudySession.created_at.asc())
         .all()
     )

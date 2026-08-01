@@ -38,6 +38,7 @@ router = APIRouter()
 # Learning Record CRUD
 # ============================================================================
 
+
 @router.post("/confirm", response_model=LearningRecordResponse)
 async def confirm_learning(
     request: LearningRecordCreate,
@@ -46,7 +47,7 @@ async def confirm_learning(
 ):
     """
     Save a learning record after user confirmation.
-    
+
     Called when user confirms they want to save learning content
     (word, sentence, topic, article, question, or idea).
     """
@@ -59,10 +60,10 @@ async def confirm_learning(
         session_id=request.session_id,
         tags=request.tags,
     )
-    
+
     # Record metrics
     record_learning_record(request.input_type.value)
-    
+
     return LearningRecordResponse(
         id=record.id,
         input_type=record.input_type,
@@ -91,13 +92,13 @@ async def list_records(
 ):
     """
     List learning records with optional filtering.
-    
+
     Supports filtering by:
     - type: word, sentence, topic, article, question, idea
     - favorites_only: only return favorited records
     """
     offset = (page - 1) * page_size
-    
+
     records, total = LearningRecordService.list_learning_records(
         db=db,
         user_id=current_user.id,
@@ -106,7 +107,7 @@ async def list_records(
         limit=page_size,
         offset=offset,
     )
-    
+
     return LearningRecordListResponse(
         records=[
             LearningRecordResponse(
@@ -140,7 +141,7 @@ async def get_record(
     record = LearningRecordService.get_record(db, record_id, current_user.id)
     if not record:
         raise HTTPException(status_code=404, detail="Record not found")
-    
+
     return LearningRecordResponse(
         id=record.id,
         input_type=record.input_type,
@@ -167,18 +168,18 @@ async def update_record(
     record = LearningRecordService.get_record(db, record_id, current_user.id)
     if not record:
         raise HTTPException(status_code=404, detail="Record not found")
-    
+
     if request.tags is not None:
         record = LearningRecordService.update_tags(
             db, record_id, current_user.id, request.tags
         )
-    
+
     if request.is_favorite is not None:
         if request.is_favorite != record.is_favorite:
             record = LearningRecordService.toggle_favorite(
                 db, record_id, current_user.id
             )
-    
+
     return LearningRecordResponse(
         id=record.id,
         input_type=record.input_type,
@@ -213,6 +214,7 @@ async def delete_record(
 # Search
 # ============================================================================
 
+
 @router.get("/search", response_model=LearningRecordListResponse)
 async def search_records(
     q: str = Query(..., min_length=1, description="Search query"),
@@ -226,11 +228,11 @@ async def search_records(
 ):
     """
     Search learning records by text.
-    
+
     Searches in user_input field.
     """
     offset = (page - 1) * page_size
-    
+
     records, total = LearningRecordService.search_learning_records(
         db=db,
         user_id=current_user.id,
@@ -239,7 +241,7 @@ async def search_records(
         limit=page_size,
         offset=offset,
     )
-    
+
     return LearningRecordListResponse(
         records=[
             LearningRecordResponse(
@@ -267,6 +269,7 @@ async def search_records(
 # Engagement
 # ============================================================================
 
+
 @router.post("/records/{record_id}/review", response_model=LearningRecordResponse)
 async def mark_reviewed(
     record_id: UUID,
@@ -277,10 +280,10 @@ async def mark_reviewed(
     record = LearningRecordService.mark_reviewed(db, record_id, current_user.id)
     if not record:
         raise HTTPException(status_code=404, detail="Record not found")
-    
+
     # Record metrics
     record_learning_review(record.input_type.value)
-    
+
     return LearningRecordResponse(
         id=record.id,
         input_type=record.input_type,
@@ -306,7 +309,7 @@ async def toggle_favorite(
     record = LearningRecordService.toggle_favorite(db, record_id, current_user.id)
     if not record:
         raise HTTPException(status_code=404, detail="Record not found")
-    
+
     return LearningRecordResponse(
         id=record.id,
         input_type=record.input_type,
@@ -326,6 +329,7 @@ async def toggle_favorite(
 # Statistics
 # ============================================================================
 
+
 @router.get("/statistics", response_model=LearningStatisticsResponse)
 async def get_statistics(
     db: Session = Depends(get_db),
@@ -333,7 +337,7 @@ async def get_statistics(
 ):
     """Get learning statistics for the current user."""
     stats = LearningRecordService.get_statistics(db, current_user.id)
-    
+
     return LearningStatisticsResponse(
         total=stats["total"],
         by_type=stats["by_type"],

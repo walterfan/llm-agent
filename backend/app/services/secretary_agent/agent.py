@@ -97,13 +97,17 @@ MAX_ROUTING_ITERATIONS = 10
 
 class RoutingDecision(BaseModel):
     """Structured output for supervisor routing decisions."""
-    next: Literal["learning_agent", "productivity_agent", "utility_agent", "coach_agent", "FINISH"] = Field(
+
+    next: Literal[
+        "learning_agent", "productivity_agent", "utility_agent", "coach_agent", "FINISH"
+    ] = Field(
         description="The next agent to route to, or FINISH if the user's request has been fully handled"
     )
 
 
 class SecretaryState(MessagesState):
     """Extended state with routing information."""
+
     next_agent: str
 
 
@@ -156,9 +160,7 @@ class SecretaryAgent:
         """
         http_client = httpx.AsyncClient(
             verify=getattr(settings, "LLM_VERIFY_SSL", True),
-            timeout=httpx.Timeout(
-                timeout=getattr(settings, "LLM_TIMEOUT", 60.0)
-            ),
+            timeout=httpx.Timeout(timeout=getattr(settings, "LLM_TIMEOUT", 60.0)),
         )
 
         return ChatOpenAI(
@@ -244,7 +246,9 @@ class SecretaryAgent:
                     "Based on the conversation, respond with ONLY one of these exact words: "
                     "learning_agent, productivity_agent, utility_agent, FINISH"
                 )
-                resp = await self.llm.ainvoke(messages + [HumanMessage(content=fallback_msg)])
+                resp = await self.llm.ainvoke(
+                    messages + [HumanMessage(content=fallback_msg)]
+                )
                 content = resp.content.strip().lower()
                 if "learning" in content:
                     next_agent = "learning_agent"
@@ -491,9 +495,7 @@ class SecretaryAgent:
                     yield {
                         "type": "tool_result",
                         "tool": event.get("name", "unknown"),
-                        "result": str(
-                            event.get("data", {}).get("output", "")
-                        ),
+                        "result": str(event.get("data", {}).get("output", "")),
                     }
 
                 elif kind == "on_chain_start":
@@ -520,9 +522,7 @@ class SecretaryAgent:
             }
 
         except Exception as e:
-            logger.error(
-                f"Streaming agent execution failed: {e}", exc_info=True
-            )
+            logger.error(f"Streaming agent execution failed: {e}", exc_info=True)
             yield {
                 "type": "error",
                 "content": f"处理请求时出现错误: {str(e)}",
@@ -551,7 +551,7 @@ class SecretaryAgent:
         messages = []
 
         # Add history
-        for msg in (chat_history or []):
+        for msg in chat_history or []:
             role = msg.get("role", "user")
             content = msg.get("content", "")
 
@@ -583,9 +583,7 @@ class SecretaryAgent:
 
         return ""
 
-    def _extract_tool_calls_from_messages(
-        self, result: dict
-    ) -> list[dict]:
+    def _extract_tool_calls_from_messages(self, result: dict) -> list[dict]:
         """Extract tool call info from the message history."""
         tool_calls = []
         messages = result.get("messages", [])
@@ -594,10 +592,12 @@ class SecretaryAgent:
             if isinstance(msg, ToolMessage):
                 # Find the preceding AI message with tool_call
                 tool_name = getattr(msg, "name", "unknown")
-                tool_calls.append({
-                    "tool": tool_name,
-                    "result": msg.content[:500] if msg.content else "",
-                })
+                tool_calls.append(
+                    {
+                        "tool": tool_name,
+                        "result": msg.content[:500] if msg.content else "",
+                    }
+                )
 
         return tool_calls
 
@@ -605,6 +605,7 @@ class SecretaryAgent:
 # ============================================================================
 # Learning Tool Functions (LLM-based, uses instructor for structured output)
 # ============================================================================
+
 
 async def process_learning_request(
     agent: SecretaryAgent,

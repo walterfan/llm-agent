@@ -241,12 +241,10 @@ class PromptService:
 
         if "雨" in weather and "rain" in warnings_config:
             warnings.append(warnings_config["rain"])
-        if ("雾" in weather or "霾" in weather):
+        if "雾" in weather or "霾" in weather:
             if "fog" in warnings_config:
                 warnings.append(warnings_config["fog"])
             elif "haze" in warnings_config:
                 warnings.append(warnings_config["haze"])
 
         return warnings
-
-

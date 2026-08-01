@@ -14,20 +14,20 @@ class CityService:
     def search_cities(db: Session, query: str, limit: int = 20) -> list[City]:
         """
         Search cities by name (Chinese or English).
-        
+
         Args:
             db: Database session
             query: Search query string
             limit: Maximum number of results
-            
+
         Returns:
             List of matching cities
         """
         if not query or not query.strip():
             return []
-        
+
         search_term = f"%{query.strip()}%"
-        
+
         # Search in both Chinese and English names
         cities = (
             db.query(City)
@@ -48,18 +48,18 @@ class CityService:
             .limit(limit)
             .all()
         )
-        
+
         return cities
 
     @staticmethod
     def get_by_ad_code(db: Session, ad_code: str) -> City | None:
         """
         Get city by AD (Administrative Division) code.
-        
+
         Args:
             db: Database session
             ad_code: 6-digit AD code
-            
+
         Returns:
             City object or None if not found
         """
@@ -69,11 +69,11 @@ class CityService:
     def get_by_location_id(db: Session, location_id: str) -> City | None:
         """
         Get city by location ID.
-        
+
         Args:
             db: Database session
             location_id: Location identifier
-            
+
         Returns:
             City object or None if not found
         """
@@ -83,11 +83,11 @@ class CityService:
     def resolve_city_code(db: Session, city_input: str) -> str | None:
         """
         Resolve city name or code to AD code.
-        
+
         Args:
             db: Database session
             city_input: City name (Chinese/English) or AD code
-            
+
         Returns:
             AD code if found, None otherwise
         """
@@ -95,22 +95,22 @@ class CityService:
         if city_input.isdigit() and len(city_input) == 6:
             city = CityService.get_by_ad_code(db, city_input)
             return city.ad_code if city else None
-        
+
         # Search by name
         cities = CityService.search_cities(db, city_input, limit=1)
         if cities:
             return cities[0].ad_code
-        
+
         return None
 
     @staticmethod
     def to_search_result(city: City) -> CitySearchResult:
         """
         Convert City model to CitySearchResult schema.
-        
+
         Args:
             city: City model instance
-            
+
         Returns:
             CitySearchResult schema
         """
@@ -128,10 +128,10 @@ class CityService:
     def to_detail(city: City) -> CityDetail:
         """
         Convert City model to CityDetail schema.
-        
+
         Args:
             city: City model instance
-            
+
         Returns:
             CityDetail schema
         """
@@ -152,4 +152,3 @@ class CityService:
 
 # Singleton instance
 city_service = CityService()
-

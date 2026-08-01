@@ -53,6 +53,7 @@ llama-index = {version = ">=0.12.0,<0.15.0", optional = true}
 llama-index-llms-openai = {version = ">=0.5.0", optional = true}
 llama-index-vector-stores-chroma = {version = ">=0.4.0", optional = true}
 llama-index-readers-file = {version = ">=0.4.0", optional = true}
+openpyxl = "^3.1.5"
 
 [tool.poetry.extras]
 chromadb = ["chromadb", "llama-index", "llama-index-llms-openai", "llama-index-vector-stores-chroma", "llama-index-readers-file"]
@@ -65,6 +66,7 @@ pytest-cov = "^4.1.0"
 black = "^24.1.0"
 ruff = "^0.1.0"
 mypy = "^1.8.0"
+import-linter = "^2.13"
 
 [tool.black]
 line-length = 88

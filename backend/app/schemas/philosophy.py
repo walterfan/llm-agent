@@ -19,16 +19,29 @@ class PhilosophyPreset(BaseModel):
     )
     tone: Optional[str] = Field(default=None, description="gentle|direct|rigorous|zen")
     depth: Optional[str] = Field(default=None, description="shallow|medium|deep")
-    mode: Optional[str] = Field(default=None, description="advice|story|compare|daily_practice")
-    multi_perspective: Optional[bool] = Field(default=None, description="If true, compare 2-3 lenses")
+    mode: Optional[str] = Field(
+        default=None, description="advice|story|compare|daily_practice"
+    )
+    multi_perspective: Optional[bool] = Field(
+        default=None, description="If true, compare 2-3 lenses"
+    )
 
 
 class PhilosophyChatRequest(BaseModel):
     """Non-streaming and streaming request schema."""
 
-    message: str = Field(..., min_length=1, max_length=10000, description="User message / problem statement")
-    preset: Optional[PhilosophyPreset] = Field(default=None, description="Optional style preset")
-    context: Optional[str] = Field(default=None, max_length=20000, description="Optional extra background context")
+    message: str = Field(
+        ...,
+        min_length=1,
+        max_length=10000,
+        description="User message / problem statement",
+    )
+    preset: Optional[PhilosophyPreset] = Field(
+        default=None, description="Optional style preset"
+    )
+    context: Optional[str] = Field(
+        default=None, max_length=20000, description="Optional extra background context"
+    )
 
 
 class PhilosophyChatResponse(BaseModel):
@@ -39,4 +52,3 @@ class PhilosophyChatResponse(BaseModel):
         default=None,
         description="Optional structured sections (analysis/actions/reflection_questions/story/reading_list, etc.)",
     )
-

@@ -7,7 +7,9 @@ class LLMSettingsUpdate(BaseModel):
     """Request body for creating or updating LLM settings."""
 
     # Text generation
-    chat_base_url: Optional[str] = Field(None, max_length=500, examples=["https://api.openai.com/v1"])
+    chat_base_url: Optional[str] = Field(
+        None, max_length=500, examples=["https://api.openai.com/v1"]
+    )
     chat_api_key: Optional[str] = Field(None, examples=["sk-..."])
     chat_model: Optional[str] = Field(None, max_length=255, examples=["gpt-4o"])
     chat_temperature: Optional[float] = Field(None, ge=0.0, le=2.0, examples=[0.7])
@@ -15,7 +17,9 @@ class LLMSettingsUpdate(BaseModel):
     # Embedding
     embedding_base_url: Optional[str] = Field(None, max_length=500)
     embedding_api_key: Optional[str] = Field(None)
-    embedding_model: Optional[str] = Field(None, max_length=255, examples=["text-embedding-3-small"])
+    embedding_model: Optional[str] = Field(
+        None, max_length=255, examples=["text-embedding-3-small"]
+    )
 
     # Image generation
     image_base_url: Optional[str] = Field(None, max_length=500)

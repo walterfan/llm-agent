@@ -48,36 +48,42 @@ def create_utility_tools() -> list[StructuredTool]:
     tools: list[StructuredTool] = []
 
     # Calculator
-    tools.append(StructuredTool.from_function(
-        func=calculate,
-        name="calculate",
-        description=(
-            "Evaluate mathematical expressions. Supports basic arithmetic, "
-            "functions (sqrt, sin, cos, log, etc.), and constants (pi, e)."
-        ),
-        args_schema=CalculatorInput,
-    ))
+    tools.append(
+        StructuredTool.from_function(
+            func=calculate,
+            name="calculate",
+            description=(
+                "Evaluate mathematical expressions. Supports basic arithmetic, "
+                "functions (sqrt, sin, cos, log, etc.), and constants (pi, e)."
+            ),
+            args_schema=CalculatorInput,
+        )
+    )
 
     # DateTime
-    tools.append(StructuredTool.from_function(
-        func=get_current_datetime,
-        name="get_datetime",
-        description="Get the current date and time. Can specify timezone.",
-        args_schema=DateTimeInput,
-    ))
+    tools.append(
+        StructuredTool.from_function(
+            func=get_current_datetime,
+            name="get_datetime",
+            description="Get the current date and time. Can specify timezone.",
+            args_schema=DateTimeInput,
+        )
+    )
 
     # Weather (async)
-    tools.append(StructuredTool.from_function(
-        coroutine=get_weather,
-        name="get_weather",
-        description=(
-            "Get current weather for a city. "
-            "Provide city name (e.g., 'Beijing', '北京') or AD code. "
-            "Returns temperature, weather condition, wind, humidity, "
-            "and suggestions."
-        ),
-        args_schema=WeatherInput,
-    ))
+    tools.append(
+        StructuredTool.from_function(
+            coroutine=get_weather,
+            name="get_weather",
+            description=(
+                "Get current weather for a city. "
+                "Provide city name (e.g., 'Beijing', '北京') or AD code. "
+                "Returns temperature, weather condition, wind, humidity, "
+                "and suggestions."
+            ),
+            args_schema=WeatherInput,
+        )
+    )
 
     return tools
 
@@ -110,8 +116,7 @@ def create_utility_agent(llm: BaseChatModel):
     )
 
     logger.info(
-        f"Created UtilityAgent with {len(tools)} tools: "
-        f"{[t.name for t in tools]}"
+        f"Created UtilityAgent with {len(tools)} tools: " f"{[t.name for t in tools]}"
     )
 
     return agent

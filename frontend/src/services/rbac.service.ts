@@ -68,18 +68,12 @@ class RBACService {
     await api.delete(`/rbac/roles/${roleId}`)
   }
 
-  async addPermissionsToRole(
-    roleId: number,
-    data: RolePermissionAssignment
-  ): Promise<Role> {
+  async addPermissionsToRole(roleId: number, data: RolePermissionAssignment): Promise<Role> {
     const response = await api.post<Role>(`/rbac/roles/${roleId}/permissions`, data)
     return response.data
   }
 
-  async removePermissionsFromRole(
-    roleId: number,
-    data: RolePermissionAssignment
-  ): Promise<Role> {
+  async removePermissionsFromRole(roleId: number, data: RolePermissionAssignment): Promise<Role> {
     const response = await api.delete<Role>(`/rbac/roles/${roleId}/permissions`, { data })
     return response.data
   }
@@ -87,5 +81,3 @@ class RBACService {
 
 export const rbacService = new RBACService()
 export default rbacService
-
-

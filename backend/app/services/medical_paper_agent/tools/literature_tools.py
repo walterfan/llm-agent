@@ -19,7 +19,9 @@ ENTREZ_TOOL = "MedicalPaperAgent"
 
 class PubMedSearchInput(BaseModel):
     query: str = Field(description="PubMed search query using MeSH terms or keywords")
-    max_results: int = Field(default=20, description="Maximum number of results to return")
+    max_results: int = Field(
+        default=20, description="Maximum number of results to return"
+    )
 
 
 class ArticleAbstractInput(BaseModel):
@@ -44,7 +46,9 @@ async def search_pubmed(query: str, max_results: int = 20) -> dict[str, Any]:
         Entrez.tool = ENTREZ_TOOL
 
         # Search for articles
-        handle = Entrez.esearch(db="pubmed", term=query, retmax=max_results, sort="relevance")
+        handle = Entrez.esearch(
+            db="pubmed", term=query, retmax=max_results, sort="relevance"
+        )
         search_results = Entrez.read(handle)
         handle.close()
 
@@ -88,14 +92,16 @@ async def search_pubmed(query: str, max_results: int = 20) -> dict[str, Any]:
             pmid = str(medline.get("PMID", ""))
             title = str(article_data.get("ArticleTitle", ""))
 
-            references.append({
-                "pmid": pmid,
-                "title": title,
-                "authors": authors,
-                "journal": journal_title,
-                "year": int(year) if year.isdigit() else 0,
-                "abstract": abstract[:1000],  # Truncate long abstracts
-            })
+            references.append(
+                {
+                    "pmid": pmid,
+                    "title": title,
+                    "authors": authors,
+                    "journal": journal_title,
+                    "year": int(year) if year.isdigit() else 0,
+                    "abstract": abstract[:1000],  # Truncate long abstracts
+                }
+            )
 
         return {
             "references": references,
@@ -184,12 +190,14 @@ async def search_clinicaltrials(query: str, max_results: int = 10) -> dict[str, 
             id_module = protocol.get("identificationModule", {})
             status_module = protocol.get("statusModule", {})
 
-            results.append({
-                "nct_id": id_module.get("nctId", ""),
-                "title": id_module.get("briefTitle", ""),
-                "status": status_module.get("overallStatus", ""),
-                "phase": protocol.get("designModule", {}).get("phases", []),
-            })
+            results.append(
+                {
+                    "nct_id": id_module.get("nctId", ""),
+                    "title": id_module.get("briefTitle", ""),
+                    "status": status_module.get("overallStatus", ""),
+                    "phase": protocol.get("designModule", {}).get("phases", []),
+                }
+            )
 
         return {
             "trials": results,

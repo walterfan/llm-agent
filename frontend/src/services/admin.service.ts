@@ -63,6 +63,3 @@ class AdminService {
 
 export const adminService = new AdminService()
 export default adminService
-
-
-

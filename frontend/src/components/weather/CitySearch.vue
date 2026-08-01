@@ -1,75 +1,76 @@
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue';
-import { useDebounceFn } from '@vueuse/core';
-import type { City } from '@/types/city';
-import cityService from '@/services/city.service';
+import { ref, watch, computed } from 'vue'
+import { useDebounceFn } from '@vueuse/core'
+import type { City } from '@/types/city'
+import { useWeatherStore } from '@/stores/weather'
+
+const weatherStore = useWeatherStore()
 
 interface Emits {
-  (e: 'select', city: City): void;
+  (e: 'select', city: City): void
 }
 
-const emit = defineEmits<Emits>();
+const emit = defineEmits<Emits>()
 
 // State
-const searchQuery = ref('');
-const cities = ref<City[]>([]);
-const loading = ref(false);
-const showDropdown = ref(false);
-const error = ref<string | null>(null);
+const searchQuery = ref('')
+const cities = ref<City[]>([])
+const loading = ref(false)
+const showDropdown = ref(false)
+const error = ref<string | null>(null)
 
 // Debounced search function
 const debouncedSearch = useDebounceFn(async () => {
   if (!searchQuery.value || searchQuery.value.length < 1) {
-    cities.value = [];
-    showDropdown.value = false;
-    return;
+    cities.value = []
+    showDropdown.value = false
+    return
   }
 
-  loading.value = true;
-  error.value = null;
+  loading.value = true
+  error.value = null
 
   try {
-    const response = await cityService.searchCities(searchQuery.value, 10);
-    cities.value = response.cities;
-    showDropdown.value = cities.value.length > 0;
+    cities.value = await weatherStore.searchCities(searchQuery.value, 10)
+    showDropdown.value = cities.value.length > 0
   } catch (err: any) {
-    error.value = err.message || 'Failed to search cities';
-    cities.value = [];
-    showDropdown.value = false;
+    error.value = err.message || 'Failed to search cities'
+    cities.value = []
+    showDropdown.value = false
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-}, 300);
+}, 300)
 
 // Watch search query
 watch(searchQuery, () => {
-  debouncedSearch();
-});
+  debouncedSearch()
+})
 
 // Select city
 function selectCity(city: City) {
-  searchQuery.value = city.display_name;
-  showDropdown.value = false;
-  emit('select', city);
+  searchQuery.value = city.display_name
+  showDropdown.value = false
+  emit('select', city)
 }
 
 // Clear search
 function clearSearch() {
-  searchQuery.value = '';
-  cities.value = [];
-  showDropdown.value = false;
-  error.value = null;
+  searchQuery.value = ''
+  cities.value = []
+  showDropdown.value = false
+  error.value = null
 }
 
 // Hide dropdown when clicking outside
 function handleBlur() {
   // Delay to allow click event on dropdown items
   setTimeout(() => {
-    showDropdown.value = false;
-  }, 200);
+    showDropdown.value = false
+  }, 200)
 }
 
-const hasResults = computed(() => cities.value.length > 0);
+const hasResults = computed(() => cities.value.length > 0)
 </script>
 
 <template>
@@ -84,12 +85,9 @@ const hasResults = computed(() => cities.value.length > 0);
         @focus="showDropdown = hasResults"
         @blur="handleBlur"
       />
-      
+
       <!-- Loading Spinner -->
-      <div
-        v-if="loading"
-        class="absolute right-4 top-1/2 transform -translate-y-1/2"
-      >
+      <div v-if="loading" class="absolute right-4 top-1/2 transform -translate-y-1/2">
         <svg
           class="animate-spin h-5 w-5 text-blue-500"
           xmlns="http://www.w3.org/2000/svg"
@@ -103,15 +101,15 @@ const hasResults = computed(() => cities.value.length > 0);
             r="10"
             stroke="currentColor"
             stroke-width="4"
-          ></circle>
+          />
           <path
             class="opacity-75"
             fill="currentColor"
             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-          ></path>
+          />
         </svg>
       </div>
-      
+
       <!-- Clear Button -->
       <button
         v-else-if="searchQuery"
@@ -119,12 +117,7 @@ const hasResults = computed(() => cities.value.length > 0);
         class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
         @click="clearSearch"
       >
-        <svg
-          class="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -155,9 +148,7 @@ const hasResults = computed(() => cities.value.length > 0);
                   {{ city.location_name_en }}
                 </span>
               </div>
-              <div class="text-sm text-gray-500">
-                {{ city.province_zh }} · {{ city.ad_code }}
-              </div>
+              <div class="text-sm text-gray-500">{{ city.province_zh }} · {{ city.ad_code }}</div>
             </div>
           </div>
         </li>
@@ -170,10 +161,7 @@ const hasResults = computed(() => cities.value.length > 0);
     </div>
 
     <!-- No Results -->
-    <div
-      v-if="searchQuery && !loading && !hasResults && !error"
-      class="mt-2 text-sm text-gray-500"
-    >
+    <div v-if="searchQuery && !loading && !hasResults && !error" class="mt-2 text-sm text-gray-500">
       No cities found for "{{ searchQuery }}"
     </div>
   </div>
@@ -199,4 +187,3 @@ const hasResults = computed(() => cities.value.length > 0);
   background: #555;
 }
 </style>
-

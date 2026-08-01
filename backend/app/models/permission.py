@@ -14,8 +14,12 @@ class Permission(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100), unique=True, nullable=False, index=True)
-    resource = Column(String(50), nullable=False, index=True)  # e.g., "user", "recommendation"
-    action = Column(String(50), nullable=False)  # e.g., "create", "read", "update", "delete"
+    resource = Column(
+        String(50), nullable=False, index=True
+    )  # e.g., "user", "recommendation"
+    action = Column(
+        String(50), nullable=False
+    )  # e.g., "create", "read", "update", "delete"
     description = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(
@@ -27,9 +31,8 @@ class Permission(Base):
         "Role",
         secondary="role_permissions",
         back_populates="permissions",
-        lazy="selectin"
+        lazy="selectin",
     )
 
     def __repr__(self) -> str:
         return f"<Permission(id={self.id}, name={self.name}, resource={self.resource}, action={self.action})>"
-

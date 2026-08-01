@@ -13,6 +13,56 @@ A modern web application for LLM (Large Language Model) interaction with a clean
 - **Configuration**: Environment-based configuration management
 - **AI Coach**: Personal learning coach with 3 modes (coaching, tutoring, quiz), RAG-powered knowledge base, learning goal tracking, and study session logging
 - **Knowledge Base**: Upload documents (text/PDF/MD), semantic search via ChromaDB + OpenAI embeddings
+- **AI Agent Factory (孵化器)**: A parent agent that compiles one plain-language sentence into a runnable child agent — see below
+
+## AI Agent Factory (孵化器)
+
+Instead of hand-crafting each agent, the factory (父 Agent) compiles a single
+sentence into a declarative **AgentSpec** (the 图纸), a human reviews it at a quality
+gate, and a generic ReAct runtime assembles and runs it.
+
+Pipeline: `一句话 → 五份图纸 → 人工质检 → 装配子 Agent → ReAct 干活`.
+
+The blueprint has 8 slots (Lilian Weng's *brain + planning/memory/tools* framework
+merged with the blog's 0~7 skeleton): `one_liner / role / brain / memory / tools /
+policies / prompts / acceptance`. The **decision-rules (policies)** slot is
+auto-drafted but must be human-reviewed before approval. Child agents pick tools from
+a read-only **tool registry** (high-risk tools like `bash` default to disabled), and
+each agent gets its own isolated long-term-memory RAG collection.
+
+Template + filled examples live in [`docs/agent_specs/`](docs/agent_specs/).
+
+Design & spec: `openspec/changes/add-agent-factory/`.
+
+### Factory API
+
+```bash
+# 1. Compile one sentence into an AgentSpec draft (five blueprints)
+curl -X POST "http://localhost:8000/api/v1/factory/compile" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"one_liner": "帮我做一个日程安排专家：查天气、翻待办、排日程、设提醒"}'
+
+# 2. Review / edit the draft (especially policies) — draft only
+curl -X PATCH "http://localhost:8000/api/v1/factory/specs/$SPEC_ID" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"spec": { ... edited AgentSpec ... }}'
+
+# 3. Approve (admin only) — draft → approved, blocks if incomplete
+curl -X POST "http://localhost:8000/api/v1/factory/specs/$SPEC_ID/approve" \
+  -H "Authorization: Bearer $ADMIN_TOKEN"
+
+# 4. (optional) Publish to share with others — approved → published
+curl -X POST "http://localhost:8000/api/v1/factory/specs/$SPEC_ID/publish" \
+  -H "Authorization: Bearer $ADMIN_TOKEN"
+
+# 5. Assemble and run the child agent (approved/published only)
+curl -X POST "http://localhost:8000/api/v1/factory/agents/$SPEC_ID/run" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"input": "帮我安排明天"}'
+
+# List the tool registry (capability catalog)
+curl "http://localhost:8000/api/v1/factory/tools" -H "Authorization: Bearer $TOKEN"
+```
 
 ## Architecture
 
@@ -122,10 +172,11 @@ ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=60
 
 # LLM Configuration
-LLM_BASE_URL=https://api.openai.com/v1
-LLM_API_KEY=your-llm-api-key-here
-LLM_MODEL=gpt-3.5-turbo
+
 LLM_STREAM=true
+LLM_BASE_URL=https://api.deepseek.com
+LLM_MODEL=deepseek-v4-pro
+LLM_API_KEY=sk-xxx
 
 # External APIs
 LBS_API_KEY=your-lbs-api-key-here

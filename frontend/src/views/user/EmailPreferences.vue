@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { useEmailStore } from '@/stores/email';
-import AppLayout from '@/components/layout/AppLayout.vue';
-import type { EmailPreferencesUpdate } from '@/types/email';
+import { ref, onMounted } from 'vue'
+import { useEmailStore } from '@/stores/email'
+import AppLayout from '@/components/layout/AppLayout.vue'
+import type { EmailPreferencesUpdate } from '@/types/email'
 
-const emailStore = useEmailStore();
+const emailStore = useEmailStore()
 
 // Form state
 const preferencesForm = ref<EmailPreferencesUpdate>({
@@ -12,92 +12,97 @@ const preferencesForm = ref<EmailPreferencesUpdate>({
   email_send_time: undefined,
   email_additional_recipients: [],
   email_preferred_city: undefined,
-});
+})
 
-const loading = ref(false);
-const saving = ref(false);
-const error = ref<string | null>(null);
-const successMessage = ref<string | null>(null);
-const additionalRecipientsInput = ref('');
+const loading = ref(false)
+const saving = ref(false)
+const error = ref<string | null>(null)
+const successMessage = ref<string | null>(null)
+const additionalRecipientsInput = ref('')
 
 // Time options (every hour)
 const timeOptions = Array.from({ length: 24 }, (_, i) => {
-  const hour = i.toString().padStart(2, '0');
-  return { value: `${hour}:00`, label: `${hour}:00` };
-});
+  const hour = i.toString().padStart(2, '0')
+  return { value: `${hour}:00`, label: `${hour}:00` }
+})
 
 // Load current preferences
 onMounted(async () => {
-  await loadPreferences();
-});
+  await loadPreferences()
+})
 
 async function loadPreferences() {
-  loading.value = true;
-  error.value = null;
+  loading.value = true
+  error.value = null
   try {
-    const prefs = await emailStore.fetchPreferences();
+    const prefs = await emailStore.fetchPreferences()
     if (prefs) {
       preferencesForm.value = {
         email_notifications_enabled: prefs.email_notifications_enabled,
         email_send_time: prefs.email_send_time || undefined,
         email_additional_recipients: prefs.email_additional_recipients || [],
         email_preferred_city: prefs.email_preferred_city || undefined,
-      };
-      additionalRecipientsInput.value = (prefs.email_additional_recipients || []).join(', ');
+      }
+      additionalRecipientsInput.value = (prefs.email_additional_recipients || []).join(', ')
     }
   } catch (err: any) {
-    error.value = err.response?.data?.detail || 'Failed to load email preferences';
+    error.value = err.response?.data?.detail || 'Failed to load email preferences'
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
 
 function updateAdditionalRecipients() {
   const emails = additionalRecipientsInput.value
     .split(',')
-    .map(e => e.trim())
-    .filter(e => e);
-  preferencesForm.value.email_additional_recipients = emails;
+    .map((e) => e.trim())
+    .filter((e) => e)
+  preferencesForm.value.email_additional_recipients = emails
 }
 
 function validateEmails(emails: string): boolean {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const emailList = emails.split(',').map(e => e.trim()).filter(e => e);
-  return emailList.length === 0 || emailList.every(e => emailRegex.test(e));
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const emailList = emails
+    .split(',')
+    .map((e) => e.trim())
+    .filter((e) => e)
+  return emailList.length === 0 || emailList.every((e) => emailRegex.test(e))
 }
 
 async function savePreferences() {
-  saving.value = true;
-  error.value = null;
-  successMessage.value = null;
+  saving.value = true
+  error.value = null
+  successMessage.value = null
 
   // Validate emails
   if (additionalRecipientsInput.value && !validateEmails(additionalRecipientsInput.value)) {
-    error.value = 'Please enter valid email addresses (comma-separated)';
-    saving.value = false;
-    return;
+    error.value = 'Please enter valid email addresses (comma-separated)'
+    saving.value = false
+    return
   }
 
-  updateAdditionalRecipients();
+  updateAdditionalRecipients()
 
   try {
-    await emailStore.updatePreferences(preferencesForm.value);
-    successMessage.value = '✅ Email preferences updated successfully!';
-    
+    await emailStore.updatePreferences(preferencesForm.value)
+    successMessage.value = '✅ Email preferences updated successfully!'
+
     setTimeout(() => {
-      successMessage.value = null;
-    }, 3000);
+      successMessage.value = null
+    }, 3000)
   } catch (err: any) {
-    error.value = err.response?.data?.detail || 'Failed to update email preferences';
+    error.value = err.response?.data?.detail || 'Failed to update email preferences'
   } finally {
-    saving.value = false;
+    saving.value = false
   }
 }
 </script>
 
 <template>
   <AppLayout>
-    <div class="email-preferences-page min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
+    <div
+      class="email-preferences-page min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4"
+    >
       <div class="max-w-2xl mx-auto">
         <!-- Header -->
         <div class="text-center mb-8">
@@ -108,11 +113,13 @@ async function savePreferences() {
         <!-- Form -->
         <div class="bg-white rounded-xl shadow-md p-6">
           <div v-if="loading" class="text-center py-8">
-            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <div
+              class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
+            />
             <p class="mt-2 text-gray-600">Loading preferences...</p>
           </div>
 
-          <form v-else @submit.prevent="savePreferences" class="space-y-6">
+          <form v-else class="space-y-6" @submit.prevent="savePreferences">
             <!-- Enable/Disable Toggle -->
             <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
               <div>
@@ -127,7 +134,7 @@ async function savePreferences() {
                 />
                 <div
                   class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"
-                ></div>
+                />
               </label>
             </div>
 
@@ -171,8 +178,8 @@ async function savePreferences() {
                 v-model="additionalRecipientsInput"
                 type="text"
                 placeholder="email1@example.com, email2@example.com"
-                @blur="updateAdditionalRecipients"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                @blur="updateAdditionalRecipients"
               />
               <p class="mt-1 text-xs text-gray-500">
                 Enter comma-separated email addresses to also receive recommendations
@@ -181,12 +188,16 @@ async function savePreferences() {
 
             <!-- Error Message -->
             <div v-if="error" class="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p class="text-sm text-red-800">{{ error }}</p>
+              <p class="text-sm text-red-800">
+                {{ error }}
+              </p>
             </div>
 
             <!-- Success Message -->
             <div v-if="successMessage" class="bg-green-50 border border-green-200 rounded-lg p-4">
-              <p class="text-sm text-green-800">{{ successMessage }}</p>
+              <p class="text-sm text-green-800">
+                {{ successMessage }}
+              </p>
             </div>
 
             <!-- Save Button -->
@@ -220,4 +231,3 @@ async function savePreferences() {
   min-height: calc(100vh - 64px);
 }
 </style>
-

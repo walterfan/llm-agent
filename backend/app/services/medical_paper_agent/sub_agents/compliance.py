@@ -42,13 +42,17 @@ def create_compliance_tools() -> list[StructuredTool]:
     """Create the tool set for the Compliance Agent."""
     tools = [
         StructuredTool.from_function(
-            func=lambda manuscript, paper_type: check_compliance_prompt(manuscript, paper_type),
+            func=lambda manuscript, paper_type: check_compliance_prompt(
+                manuscript, paper_type
+            ),
             name="check_compliance",
             description="Generate a compliance checking prompt for a manuscript against the appropriate checklist (CONSORT/STROBE/PRISMA).",
             args_schema=CheckComplianceInput,
         ),
         StructuredTool.from_function(
-            func=lambda items, checklist_type: generate_compliance_report(items, checklist_type),
+            func=lambda items, checklist_type: generate_compliance_report(
+                items, checklist_type
+            ),
             name="generate_compliance_report",
             description="Generate a structured compliance report from individual item check results.",
             args_schema=GenerateReportInput,

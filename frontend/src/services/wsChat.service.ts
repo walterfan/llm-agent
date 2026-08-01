@@ -197,7 +197,7 @@ export class WsChatService {
       if (
         this.options.autoReconnect &&
         event.code !== 4001 && // Auth failure
-        event.code !== 1000   // Normal close
+        event.code !== 1000 // Normal close
       ) {
         this.scheduleReconnect()
       }

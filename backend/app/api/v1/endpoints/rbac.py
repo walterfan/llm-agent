@@ -37,15 +37,17 @@ def list_permissions(
 ) -> PermissionListResponse:
     """
     List all permissions with pagination and filtering.
-    
+
     Requires: permission.read permission
     """
     logger.info(
         f"Admin {current_user.email} listing permissions (skip={skip}, limit={limit}, resource={resource})"
     )
-    
-    permissions, total = PermissionService.get_permissions(db, skip=skip, limit=limit, resource=resource)
-    
+
+    permissions, total = PermissionService.get_permissions(
+        db, skip=skip, limit=limit, resource=resource
+    )
+
     return PermissionListResponse(
         items=[Permission.model_validate(p) for p in permissions],
         total=total,
@@ -54,7 +56,9 @@ def list_permissions(
     )
 
 
-@router.post("/permissions", response_model=Permission, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/permissions", response_model=Permission, status_code=status.HTTP_201_CREATED
+)
 def create_permission(
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(require_permission("permission.create"))],
@@ -62,14 +66,18 @@ def create_permission(
 ) -> Permission:
     """
     Create a new permission.
-    
+
     Requires: permission.create permission
     """
-    logger.info(f"Admin {current_user.email} creating permission: {permission_create.name}")
-    
+    logger.info(
+        f"Admin {current_user.email} creating permission: {permission_create.name}"
+    )
+
     try:
         permission = PermissionService.create_permission(db, permission_create)
-        logger.info(f"Permission created successfully: {permission.name} (id={permission.id})")
+        logger.info(
+            f"Permission created successfully: {permission.name} (id={permission.id})"
+        )
         return Permission.model_validate(permission)
     except ValueError as e:
         logger.warning(f"Failed to create permission: {e}")
@@ -87,18 +95,18 @@ def get_permission(
 ) -> Permission:
     """
     Get permission by ID.
-    
+
     Requires: permission.read permission
     """
     logger.info(f"Admin {current_user.email} getting permission: {permission_id}")
-    
+
     permission = PermissionService.get_permission_by_id(db, permission_id)
     if not permission:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Permission not found",
         )
-    
+
     return Permission.model_validate(permission)
 
 
@@ -111,14 +119,18 @@ def update_permission(
 ) -> Permission:
     """
     Update permission.
-    
+
     Requires: permission.update permission
     """
     logger.info(f"Admin {current_user.email} updating permission: {permission_id}")
-    
+
     try:
-        permission = PermissionService.update_permission(db, permission_id, permission_update)
-        logger.info(f"Permission updated successfully: {permission.name} (id={permission.id})")
+        permission = PermissionService.update_permission(
+            db, permission_id, permission_update
+        )
+        logger.info(
+            f"Permission updated successfully: {permission.name} (id={permission.id})"
+        )
         return Permission.model_validate(permission)
     except ValueError as e:
         logger.warning(f"Failed to update permission: {e}")
@@ -136,11 +148,11 @@ def delete_permission(
 ) -> None:
     """
     Delete permission.
-    
+
     Requires: permission.delete permission
     """
     logger.info(f"Admin {current_user.email} deleting permission: {permission_id}")
-    
+
     try:
         PermissionService.delete_permission(db, permission_id)
         logger.info(f"Permission deleted successfully: permission_id={permission_id}")
@@ -163,15 +175,15 @@ def list_roles(
 ) -> RoleListResponse:
     """
     List all roles with pagination and search.
-    
+
     Requires: role.read permission
     """
     logger.info(
         f"Admin {current_user.email} listing roles (skip={skip}, limit={limit}, search={search})"
     )
-    
+
     roles, total = RoleService.get_roles(db, skip=skip, limit=limit, search=search)
-    
+
     return RoleListResponse(
         items=[Role.model_validate(r) for r in roles],
         total=total,
@@ -188,11 +200,11 @@ def create_role(
 ) -> Role:
     """
     Create a new role with permissions.
-    
+
     Requires: role.create permission
     """
     logger.info(f"Admin {current_user.email} creating role: {role_create.name}")
-    
+
     try:
         role = RoleService.create_role(db, role_create)
         logger.info(f"Role created successfully: {role.name} (id={role.id})")
@@ -213,18 +225,18 @@ def get_role(
 ) -> Role:
     """
     Get role by ID with permissions.
-    
+
     Requires: role.read permission
     """
     logger.info(f"Admin {current_user.email} getting role: {role_id}")
-    
+
     role = RoleService.get_role_by_id(db, role_id)
     if not role:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Role not found",
         )
-    
+
     return Role.model_validate(role)
 
 
@@ -237,11 +249,11 @@ def update_role(
 ) -> Role:
     """
     Update role.
-    
+
     Requires: role.update permission
     """
     logger.info(f"Admin {current_user.email} updating role: {role_id}")
-    
+
     try:
         role = RoleService.update_role(db, role_id, role_update)
         logger.info(f"Role updated successfully: {role.name} (id={role.id})")
@@ -262,11 +274,11 @@ def delete_role(
 ) -> None:
     """
     Delete role.
-    
+
     Requires: role.delete permission
     """
     logger.info(f"Admin {current_user.email} deleting role: {role_id}")
-    
+
     try:
         RoleService.delete_role(db, role_id)
         logger.info(f"Role deleted successfully: role_id={role_id}")
@@ -287,14 +299,18 @@ def add_permissions_to_role(
 ) -> Role:
     """
     Add permissions to a role.
-    
+
     Requires: role.update permission
     """
     logger.info(f"Admin {current_user.email} adding permissions to role {role_id}")
-    
+
     try:
-        role = RoleService.add_permissions_to_role(db, role_id, assignment.permission_ids)
-        logger.info(f"Permissions added successfully to role: {role.name} (id={role.id})")
+        role = RoleService.add_permissions_to_role(
+            db, role_id, assignment.permission_ids
+        )
+        logger.info(
+            f"Permissions added successfully to role: {role.name} (id={role.id})"
+        )
         return Role.model_validate(role)
     except ValueError as e:
         logger.warning(f"Failed to add permissions to role: {e}")
@@ -313,14 +329,18 @@ def remove_permissions_from_role(
 ) -> Role:
     """
     Remove permissions from a role.
-    
+
     Requires: role.update permission
     """
     logger.info(f"Admin {current_user.email} removing permissions from role {role_id}")
-    
+
     try:
-        role = RoleService.remove_permissions_from_role(db, role_id, assignment.permission_ids)
-        logger.info(f"Permissions removed successfully from role: {role.name} (id={role.id})")
+        role = RoleService.remove_permissions_from_role(
+            db, role_id, assignment.permission_ids
+        )
+        logger.info(
+            f"Permissions removed successfully from role: {role.name} (id={role.id})"
+        )
         return Role.model_validate(role)
     except ValueError as e:
         logger.warning(f"Failed to remove permissions from role: {e}")
@@ -328,4 +348,3 @@ def remove_permissions_from_role(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
-

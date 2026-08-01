@@ -7,27 +7,27 @@
 // ============================================================================
 
 export interface KnowledgeDocument {
-  id: string;
-  user_id: number;
-  title: string;
-  content: string;
-  tags: string[];
-  source: string | null;
-  word_count: number;
-  created_at: string;
-  updated_at: string;
+  id: string
+  user_id: number
+  title: string
+  content: string
+  tags: string[]
+  source: string | null
+  word_count: number
+  created_at: string
+  updated_at: string
 }
 
 export interface DocumentUpload {
-  title: string;
-  content: string;
-  tags?: string[];
-  source?: string;
+  title: string
+  content: string
+  tags?: string[]
+  source?: string
 }
 
 export interface FileUploadResponse {
-  document: KnowledgeDocument;
-  message: string;
+  document: KnowledgeDocument
+  message: string
 }
 
 // ============================================================================
@@ -35,22 +35,22 @@ export interface FileUploadResponse {
 // ============================================================================
 
 export interface KnowledgeQuery {
-  query: string;
-  top_k?: number;
+  query: string
+  top_k?: number
 }
 
 export interface KnowledgeQueryResult {
-  content: string;
-  score: number;
-  metadata: Record<string, any>;
+  content: string
+  score: number
+  metadata: Record<string, any>
 }
 
 export interface KnowledgeQueryResponse {
-  query: string;
-  results: KnowledgeQueryResult[];
-  total: number;
+  query: string
+  results: KnowledgeQueryResult[]
+  total: number
   /** Shown when RAG is unavailable (e.g. semantic search disabled). */
-  message?: string;
+  message?: string
 }
 
 // ============================================================================
@@ -58,8 +58,8 @@ export interface KnowledgeQueryResponse {
 // ============================================================================
 
 export interface KnowledgeStats {
-  total_documents: number;
-  total_words: number;
-  total_chunks: number;
-  tags: Record<string, number>;
+  total_documents: number
+  total_words: number
+  total_chunks: number
+  tags: Record<string, number>
 }

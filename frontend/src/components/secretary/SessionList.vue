@@ -1,45 +1,45 @@
 <script setup lang="ts">
-import type { ChatSession } from '@/types/secretary';
+import type { ChatSession } from '@/types/secretary'
 
 defineProps<{
-  sessions: ChatSession[];
-  currentSessionId?: string;
-  loading?: boolean;
-}>();
+  sessions: ChatSession[]
+  currentSessionId?: string
+  loading?: boolean
+}>()
 
 const emit = defineEmits<{
-  (e: 'select', session: ChatSession): void;
-  (e: 'delete', sessionId: string): void;
-  (e: 'new'): void;
-}>();
+  (e: 'select', session: ChatSession): void
+  (e: 'delete', sessionId: string): void
+  (e: 'new'): void
+}>()
 
 function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  const now = new Date();
-  const diff = now.getTime() - date.getTime();
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  
+  const date = new Date(dateStr)
+  const now = new Date()
+  const diff = now.getTime() - date.getTime()
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+
   if (days === 0) {
     return date.toLocaleTimeString('zh-CN', {
       hour: '2-digit',
       minute: '2-digit',
-    });
+    })
   } else if (days === 1) {
-    return '昨天';
+    return '昨天'
   } else if (days < 7) {
-    return `${days}天前`;
+    return `${days}天前`
   } else {
     return date.toLocaleDateString('zh-CN', {
       month: 'short',
       day: 'numeric',
-    });
+    })
   }
 }
 
 function handleDelete(event: Event, sessionId: string) {
-  event.stopPropagation();
+  event.stopPropagation()
   if (confirm('确定要删除这个会话吗？')) {
-    emit('delete', sessionId);
+    emit('delete', sessionId)
   }
 }
 </script>
@@ -53,12 +53,7 @@ function handleDelete(event: Event, sessionId: string) {
         class="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
         @click="emit('new')"
       >
-        <svg
-          class="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -72,24 +67,11 @@ function handleDelete(event: Event, sessionId: string) {
 
     <!-- Session list -->
     <div class="flex-1 overflow-y-auto">
-      <div
-        v-if="loading"
-        class="p-4 text-center text-gray-500"
-      >
-        加载中...
-      </div>
-      
-      <div
-        v-else-if="sessions.length === 0"
-        class="p-4 text-center text-gray-500"
-      >
-        暂无会话
-      </div>
-      
-      <div
-        v-else
-        class="divide-y divide-gray-100"
-      >
+      <div v-if="loading" class="p-4 text-center text-gray-500">加载中...</div>
+
+      <div v-else-if="sessions.length === 0" class="p-4 text-center text-gray-500">暂无会话</div>
+
+      <div v-else class="divide-y divide-gray-100">
         <div
           v-for="session in sessions"
           :key="session.id"
@@ -110,7 +92,7 @@ function handleDelete(event: Event, sessionId: string) {
                 <span>{{ formatDate(session.updated_at) }}</span>
               </div>
             </div>
-            
+
             <!-- Delete button -->
             <button
               type="button"
@@ -118,12 +100,7 @@ function handleDelete(event: Event, sessionId: string) {
               title="删除会话"
               @click="handleDelete($event, session.id)"
             >
-              <svg
-                class="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"

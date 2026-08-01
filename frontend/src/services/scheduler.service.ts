@@ -55,7 +55,10 @@ export const schedulerService = {
   /**
    * Update an existing job.
    */
-  async updateJob(jobId: string, request: AddJobRequest): Promise<{ status: string; job: ScheduledJob }> {
+  async updateJob(
+    jobId: string,
+    request: AddJobRequest
+  ): Promise<{ status: string; job: ScheduledJob }> {
     const { data } = await api.put(`${BASE}/jobs/${jobId}`, request)
     return data
   },

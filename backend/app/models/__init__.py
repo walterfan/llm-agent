@@ -1,11 +1,17 @@
 """Models package."""
 
+from app.models.agent_spec import AgentSpecRecord
 from app.models.chat_message import ChatMessage, MessageRole
 from app.models.chat_session import ChatSession
 from app.models.city import City
 from app.models.knowledge_document import KnowledgeDocument
 from app.models.learning_goal import GoalStatus, LearningGoal
-from app.models.medical_paper import MedicalPaperTask, PaperTaskMessage, PaperTaskStatus, PaperType
+from app.models.medical_paper import (
+    MedicalPaperTask,
+    PaperTaskMessage,
+    PaperTaskStatus,
+    PaperType,
+)
 from app.models.email_log import EmailLog
 from app.models.learning_record import LearningRecord, LearningRecordType
 from app.models.llm_settings import LLMSettings
@@ -20,6 +26,7 @@ from app.models.task import Task, TaskPriority, TaskStatus
 from app.models.user import User, UserRole
 
 __all__ = [
+    "AgentSpecRecord",
     "ChatMessage",
     "ChatSession",
     "City",
@@ -52,4 +59,3 @@ __all__ = [
     "User",
     "UserRole",
 ]
-

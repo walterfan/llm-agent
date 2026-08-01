@@ -8,7 +8,15 @@ from datetime import datetime
 from enum import Enum
 from uuid import uuid4
 
-from sqlalchemy import Column, DateTime, Enum as SQLEnum, ForeignKey, Integer, String, Text
+from sqlalchemy import (
+    Column,
+    DateTime,
+    Enum as SQLEnum,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -17,6 +25,7 @@ from app.db.base import Base
 
 class Difficulty(str, Enum):
     """Study session difficulty rating."""
+
     EASY = "easy"
     MEDIUM = "medium"
     HARD = "hard"

@@ -103,26 +103,32 @@ const startAiToolsCloseTimeout = () => {
 
 // Check if current route is an admin route
 const isAdminRoute = () => {
-  return route.path.startsWith('/admin') || route.path.startsWith('/rbac') || route.path.startsWith('/admin/scheduler')
+  return (
+    route.path.startsWith('/admin') ||
+    route.path.startsWith('/rbac') ||
+    route.path.startsWith('/admin/scheduler')
+  )
 }
 
 // Check if current route is an AI Agents route
 const isAiAgentsRoute = () => {
-  return route.path.startsWith('/recommendations') ||
-         route.path.startsWith('/secretary') ||
-         route.path.startsWith('/learning') ||
-         route.path.startsWith('/medical-paper') ||
-         route.path.startsWith('/translation') ||
-         route.path.startsWith('/philosophy') ||
-         route.path.startsWith('/coach') ||
-         route.path.startsWith('/knowledge') ||
-         route.path.startsWith('/learning-plan')
+  return (
+    route.path.startsWith('/recommendations') ||
+    route.path.startsWith('/secretary') ||
+    route.path.startsWith('/learning') ||
+    route.path.startsWith('/medical-paper') ||
+    route.path.startsWith('/translation') ||
+    route.path.startsWith('/philosophy') ||
+    route.path.startsWith('/factory') ||
+    route.path.startsWith('/coach') ||
+    route.path.startsWith('/knowledge') ||
+    route.path.startsWith('/learning-plan')
+  )
 }
 
 // Check if current route is an AI Tools route
 const isAiToolsRoute = () => {
-  return route.path.startsWith('/weather') || 
-         route.path.startsWith('/tools/')
+  return route.path.startsWith('/weather') || route.path.startsWith('/tools/')
 }
 </script>
 
@@ -160,11 +166,11 @@ const isAiToolsRoute = () => {
               @mouseleave="startAiAgentsCloseTimeout"
             >
               <button
-                @click="toggleAiAgentsMenu"
                 :class="[
                   'text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1',
-                  isAiAgentsRoute() ? 'text-primary-600 font-semibold' : ''
+                  isAiAgentsRoute() ? 'text-primary-600 font-semibold' : '',
                 ]"
+                @click="toggleAiAgentsMenu"
               >
                 🤖 AI Agents
                 <svg
@@ -174,10 +180,15 @@ const isAiToolsRoute = () => {
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </button>
-              
+
               <!-- AI Agents Dropdown -->
               <div
                 v-show="aiAgentsMenuOpen"
@@ -188,65 +199,72 @@ const isAiToolsRoute = () => {
                 <div class="py-1">
                   <RouterLink
                     to="/secretary"
-                    @click="closeAiAgentsMenu"
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    @click="closeAiAgentsMenu"
                   >
                     🤖 Personal Secretary
                   </RouterLink>
                   <RouterLink
                     to="/learning"
-                    @click="closeAiAgentsMenu"
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    @click="closeAiAgentsMenu"
                   >
                     📚 Learning History
                   </RouterLink>
                   <RouterLink
                     to="/medical-paper"
-                    @click="closeAiAgentsMenu"
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    @click="closeAiAgentsMenu"
                   >
                     📄 Medical Paper
                   </RouterLink>
                   <RouterLink
                     to="/recommendations"
-                    @click="closeAiAgentsMenu"
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    @click="closeAiAgentsMenu"
                   >
                     👔 AI Dress Agent
                   </RouterLink>
                   <RouterLink
                     to="/translation"
-                    @click="closeAiAgentsMenu"
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    @click="closeAiAgentsMenu"
                   >
                     🌐 Translation
                   </RouterLink>
                   <RouterLink
                     to="/philosophy"
-                    @click="closeAiAgentsMenu"
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    @click="closeAiAgentsMenu"
                   >
                     🧠 Philosophy Master
                   </RouterLink>
-                  <div class="border-t my-1"></div>
+                  <div class="border-t my-1" />
+                  <RouterLink
+                    to="/factory"
+                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    @click="closeAiAgentsMenu"
+                  >
+                    🏭 AI Agent Factory
+                  </RouterLink>
                   <RouterLink
                     to="/coach"
-                    @click="closeAiAgentsMenu"
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    @click="closeAiAgentsMenu"
                   >
                     🎓 AI Coach
                   </RouterLink>
                   <RouterLink
                     to="/knowledge"
-                    @click="closeAiAgentsMenu"
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    @click="closeAiAgentsMenu"
                   >
                     📚 Knowledge Base
                   </RouterLink>
                   <RouterLink
                     to="/learning-plan"
-                    @click="closeAiAgentsMenu"
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    @click="closeAiAgentsMenu"
                   >
                     📅 Learning Plan
                   </RouterLink>
@@ -261,11 +279,11 @@ const isAiToolsRoute = () => {
               @mouseleave="startAiToolsCloseTimeout"
             >
               <button
-                @click="toggleAiToolsMenu"
                 :class="[
                   'text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1',
-                  isAiToolsRoute() ? 'text-primary-600 font-semibold' : ''
+                  isAiToolsRoute() ? 'text-primary-600 font-semibold' : '',
                 ]"
+                @click="toggleAiToolsMenu"
               >
                 🛠️ AI Tools
                 <svg
@@ -275,10 +293,15 @@ const isAiToolsRoute = () => {
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </button>
-              
+
               <!-- AI Tools Dropdown -->
               <div
                 v-show="aiToolsMenuOpen"
@@ -291,53 +314,57 @@ const isAiToolsRoute = () => {
                   <div class="px-4 py-1 text-xs text-gray-500 font-semibold uppercase">Utility</div>
                   <RouterLink
                     to="/weather"
-                    @click="closeAiToolsMenu"
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    @click="closeAiToolsMenu"
                   >
                     🌤️ Weather
                   </RouterLink>
                   <RouterLink
                     to="/tools/calculator"
-                    @click="closeAiToolsMenu"
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    @click="closeAiToolsMenu"
                   >
                     🧮 Calculator
                   </RouterLink>
                   <RouterLink
                     to="/tools/datetime"
-                    @click="closeAiToolsMenu"
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    @click="closeAiToolsMenu"
                   >
                     🕐 Date & Time
                   </RouterLink>
-                  
+
                   <!-- Productivity Tools -->
-                  <div class="px-4 py-1 mt-2 text-xs text-gray-500 font-semibold uppercase border-t">Productivity</div>
+                  <div
+                    class="px-4 py-1 mt-2 text-xs text-gray-500 font-semibold uppercase border-t"
+                  >
+                    Productivity
+                  </div>
                   <RouterLink
                     to="/tools/notes"
-                    @click="closeAiToolsMenu"
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    @click="closeAiToolsMenu"
                   >
                     📝 Notes
                   </RouterLink>
                   <RouterLink
                     to="/tools/tasks"
-                    @click="closeAiToolsMenu"
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    @click="closeAiToolsMenu"
                   >
                     ✅ Tasks
                   </RouterLink>
                   <RouterLink
                     to="/tools/reminders"
-                    @click="closeAiToolsMenu"
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    @click="closeAiToolsMenu"
                   >
                     ⏰ Reminders
                   </RouterLink>
                 </div>
               </div>
             </div>
-            
+
             <!-- Admin Dropdown Menu -->
             <div
               v-if="authStore.isAdmin"
@@ -346,11 +373,11 @@ const isAiToolsRoute = () => {
               @mouseleave="startAdminCloseTimeout"
             >
               <button
-                @click="toggleAdminMenu"
                 :class="[
                   'text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1',
-                  isAdminRoute() ? 'text-primary-600 font-semibold' : ''
+                  isAdminRoute() ? 'text-primary-600 font-semibold' : '',
                 ]"
+                @click="toggleAdminMenu"
               >
                 ⚙️ Admin
                 <svg
@@ -360,10 +387,15 @@ const isAiToolsRoute = () => {
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </button>
-              
+
               <!-- Dropdown Menu -->
               <div
                 v-show="adminMenuOpen"
@@ -375,47 +407,47 @@ const isAiToolsRoute = () => {
                   <RouterLink
                     v-if="authStore.isSuperAdmin"
                     to="/admin/users"
-                    @click="closeAdminMenu"
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    @click="closeAdminMenu"
                   >
                     👥 Users
                   </RouterLink>
                   <RouterLink
                     v-if="authStore.isAdmin"
                     to="/admin/email-management"
-                    @click="closeAdminMenu"
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    @click="closeAdminMenu"
                   >
                     📧 Email Settings
                   </RouterLink>
                   <RouterLink
                     v-if="authStore.isAdmin"
                     to="/admin/scheduler"
-                    @click="closeAdminMenu"
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    @click="closeAdminMenu"
                   >
                     ⏰ Job Scheduler
                   </RouterLink>
                   <RouterLink
                     v-if="authStore.isSuperAdmin"
                     to="/rbac/roles"
-                    @click="closeAdminMenu"
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    @click="closeAdminMenu"
                   >
                     🔐 Roles
                   </RouterLink>
                   <RouterLink
                     v-if="authStore.isSuperAdmin"
                     to="/rbac/permissions"
-                    @click="closeAdminMenu"
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    @click="closeAdminMenu"
                   >
                     🔑 Permissions
                   </RouterLink>
                 </div>
               </div>
             </div>
-            
+
             <RouterLink
               to="/admin/llm-settings"
               class="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium"
@@ -429,8 +461,8 @@ const isAiToolsRoute = () => {
               Profile
             </RouterLink>
             <button
-              @click="handleLogout"
               class="text-gray-700 hover:text-red-600 px-3 py-2 rounded-md text-sm font-medium"
+              @click="handleLogout"
             >
               Logout
             </button>
@@ -440,5 +472,3 @@ const isAiToolsRoute = () => {
     </nav>
   </header>
 </template>
-
-

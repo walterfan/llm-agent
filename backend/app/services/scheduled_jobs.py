@@ -32,6 +32,7 @@ logger = logging.getLogger("scheduled_jobs")
 # Job 1: Check Due Reminders (every 5 minutes)
 # ============================================================================
 
+
 async def job_check_due_reminders() -> dict[str, Any]:
     """
     Check all users for due reminders and trigger notifications.
@@ -57,10 +58,12 @@ async def job_check_due_reminders() -> dict[str, Any]:
             db.query(Reminder)
             .filter(
                 Reminder.deleted_at.is_(None),
-                Reminder.status.in_([
-                    ReminderStatus.pending.value,
-                    ReminderStatus.snoozed.value,
-                ]),
+                Reminder.status.in_(
+                    [
+                        ReminderStatus.pending.value,
+                        ReminderStatus.snoozed.value,
+                    ]
+                ),
                 Reminder.remind_at <= now,
             )
             .all()
@@ -101,9 +104,7 @@ async def job_check_due_reminders() -> dict[str, Any]:
                     )
                     db.add(new_reminder)
                     total_repeated += 1
-                    logger.info(
-                        f"  🔁 Created next occurrence: {next_time}"
-                    )
+                    logger.info(f"  🔁 Created next occurrence: {next_time}")
 
             # TODO: Send notification via WebSocket / push / email
             # await notify_user(reminder.user_id, {
@@ -125,13 +126,16 @@ async def job_check_due_reminders() -> dict[str, Any]:
         "repeated": total_repeated,
         "checked_at": datetime.utcnow().isoformat(),
     }
-    logger.info(f"🔔 [Job] Reminders: {total_triggered} triggered, {total_repeated} repeated")
+    logger.info(
+        f"🔔 [Job] Reminders: {total_triggered} triggered, {total_repeated} repeated"
+    )
     return result
 
 
 # ============================================================================
 # Job 2: Check Overdue Tasks (every 30 minutes)
 # ============================================================================
+
 
 async def job_check_overdue_tasks() -> dict[str, Any]:
     """
@@ -155,10 +159,12 @@ async def job_check_overdue_tasks() -> dict[str, Any]:
             db.query(Task)
             .filter(
                 Task.deleted_at.is_(None),
-                Task.status.in_([
-                    TaskStatus.pending.value,
-                    TaskStatus.in_progress.value,
-                ]),
+                Task.status.in_(
+                    [
+                        TaskStatus.pending.value,
+                        TaskStatus.in_progress.value,
+                    ]
+                ),
                 Task.due_date.isnot(None),
                 Task.due_date < now,
             )
@@ -169,8 +175,7 @@ async def job_check_overdue_tasks() -> dict[str, Any]:
             overdue_count += 1
             users_affected.add(task.user_id)
             logger.info(
-                f"  ⚠️ Overdue: [{task.user_id}] {task.title} "
-                f"(due: {task.due_date})"
+                f"  ⚠️ Overdue: [{task.user_id}] {task.title} " f"(due: {task.due_date})"
             )
 
         # TODO: For each affected user, optionally trigger Secretary Agent
@@ -193,13 +198,16 @@ async def job_check_overdue_tasks() -> dict[str, Any]:
         "users_affected": len(users_affected),
         "checked_at": datetime.utcnow().isoformat(),
     }
-    logger.info(f"📋 [Job] Tasks: {overdue_count} overdue, {len(users_affected)} users affected")
+    logger.info(
+        f"📋 [Job] Tasks: {overdue_count} overdue, {len(users_affected)} users affected"
+    )
     return result
 
 
 # ============================================================================
 # Job 3: Daily Summary (every day at 08:00)
 # ============================================================================
+
 
 async def job_daily_summary() -> dict[str, Any]:
     """
@@ -221,11 +229,7 @@ async def job_daily_summary() -> dict[str, Any]:
 
     try:
         # Get all active users
-        active_users = (
-            db.query(User)
-            .filter(User.is_active == True)  # noqa: E712
-            .all()
-        )
+        active_users = db.query(User).filter(User.is_active == True).all()  # noqa: E712
 
         for user in active_users:
             try:
@@ -245,24 +249,22 @@ async def job_daily_summary() -> dict[str, Any]:
 
                 summary_parts = []
                 if due:
-                    summary_parts.append(
-                        f"🔔 {len(due)} reminder(s) due now"
-                    )
+                    summary_parts.append(f"🔔 {len(due)} reminder(s) due now")
                 if upcoming:
                     summary_parts.append(
                         f"⏰ {len(upcoming)} reminder(s) coming up today"
                     )
                 if due_tasks:
-                    summary_parts.append(
-                        f"⚠️ {len(due_tasks)} overdue task(s)"
-                    )
+                    summary_parts.append(f"⚠️ {len(due_tasks)} overdue task(s)")
                 summary_parts.append(
                     f"📋 {task_stats['by_status']['pending']} pending, "
                     f"{task_stats['by_status']['in_progress']} in progress"
                 )
 
                 summary = " | ".join(summary_parts)
-                logger.info(f"  📰 [{user.id}] {user.full_name or user.email}: {summary}")
+                logger.info(
+                    f"  📰 [{user.id}] {user.full_name or user.email}: {summary}"
+                )
 
                 # TODO: Trigger Secretary Agent to generate a natural-language
                 # daily briefing and send via preferred channel:
@@ -283,9 +285,7 @@ async def job_daily_summary() -> dict[str, Any]:
 
             except Exception as e:
                 errors += 1
-                logger.error(
-                    f"  ❌ Failed for user {user.id}: {e}", exc_info=True
-                )
+                logger.error(f"  ❌ Failed for user {user.id}: {e}", exc_info=True)
 
     except Exception as e:
         logger.error(f"❌ [Job] daily_summary failed: {e}", exc_info=True)
@@ -305,6 +305,7 @@ async def job_daily_summary() -> dict[str, Any]:
 # Job 4: Send Scheduled Emails (every hour)
 # ============================================================================
 
+
 async def job_send_scheduled_emails() -> dict[str, Any]:
     """
     Send scheduled recommendation emails for the current hour.
@@ -322,7 +323,7 @@ async def job_send_scheduled_emails() -> dict[str, Any]:
 
         current_hour = datetime.now().hour
         service = ScheduledEmailService(db)
-        result = service.send_emails_for_hour(current_hour)
+        result = await service.send_emails_for_hour(current_hour)
 
         logger.info(
             f"📧 [Job] Emails: {result['success_count']}/{result['processed_count']} sent"
@@ -348,6 +349,7 @@ async def job_send_scheduled_emails() -> dict[str, Any]:
 # ============================================================================
 # Job 5: Scheduled Database Backup (daily at 02:00)
 # ============================================================================
+
 
 async def job_scheduled_backup() -> dict[str, Any]:
     """
@@ -380,9 +382,8 @@ async def job_scheduled_backup() -> dict[str, Any]:
 # Helper functions
 # ============================================================================
 
-def _calculate_next_occurrence(
-    current_time: datetime, repeat: str
-) -> datetime | None:
+
+def _calculate_next_occurrence(current_time: datetime, repeat: str) -> datetime | None:
     """
     Calculate the next occurrence for a repeating reminder.
 

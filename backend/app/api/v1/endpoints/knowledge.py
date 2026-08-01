@@ -32,7 +32,9 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.post("/documents", response_model=DocumentResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/documents", response_model=DocumentResponse, status_code=status.HTTP_201_CREATED
+)
 def upload_document(
     payload: DocumentUpload,
     db: Annotated[Session, Depends(get_db)],
@@ -68,11 +70,17 @@ def upload_document(
     else:
         logger.warning("RAG engine not available, document saved to DB only")
 
-    logger.info(f"Document uploaded: {payload.title} (id={doc_id}, user={current_user.id})")
+    logger.info(
+        f"Document uploaded: {payload.title} (id={doc_id}, user={current_user.id})"
+    )
     return doc
 
 
-@router.post("/documents/file", response_model=FileUploadResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/documents/file",
+    response_model=FileUploadResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def upload_file(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
@@ -205,13 +213,17 @@ def query_knowledge(
             getattr(rag, "init_error", None) if rag else "RAG engine not initialized"
         )
         hint = (
+            (
                 "Ensure LLM_API_KEY (or EMBEDDING_API_KEY) is set and that the embedding "
                 "base URL supports /embeddings (e.g. OpenAI). Many chat APIs (e.g. DeepSeek) do not. "
                 "Set EMBEDDING_BASE_URL=https://api.openai.com/v1 and EMBEDDING_API_KEY for embeddings."
-            ) if reason and "404" in str(reason) else (
+            )
+            if reason and "404" in str(reason)
+            else (
                 "Ensure optional dependencies are installed: pip install llama-index chromadb. "
                 "Check backend logs for the full error."
             )
+        )
         return KnowledgeQueryResponse(
             query=payload.query,
             results=[],

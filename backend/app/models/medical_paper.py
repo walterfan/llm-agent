@@ -16,13 +16,15 @@ from app.db.base import Base
 
 class PaperType(str, Enum):
     """Types of medical papers supported."""
-    RCT = "rct"                    # Randomized Controlled Trial
+
+    RCT = "rct"  # Randomized Controlled Trial
     META_ANALYSIS = "meta_analysis"  # Meta-Analysis / Systematic Review
-    COHORT = "cohort"              # Cohort Study
+    COHORT = "cohort"  # Cohort Study
 
 
 class PaperTaskStatus(str, Enum):
     """Status of a medical paper writing task."""
+
     PENDING = "pending"
     RUNNING = "running"
     REVISION = "revision"
@@ -54,10 +56,10 @@ class MedicalPaperTask(Base):
     raw_data = Column(JSON, nullable=True)
 
     # Output
-    manuscript = Column(JSON, nullable=True)       # Final manuscript sections
-    references = Column(JSON, nullable=True)       # Literature references
-    stats_report = Column(JSON, nullable=True)     # Statistical analysis report
-    compliance_report = Column(JSON, nullable=True) # Compliance check report
+    manuscript = Column(JSON, nullable=True)  # Final manuscript sections
+    references = Column(JSON, nullable=True)  # Literature references
+    stats_report = Column(JSON, nullable=True)  # Statistical analysis report
+    compliance_report = Column(JSON, nullable=True)  # Compliance check report
 
     # Workflow tracking
     current_step = Column(String(50), nullable=True)
@@ -70,7 +72,9 @@ class MedicalPaperTask(Base):
 
     # Relationships
     user = relationship("User", back_populates="medical_paper_tasks")
-    messages = relationship("PaperTaskMessage", back_populates="task", cascade="all, delete-orphan")
+    messages = relationship(
+        "PaperTaskMessage", back_populates="task", cascade="all, delete-orphan"
+    )
 
     def __repr__(self) -> str:
         return f"<MedicalPaperTask(id={self.id}, title={self.title!r}, status={self.status})>"
@@ -93,7 +97,9 @@ class MedicalPaperTask(Base):
             "compliance_report": self.compliance_report,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
-            "completed_at": self.completed_at.isoformat() if self.completed_at else None,
+            "completed_at": (
+                self.completed_at.isoformat() if self.completed_at else None
+            ),
         }
 
 
@@ -107,7 +113,9 @@ class PaperTaskMessage(Base):
     __tablename__ = "paper_task_messages"
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
-    task_id = Column(String(36), ForeignKey("medical_paper_tasks.id"), nullable=False, index=True)
+    task_id = Column(
+        String(36), ForeignKey("medical_paper_tasks.id"), nullable=False, index=True
+    )
 
     # A2A message fields
     sender = Column(String(50), nullable=False)

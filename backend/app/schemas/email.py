@@ -19,7 +19,9 @@ class EmailPreferencesUpdate(BaseModel):
     """Schema for updating email preferences."""
 
     email_notifications_enabled: bool | None = None
-    email_send_time: str | None = Field(None, description="Time in HH:MM format (24-hour)")
+    email_send_time: str | None = Field(
+        None, description="Time in HH:MM format (24-hour)"
+    )
     email_additional_recipients: List[str] | None = None
     email_preferred_city: str | None = None
 
@@ -56,7 +58,9 @@ class EmailSendRequest(BaseModel):
     """Request schema for sending email."""
 
     city: str = Field(..., description="City AD code or name")
-    recipient_emails: List[EmailStr] = Field(..., description="List of email addresses to send to")
+    recipient_emails: List[EmailStr] = Field(
+        ..., description="List of email addresses to send to"
+    )
 
 
 class EmailDeliveryResult(BaseModel):
@@ -95,6 +99,3 @@ class EmailLogListResponse(BaseModel):
 
     total: int
     items: List[EmailLogResponse]
-
-
-
